@@ -7,17 +7,17 @@ const getBadgeStyles = (status) => {
     case 'pending':
     case 'repaid_pending':
     case 'lent': // for money loans
-      return { bg: '#493a22', text: theme.colors.accent };
+      return { bg: '#3d3221', text: theme.colors.accent };
     case 'active':
     case 'approved':
-      return { bg: '#20382b', text: theme.colors.success };
+      return { bg: '#172f3d', text: theme.colors.primary };
     case 'available':
     case 'returned':
     case 'repaid':
-      return { bg: '#20382b', text: theme.colors.success };
+      return { bg: '#17352f', text: theme.colors.success };
     case 'overdue':
     case 'rejected':
-      return { bg: '#402724', text: theme.colors.error };
+      return { bg: '#3c242a', text: theme.colors.error };
     default:
       return { bg: theme.colors.border, text: theme.colors.textSecondary };
   }

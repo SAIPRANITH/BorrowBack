@@ -1,19 +1,19 @@
 export const theme = {
   colors: {
-    primary: '#77b984',
-    secondary: '#91c99b',
-    background: '#101713',
-    surface: '#19231d',
-    surfaceRaised: '#222e26',
-    text: '#f2efe4',
-    textSecondary: '#adb8ac',
-    accent: '#e2bd72',
-    success: '#8ec58b',
-    error: '#f08a78',
-    border: '#39483d',
-    paperShade: '#29372d',
-    inkMuted: '#849486',
-    noticeRed: '#e68772',
+    primary: '#38bdf8',
+    secondary: '#22d3ee',
+    background: '#0c1117',
+    surface: '#161b1f',
+    surfaceRaised: '#262b2f',
+    text: '#f4f7f9',
+    textSecondary: '#adb5bd',
+    accent: '#f0b44d',
+    success: '#34d399',
+    error: '#fb7185',
+    border: '#353b41',
+    paperShade: '#262b2f',
+    inkMuted: '#87919b',
+    noticeRed: '#fb7185',
   },
   spacing: {
     xs: 4,
@@ -31,7 +31,7 @@ export const theme = {
   },
   shadows: {
     card: {
-      shadowColor: '#050806',
+      shadowColor: '#000000',
       shadowOffset: {
         width: 0,
         height: 4,
@@ -41,7 +41,7 @@ export const theme = {
       elevation: 3,
     },
     header: {
-      shadowColor: '#050806',
+      shadowColor: '#000000',
       shadowOffset: {
         width: 0,
         height: 2,

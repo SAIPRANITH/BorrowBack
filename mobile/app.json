@@ -2,7 +2,7 @@
   "expo": {
     "name": "BorrowBack",
     "slug": "borrowback",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,9 +11,9 @@
     },
     "android": {
       "package": "com.borrowback.campus",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
-        "backgroundColor": "#101713",
+        "backgroundColor": "#0c1117",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -34,10 +34,10 @@
         "expo-splash-screen",
         {
           "image": "./assets/icon.png",
-          "backgroundColor": "#101713",
+          "backgroundColor": "#0c1117",
           "dark": {
             "image": "./assets/icon.png",
-            "backgroundColor": "#101713"
+            "backgroundColor": "#0c1117"
           }
         }
       ]

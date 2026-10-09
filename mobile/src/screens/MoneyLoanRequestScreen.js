@@ -367,9 +367,9 @@ const styles = StyleSheet.create({
   lendersError: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#33221e',
+    backgroundColor: '#3c242a',
     borderWidth: 1,
-    borderColor: '#69443a',
+    borderColor: '#6f3942',
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,

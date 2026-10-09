@@ -228,13 +228,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: '#f1d69a99',
+    borderColor: `${theme.colors.accent}99`,
     borderRadius: 4,
     marginBottom: theme.spacing.md,
     transform: [{ rotate: '-1deg' }],
   },
   memberStampText: {
-    color: '#f1d69a',
+    color: theme.colors.accent,
     fontSize: 9,
     fontWeight: theme.typography.weights.bold,
     letterSpacing: 1,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     backgroundColor: theme.colors.surface,
     borderWidth: 3,
-    borderColor: '#f1d69a',
+    borderColor: theme.colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: theme.spacing.md,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   emailText: {
     fontSize: theme.typography.sizes.md,
-    color: '#e7e2d4',
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   ratingContainer: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   memberSince: {
     fontSize: theme.typography.sizes.xs,
-    color: '#e7e2d4',
+    color: theme.colors.text,
     marginTop: theme.spacing.sm,
   },
   sectionCard: {

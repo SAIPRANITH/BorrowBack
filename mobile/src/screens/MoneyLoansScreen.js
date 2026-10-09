@@ -115,7 +115,7 @@ const MoneyLoansScreen = () => {
       setPayment({
         id: loan._id,
         amount: loan.totalRepayable || loan.amount,
-        title: 'Record External Loan Repayment',
+        title: 'Repay Loan',
         reference: loan._id?.slice(0, 7).toUpperCase(),
       });
       return;
@@ -198,12 +198,17 @@ const MoneyLoansScreen = () => {
 
         <View style={styles.actionContainer}>
           {item.status === 'active' && (
-            <Button 
-              title={acting === `${item._id}:repay` ? 'Saving...' : 'I repaid outside the app'}
-              onPress={() => confirmAction(item, 'repay')}
-              disabled={Boolean(acting)}
-              style={styles.actionButton}
-            />
+            <>
+              <Text style={styles.paymentHint}>
+                Pay the lender using your agreed method, then record it here.
+              </Text>
+              <Button
+                title={acting === `${item._id}:repay` ? 'Saving...' : 'Pay Now'}
+                onPress={() => confirmAction(item, 'repay')}
+                disabled={Boolean(acting)}
+                style={styles.actionButton}
+              />
+            </>
           )}
           {item.status === 'repaid_pending' && (
             <Text style={styles.waitingText}>Repayment recorded — waiting for lender confirmation.</Text>
@@ -528,6 +533,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   actionContainer: {
+    marginTop: theme.spacing.sm,
+  },
+  paymentHint: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    lineHeight: 18,
     marginTop: theme.spacing.sm,
   },
   actionButton: {

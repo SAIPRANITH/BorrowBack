@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     paddingRight: theme.spacing.md,
   },
   headerEyebrow: {
-    color: '#f1d69a',
+    color: theme.colors.accent,
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
     letterSpacing: 1.2,
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   subGreeting: {
     fontSize: theme.typography.sizes.sm,
-    color: '#f0ead9',
+    color: theme.colors.text,
   },
   headerFooter: {
     alignSelf: 'flex-start',
