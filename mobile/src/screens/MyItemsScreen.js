@@ -85,22 +85,45 @@ const MyItemsScreen = () => {
   const renderItem = ({ item }) => {
     const isAvailable = item.status === 'available';
     const isLent = item.status === 'lent';
+    const statusLabel = isAvailable ? 'AVAILABLE' : isLent ? 'LENT OUT' : 'HIDDEN';
+    const listingContext = isAvailable
+      ? 'LISTED IN BROWSE'
+      : isLent
+        ? 'WITH A BORROWER'
+        : 'HIDDEN FROM BROWSE';
+    const categoryTone = {
+      books: '#85bdd1',
+      electronics: '#85bdd1',
+      sports: theme.colors.noticeRed,
+      kitchen: theme.colors.accent,
+      stationery: '#c0a878',
+    }[item.category?.toLowerCase()] || theme.colors.secondary;
 
     return (
       <Card style={styles.itemCard}>
         <View style={styles.cardHeader}>
           <View style={styles.headerTitleContainer}>
+            <Text style={styles.listingLabel}>{listingContext}</Text>
             <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-            <Text style={styles.itemCategory}>{item.category?.toUpperCase()}</Text>
+            <View style={[styles.categoryStamp, { borderColor: categoryTone }]}>
+              <Text style={[styles.itemCategory, { color: categoryTone }]}>{item.category?.toUpperCase()}</Text>
+            </View>
           </View>
           <Badge 
-            label={item.status.toUpperCase()} 
-            color={isAvailable ? theme.colors.success : (isLent ? theme.colors.accent : theme.colors.error)} 
+            label={statusLabel}
+            color={isAvailable ? theme.colors.success : (isLent ? theme.colors.accent : theme.colors.textSecondary)}
           />
         </View>
-        {item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.itemImage} resizeMode="cover" />
-        ) : null}
+        <View style={[styles.imageFrame, { backgroundColor: `${categoryTone}18` }]}>
+          {item.imageUrl ? (
+            <Image source={{ uri: item.imageUrl }} style={styles.itemImage} resizeMode="cover" />
+          ) : (
+            <View style={styles.imageFallback}>
+              <Ionicons name="cube-outline" size={32} color={categoryTone} />
+              <Text style={[styles.imageFallbackText, { color: categoryTone }]}>{item.category || 'Shared item'}</Text>
+            </View>
+          )}
+        </View>
 
         <View style={styles.financialRow}>
           <Text style={styles.financialText}>
@@ -123,7 +146,7 @@ const MyItemsScreen = () => {
             disabled={isLent}
           >
             <Ionicons 
-              name={isAvailable ? "eye-off-outline" : "eye-outline"} 
+              name={isAvailable ? 'eye-off-outline' : 'eye-outline'}
               size={18} 
               color={isLent ? theme.colors.textSecondary : theme.colors.primary} 
             />
@@ -151,12 +174,17 @@ const MyItemsScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Items</Text>
+        <View>
+          <Text style={styles.headerEyebrow}>YOUR NOTICEBOARD</Text>
+          <Text style={styles.headerTitle}>My items</Text>
+        </View>
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => navigation.navigate('AddItem')}
+          accessibilityRole="button"
+          accessibilityLabel="Add an item"
         >
-          <Ionicons name="add" size={24} color="#fff" />
+          <Ionicons name="add" size={24} color={theme.colors.surface} />
         </TouchableOpacity>
       </View>
 
@@ -167,6 +195,27 @@ const MyItemsScreen = () => {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
+            <View style={styles.inventoryStrip}>
+              <View style={styles.inventoryCell}>
+                <Text style={styles.inventoryValue}>{items.length}</Text>
+                <Text style={styles.inventoryLabel}>TOTAL</Text>
+              </View>
+              <View style={styles.inventoryRule} />
+              <View style={styles.inventoryCell}>
+                <Text style={styles.inventoryValue}>{items.filter((item) => item.status === 'available').length}</Text>
+                <Text style={styles.inventoryLabel}>AVAILABLE</Text>
+              </View>
+              <View style={styles.inventoryRule} />
+              <View style={styles.inventoryCell}>
+                <Text style={styles.inventoryValue}>{items.filter((item) => item.status === 'lent').length}</Text>
+                <Text style={styles.inventoryLabel}>LENT OUT</Text>
+              </View>
+              <View style={styles.inventoryRule} />
+              <View style={styles.inventoryCell}>
+                <Text style={styles.inventoryValue}>{items.filter((item) => item.status === 'unavailable').length}</Text>
+                <Text style={styles.inventoryLabel}>HIDDEN</Text>
+              </View>
+            </View>
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={theme.colors.secondary} />
@@ -222,16 +271,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
+  headerEyebrow: {
+    color: theme.colors.noticeRed,
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 1.4,
+    marginBottom: 3,
+  },
   headerTitle: {
     fontSize: theme.typography.sizes.xxl,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text,
   },
   addButton: {
-    backgroundColor: theme.colors.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: theme.colors.noticeRed,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     ...theme.shadows.card,
@@ -239,6 +295,39 @@ const styles = StyleSheet.create({
   listContent: {
     padding: theme.spacing.md,
     flexGrow: 1,
+  },
+  inventoryStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceRaised,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderBottomWidth: 3,
+    borderBottomColor: theme.colors.paperShade,
+  },
+  inventoryCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  inventoryValue: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+  },
+  inventoryLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: 8,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 0.4,
+    marginTop: 2,
+  },
+  inventoryRule: {
+    width: 1,
+    height: 28,
+    backgroundColor: theme.colors.border,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -254,9 +343,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#33221e',
     borderWidth: 1,
-    borderColor: '#fecaca',
+    borderColor: '#69443a',
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
@@ -278,12 +367,28 @@ const styles = StyleSheet.create({
   itemCard: {
     marginBottom: theme.spacing.md,
   },
-  itemImage: {
+  imageFrame: {
     width: '100%',
     height: 160,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.md,
-    padding: theme.spacing.md,
+    overflow: 'hidden',
+  },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageFallback: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageFallbackText: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: theme.spacing.xs,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -301,10 +406,26 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: 2,
   },
+  listingLabel: {
+    color: theme.colors.inkMuted,
+    fontSize: 9,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 1.1,
+    marginBottom: 3,
+  },
+  categoryStamp: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    marginTop: 3,
+    transform: [{ rotate: '-1deg' }],
+  },
   itemCategory: {
-    fontSize: theme.typography.sizes.xs,
-    color: theme.colors.textSecondary,
+    fontSize: 9,
     fontWeight: theme.typography.weights.medium,
+    letterSpacing: 0.7,
   },
   financialRow: {
     flexDirection: 'row',

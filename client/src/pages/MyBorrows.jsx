@@ -41,9 +41,8 @@ import {
 export default function MyBorrows() {
 
  const [borrows, setBorrows] = useState([])
-
  const [loading, setLoading] = useState(true)
-
+ const [loadError, setLoadError] = useState('')
  const [acting, setActing] = useState('')
 
  const [tab, setTab] = useState('all')
@@ -52,15 +51,21 @@ export default function MyBorrows() {
 
  const load = async () => {
 
+ setLoadError('')
+
  try {
 
  const r = await api.get('/borrows/mine')
 
- if (r.data.success) setBorrows(r.data.borrows)
+ if (!r.data.success) throw new Error('The server did not return your borrow records.')
+ setBorrows(r.data.borrows || [])
 
- } catch {}
-
+ } catch (error) {
+ console.error('Error loading your borrows:', error)
+ setLoadError(error.response?.data?.message || error.message || 'Could not load your borrow records. Please retry.')
+ } finally {
  setLoading(false)
+ }
 
  }
 
@@ -86,11 +91,14 @@ export default function MyBorrows() {
 
  await api.put(`/borrows/${id}/${action}`, data)
 
- load()
-
- } catch {}
-
+ await load()
+ return true
+ } catch (error) {
+ window.alert(error.response?.data?.message || 'Could not update the borrow record. Please try again.')
+ return false
+ } finally {
  setActing('')
+ }
 
  }
 
@@ -108,9 +116,11 @@ export default function MyBorrows() {
 
  if (paymentModal.id && paymentModal.action) {
 
- act(paymentModal.id, paymentModal.action)
+ return act(paymentModal.id, paymentModal.action)
 
  }
+
+ return false
 
  }
 
@@ -189,6 +199,14 @@ export default function MyBorrows() {
  return (
 
  <div className="space-y-6">
+ {loadError ? (
+ <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+ <span>{loadError}</span>
+ <button type="button" onClick={() => { setLoading(true); load() }} className="font-semibold text-red-100 underline underline-offset-2">
+ Retry
+ </button>
+ </div>
+ ) : null}
 
  {/* Hero Section */}
 
@@ -699,4 +717,3 @@ export default function MyBorrows() {
  )
 
 }
-

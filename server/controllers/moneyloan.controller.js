@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import MoneyLoan from '../models/MoneyLoan.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
@@ -5,22 +6,43 @@ import User from '../models/User.js';
 export const createLoanRequest = async (req, res, next) => {
   try {
     const { lenderId, amount, interestRate, dueDate, purpose, note } = req.body;
-    
-    if (req.user._id.toString() === lenderId) {
+    const parsedAmount = Number(amount);
+    const parsedInterestRate = interestRate == null ? 0 : Number(interestRate);
+    const parsedDueDate = new Date(dueDate);
+
+    if (!mongoose.isValidObjectId(lenderId)) {
+      return res.status(400).json({ success: false, message: 'Select a valid lender' });
+    }
+    if (!Number.isFinite(parsedAmount) || parsedAmount < 100) {
+      return res.status(400).json({ success: false, message: 'Loan amount must be at least 100' });
+    }
+    if (!Number.isFinite(parsedInterestRate) || parsedInterestRate < 0) {
+      return res.status(400).json({ success: false, message: 'Interest rate must be zero or greater' });
+    }
+    if (!Number.isFinite(parsedDueDate.getTime()) || parsedDueDate <= new Date()) {
+      return res.status(400).json({ success: false, message: 'Repayment due date must be in the future' });
+    }
+    if (typeof purpose !== 'string' || !purpose.trim()) {
+      return res.status(400).json({ success: false, message: 'Loan purpose is required' });
+    }
+    if (req.user._id.toString() === lenderId.toString()) {
       return res.status(400).json({ success: false, message: 'Cannot borrow from yourself' });
     }
+    if (!(await User.exists({ _id: lenderId }))) {
+      return res.status(404).json({ success: false, message: 'Lender not found' });
+    }
 
-    const totalRepayable = amount + (amount * (interestRate || 0) / 100);
+    const totalRepayable = Math.round((parsedAmount + (parsedAmount * parsedInterestRate / 100)) * 100) / 100;
 
     const loan = await MoneyLoan.create({
       borrower: req.user._id,
       lender: lenderId,
-      amount,
-      interestRate: interestRate || 0,
+      amount: parsedAmount,
+      interestRate: parsedInterestRate,
       totalRepayable,
-      dueDate,
-      purpose,
-      note,
+      dueDate: parsedDueDate,
+      purpose: purpose.trim(),
+      note: typeof note === 'string' ? note.trim() : '',
       status: 'pending'
     });
 
@@ -86,6 +108,7 @@ export const acceptLoan = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    if (loan.status !== 'pending') return res.status(400).json({ success: false, message: 'Only pending loans can be accepted' });
 
     loan.status = 'active';
     await loan.save();
@@ -107,6 +130,7 @@ export const rejectLoan = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    if (loan.status !== 'pending') return res.status(400).json({ success: false, message: 'Only pending loans can be rejected' });
 
     loan.status = 'rejected';
     await loan.save();
@@ -128,8 +152,9 @@ export const repayLoan = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.borrower.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can be marked as repaid' });
 
-    loan.status = 'repaid';
+    loan.status = 'repaid_pending';
     loan.returnDate = Date.now();
     await loan.save();
 
@@ -150,6 +175,7 @@ export const confirmRepayment = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    if (loan.status !== 'repaid_pending') return res.status(400).json({ success: false, message: 'There is no repayment awaiting confirmation' });
 
     loan.status = 'repaid';
     await loan.save();
@@ -173,9 +199,17 @@ export const rateLender = async (req, res, next) => {
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.borrower.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
     if (loan.status !== 'repaid') return res.status(400).json({ success: false, message: 'Loan must be repaid first' });
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ success: false, message: 'Rating must be a whole number from 1 to 5' });
+    if (loan.lenderRating) return res.status(400).json({ success: false, message: 'You have already rated this lender for this loan' });
 
     loan.lenderRating = rating;
     await loan.save();
+    const lender = await User.findById(loan.lender);
+    if (lender) {
+      lender.totalRatings += 1;
+      lender.averageRating = (lender.averageRating * (lender.totalRatings - 1) + rating) / lender.totalRatings;
+      await lender.save();
+    }
 
     res.status(200).json({ success: true, loan });
   } catch (error) {
@@ -190,9 +224,17 @@ export const rateBorrower = async (req, res, next) => {
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
     if (loan.status !== 'repaid') return res.status(400).json({ success: false, message: 'Loan must be repaid first' });
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ success: false, message: 'Rating must be a whole number from 1 to 5' });
+    if (loan.borrowerRating) return res.status(400).json({ success: false, message: 'You have already rated this borrower for this loan' });
 
     loan.borrowerRating = rating;
     await loan.save();
+    const borrower = await User.findById(loan.borrower);
+    if (borrower) {
+      borrower.totalRatings += 1;
+      borrower.averageRating = (borrower.averageRating * (borrower.totalRatings - 1) + rating) / borrower.totalRatings;
+      await borrower.save();
+    }
 
     res.status(200).json({ success: true, loan });
   } catch (error) {
@@ -209,14 +251,15 @@ export const getLoanFinancialSummary = async (req, res, next) => {
 
     const borrowerSummary = {
       totalBorrowed: asBorrower.reduce((acc, curr) => acc + (curr.status !== 'rejected' ? curr.amount : 0), 0),
-      totalRepaid: asBorrower.reduce((acc, curr) => acc + (curr.status === 'repaid' ? curr.totalRepayable : 0), 0),
-      totalPending: asBorrower.reduce((acc, curr) => acc + (['pending', 'active', 'overdue'].includes(curr.status) ? curr.totalRepayable : 0), 0)
+      totalRepaid: asBorrower.reduce((acc, curr) => acc + (curr.status === 'repaid' ? (curr.totalRepayable || curr.amount) : 0), 0),
+      totalPending: asBorrower.reduce((acc, curr) => acc + (['pending', 'active', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0),
+      awaitingConfirmation: asBorrower.reduce((acc, curr) => acc + (curr.status === 'repaid_pending' ? (curr.totalRepayable || curr.amount) : 0), 0)
     };
 
     const lenderSummary = {
       totalLent: asLender.reduce((acc, curr) => acc + (curr.status !== 'rejected' ? curr.amount : 0), 0),
-      totalRecovered: asLender.reduce((acc, curr) => acc + (curr.status === 'repaid' ? curr.totalRepayable : 0), 0),
-      totalOutstanding: asLender.reduce((acc, curr) => acc + (['pending', 'active', 'overdue'].includes(curr.status) ? curr.totalRepayable : 0), 0)
+      totalRecovered: asLender.reduce((acc, curr) => acc + (curr.status === 'repaid' ? (curr.totalRepayable || curr.amount) : 0), 0),
+      totalOutstanding: asLender.reduce((acc, curr) => acc + (['pending', 'active', 'repaid_pending', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0)
     };
 
     res.status(200).json({

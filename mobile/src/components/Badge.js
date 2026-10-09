@@ -5,30 +5,32 @@ import { theme } from '../theme';
 const getBadgeStyles = (status) => {
   switch (status?.toLowerCase()) {
     case 'pending':
+    case 'repaid_pending':
     case 'lent': // for money loans
-      return { bg: '#fef3c7', text: '#d97706' }; // amber/orange
+      return { bg: '#493a22', text: theme.colors.accent };
     case 'active':
     case 'approved':
-      return { bg: '#e0f2fe', text: '#0284c7' }; // blue
+      return { bg: '#20382b', text: theme.colors.success };
     case 'available':
     case 'returned':
     case 'repaid':
-      return { bg: '#d1fae5', text: '#059669' }; // emerald/green
+      return { bg: '#20382b', text: theme.colors.success };
     case 'overdue':
     case 'rejected':
-      return { bg: '#fee2e2', text: '#dc2626' }; // red
+      return { bg: '#402724', text: theme.colors.error };
     default:
       return { bg: theme.colors.border, text: theme.colors.textSecondary };
   }
 };
 
-const Badge = ({ status, label }) => {
-  const { bg, text } = getBadgeStyles(status);
+const Badge = ({ status, label, text: badgeText, color, backgroundColor }) => {
+  const { bg, text: textColor } = getBadgeStyles(status);
+  const resolvedTextColor = color || textColor;
   
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
-      <Text style={[styles.text, { color: text }]}>
-        {label || status?.toUpperCase()}
+    <View style={[styles.container, { backgroundColor: backgroundColor || (color ? `${color}20` : bg) }]}>
+      <Text style={[styles.text, { color: resolvedTextColor }]}>
+        {label || badgeText || status?.replace(/_/g, ' ').toUpperCase()}
       </Text>
     </View>
   );

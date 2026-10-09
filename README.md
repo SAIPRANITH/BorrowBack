@@ -30,14 +30,14 @@ mobile client.
 | `client/src/components/ItemCard.jsx` | Displays a browsable item card with image, owner, and pricing details. |
 | `client/src/components/Layout.jsx` | Provides the shared authenticated page layout. |
 | `client/src/components/Navbar.jsx` | Renders the main navigation and account actions. |
-| `client/src/components/PaymentModal.jsx` | Collects payment details in the payment dialog. |
+| `client/src/components/PaymentModal.jsx` | Confirms that an external payment has already been made; it does not process payments. |
 | `client/src/components/ProtectedRoute.jsx` | Redirects signed-out visitors away from protected pages. |
 | `client/src/components/StarRating.jsx` | Shows an item's or user's star rating. |
 | `client/src/pages/AdminDashboard.jsx` | Gives administrators access to user, listing, and system management. |
 | `client/src/pages/BorrowRequests.jsx` | Lets item owners review and manage incoming borrowing requests. |
 | `client/src/pages/BrowseItems.jsx` | Searches, filters, and displays available listings. |
 | `client/src/pages/Dashboard.jsx` | Shows the signed-in user's dashboard and activity summary. |
-| `client/src/pages/Fines.jsx` | Displays borrowing fines and related payment actions. |
+| `client/src/pages/Fines.jsx` | Displays borrowing and peer-loan financial summaries. |
 | `client/src/pages/ItemDetail.jsx` | Shows a listing's details and borrowing actions. |
 | `client/src/pages/LoginPage.jsx` | Provides the account sign-in form. |
 | `client/src/pages/MoneyLoanRequest.jsx` | Submits a request for a short-term loan. |
@@ -101,11 +101,11 @@ mobile client.
 | `mobile/src/components/Input.js` | Provides a styled, reusable form input. |
 | `mobile/src/components/LoadingScreen.js` | Displays the shared loading state. |
 | `mobile/src/screens/AddItemScreen.js` | Creates a new item listing from the mobile app. |
-| `mobile/src/screens/AdminScreen.js` | Provides mobile administrator tools. |
+| `mobile/src/screens/AdminScreen.js` | Shows administrator overview, service health, alerts, recent loans, and account summaries. |
 | `mobile/src/screens/BorrowsScreen.js` | Displays borrowing requests and their status. |
 | `mobile/src/screens/BrowseScreen.js` | Browses available item listings. |
 | `mobile/src/screens/DashboardScreen.js` | Shows the mobile dashboard and account activity. |
-| `mobile/src/screens/FinesScreen.js` | Displays fine information and payment actions. |
+| `mobile/src/screens/FinesScreen.js` | Displays recorded deposits and fine summaries. |
 | `mobile/src/screens/ItemDetailScreen.js` | Shows a listing's details and borrowing options. |
 | `mobile/src/screens/LoginScreen.js` | Signs a user into the mobile app. |
 | `mobile/src/screens/MoneyLoanRequestScreen.js` | Submits a mobile money-loan request. |
@@ -161,6 +161,10 @@ signing key. The finished APK is copied to
 `client/public/downloads/BorrowBack.apk`, where the web login page links to it.
 The Android app connects to the HTTPS API URL configured by
 `EXPO_PUBLIC_API_URL` (defaulting to the production endpoint).
+
+Peer loans, deposits, and fines are tracking records only. BorrowBack does not
+currently transfer money or connect to a payment provider; users must settle
+payments using an agreed method outside the app and only then record them.
 
 ## Local utility scripts
 
