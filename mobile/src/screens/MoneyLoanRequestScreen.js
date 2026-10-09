@@ -30,7 +30,7 @@ const MoneyLoanRequestScreen = () => {
   const fetchLenders = async () => {
     try {
       const response = await api.get('/money-loans/lenders');
-      setLenders(response.data);
+      setLenders(response.data.lenders || []);
     } catch (error) {
       console.error('Error fetching lenders:', error);
       Alert.alert('Error', 'Failed to load potential lenders.');

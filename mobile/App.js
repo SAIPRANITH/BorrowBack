@@ -1,4 +1,5 @@
 import React from 'react';
+import { DeviceEventEmitter, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
@@ -9,7 +10,12 @@ export default function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <StatusBar style="auto" />
-        <AppNavigator />
+        <View
+          style={{ flex: 1 }}
+          onTouchStartCapture={() => DeviceEventEmitter.emit('USER_ACTIVITY')}
+        >
+          <AppNavigator />
+        </View>
       </AuthProvider>
     </SafeAreaProvider>
   );

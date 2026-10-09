@@ -28,19 +28,19 @@ const MoneyLoansScreen = () => {
       switch (activeTab) {
         case 'My Loans':
           response = await api.get('/money-loans/mine');
-          setLoans(response.data);
+          setLoans(response.data.loans || []);
           break;
         case 'Requests':
           response = await api.get('/money-loans/incoming');
-          setLoans(response.data);
+          setLoans(response.data.requests || []);
           break;
         case 'Lending':
           response = await api.get('/money-loans/lending');
-          setLoans(response.data);
+          setLoans(response.data.loans || []);
           break;
         case 'Summary':
           response = await api.get('/money-loans/financial');
-          setSummaryData(response.data);
+          setSummaryData(response.data.summary);
           break;
       }
     } catch (error) {

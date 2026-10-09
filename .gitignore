@@ -5,6 +5,7 @@ dist/
 **/.expo/
 coverage/
 .playwright-cli/
+client/public/downloads/*.apk
 
 .env
 .env.*

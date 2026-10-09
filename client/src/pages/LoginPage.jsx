@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
-import { Mail, Lock, ArrowRight, Loader2, Package, Fingerprint, ShieldCheck, Sparkles } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Loader2, Package, Fingerprint, ShieldCheck, Sparkles, Download } from 'lucide-react'
 
 export default function LoginPage() {
  const { login, user } = useContext(AuthContext)
@@ -10,6 +10,8 @@ export default function LoginPage() {
  
  const [email, setEmail] = useState('')
  const [password, setPassword] = useState('')
+ const [emailEditable, setEmailEditable] = useState(false)
+ const [passwordEditable, setPasswordEditable] = useState(false)
  const [error, setError] = useState(
  location.state?.reason === 'inactivity'
  ? 'You were signed out after 5 minutes of inactivity. Please sign in again.'
@@ -34,9 +36,14 @@ export default function LoginPage() {
  e.preventDefault()
  setError('')
  setLoading(true)
- const res = await login(email, password)
- if (res && !res.success) setError(res.message)
- setLoading(false)
+ try {
+ const res = await login(email, password)
+ if (res && !res.success) setError(res.message)
+ } catch (loginError) {
+ setError(loginError?.response?.data?.message || loginError?.message || 'Login failed')
+ } finally {
+ setLoading(false)
+ }
  }
 
  return (
@@ -141,7 +148,7 @@ export default function LoginPage() {
  )}
 
  {/* Form */}
- <form onSubmit={handleSubmit} className="space-y-5 relative">
+ <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5 relative">
  <div className="space-y-1.5">
  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">
  Campus Email
@@ -152,7 +159,11 @@ export default function LoginPage() {
  </div>
  <input
  type="email"
- required
+ name="borrowback-login-email"
+ autoComplete="new-password"
+ readOnly={!emailEditable}
+ onFocus={() => setEmailEditable(true)}
+ required
  className="w-full pl-12 pr-4 py-3.5 bg-[#0a0a0e]/50 border border-white/5 group- rounded-xl text-white text-[15px] focus:border-cyan-500/50 focus:bg-[#0a0a0e]/80 focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none shadow-inner"
  placeholder="name@university.edu"
  value={email}
@@ -176,7 +187,11 @@ export default function LoginPage() {
  </div>
  <input
  type="password"
- required
+ name="borrowback-login-password"
+ autoComplete="new-password"
+ readOnly={!passwordEditable}
+ onFocus={() => setPasswordEditable(true)}
+ required
  className="w-full pl-12 pr-4 py-3.5 bg-[#0a0a0e]/50 border border-white/5 group- rounded-xl text-white text-[15px] focus:border-cyan-500/50 focus:bg-[#0a0a0e]/80 focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none shadow-inner"
  placeholder="••••••••"
  value={password}
@@ -211,7 +226,15 @@ export default function LoginPage() {
  <Link to="/register" className="text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline">
  Join the network
  </Link>
- </div>
+ <a
+ href="/downloads/BorrowBack.apk"
+ className="mt-4 inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
+ download
+ >
+ <Download className="w-4 h-4" />
+ Download the Android app
+ </a>
+ </div>
  </div>
  </div>
  </div>

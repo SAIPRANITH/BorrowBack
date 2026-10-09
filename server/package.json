@@ -2,6 +2,9 @@
   "name": "borrowback-server",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
@@ -19,7 +22,6 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.0",
-    "multer": "^2.4.0",
-    "node-cron": "^3.0.3"
+    "multer": "^2.4.0"
   }
 }

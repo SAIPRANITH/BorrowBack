@@ -38,7 +38,12 @@ export default function BorrowsScreen() {
       else if (activeTab === TABS.LENDING) endpoint = '/borrows/lending';
 
       const response = await api.get(endpoint);
-      setData(response.data.data || []);
+      const rows = activeTab === TABS.MINE
+        ? response.data.borrows
+        : activeTab === TABS.REQUESTS
+          ? response.data.requests
+          : response.data.history;
+      setData(rows || []);
     } catch (error) {
       console.error('Failed to fetch borrows', error);
       Alert.alert('Error', 'Could not load borrow data');

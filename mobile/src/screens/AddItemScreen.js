@@ -5,12 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import api from '../api/api';
 import { theme } from '../theme';
 import { Input, Button, Card } from '../components';
@@ -28,9 +30,10 @@ const AddItemScreen = () => {
     category: '',
     description: '',
     imageUrl: '',
-    securityDeposit: '',
-    lateFine: '10',
+    depositAmount: '',
+    finePerDay: '10',
   });
+  const [imageFile, setImageFile] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -40,9 +43,36 @@ const AddItemScreen = () => {
     if (!formData.name.trim()) return 'Item name is required.';
     if (!formData.category) return 'Please select a category.';
     if (!formData.description.trim()) return 'Description is required.';
-    if (!formData.securityDeposit || isNaN(formData.securityDeposit)) return 'Valid security deposit is required.';
-    if (!formData.lateFine || isNaN(formData.lateFine)) return 'Valid late fine is required.';
+    if (formData.depositAmount === '' || !Number.isFinite(Number(formData.depositAmount)) || Number(formData.depositAmount) < 0) return 'Valid security deposit is required.';
+    if (formData.finePerDay === '' || !Number.isFinite(Number(formData.finePerDay)) || Number(formData.finePerDay) < 0) return 'Valid late fine is required.';
     return null;
+  };
+
+  const handleChooseImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission required', 'Allow photo library access to select an item image.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+      Alert.alert('Image too large', 'Choose an image smaller than 5 MB.');
+      return;
+    }
+    setImageFile({
+      uri: asset.uri,
+      name: asset.fileName || `item-${Date.now()}.jpg`,
+      type: asset.mimeType || 'image/jpeg',
+    });
+    handleInputChange('imageUrl', '');
   };
 
   const handleSubmit = async () => {
@@ -54,12 +84,15 @@ const AddItemScreen = () => {
 
     try {
       setLoading(true);
-      const payload = {
-        ...formData,
-        securityDeposit: Number(formData.securityDeposit),
-        lateFine: Number(formData.lateFine),
-      };
-      
+      const payload = new FormData();
+      payload.append('name', formData.name.trim());
+      payload.append('category', formData.category);
+      payload.append('description', formData.description.trim());
+      payload.append('depositAmount', String(Number(formData.depositAmount)));
+      payload.append('finePerDay', String(Number(formData.finePerDay)));
+      payload.append('imageUrl', formData.imageUrl.trim());
+      if (imageFile) payload.append('image', imageFile);
+
       await api.post('/items', payload);
       Alert.alert('Success', 'Your item has been listed successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() }
@@ -142,8 +175,8 @@ const AddItemScreen = () => {
               <Input
                 label="Security Deposit (₹) *"
                 placeholder="e.g. 500"
-                value={formData.securityDeposit}
-                onChangeText={(text) => handleInputChange('securityDeposit', text)}
+                value={formData.depositAmount}
+                onChangeText={(text) => handleInputChange('depositAmount', text)}
                 keyboardType="numeric"
               />
             </View>
@@ -152,8 +185,8 @@ const AddItemScreen = () => {
               <Input
                 label="Late Fine (₹/day) *"
                 placeholder="e.g. 10"
-                value={formData.lateFine}
-                onChangeText={(text) => handleInputChange('lateFine', text)}
+                value={formData.finePerDay}
+                onChangeText={(text) => handleInputChange('finePerDay', text)}
                 keyboardType="numeric"
               />
             </View>
@@ -162,12 +195,23 @@ const AddItemScreen = () => {
 
         <Card style={styles.formCard}>
           <Text style={styles.sectionTitle}>Media</Text>
-          
+          <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
+            <Ionicons name="cloud-upload-outline" size={20} color={theme.colors.secondary} />
+            <Text style={styles.imagePickerText}>
+              {imageFile ? 'Choose a different image' : 'Upload an image'}
+            </Text>
+          </TouchableOpacity>
+          {imageFile ? (
+            <Image source={{ uri: imageFile.uri }} style={styles.imagePreview} resizeMode="cover" />
+          ) : null}
           <Input
             label="Image URL (Optional)"
             placeholder="https://example.com/image.jpg"
             value={formData.imageUrl}
-            onChangeText={(text) => handleInputChange('imageUrl', text)}
+            onChangeText={(text) => {
+              handleInputChange('imageUrl', text);
+              if (text) setImageFile(null);
+            }}
             autoCapitalize="none"
             keyboardType="url"
           />
@@ -213,6 +257,27 @@ const styles = StyleSheet.create({
   },
   formCard: {
     marginBottom: theme.spacing.lg,
+  },
+  imagePicker: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+  },
+  imagePickerText: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.sm,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 180,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
   },
   sectionTitle: {
     fontSize: theme.typography.sizes.md,

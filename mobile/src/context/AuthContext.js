@@ -1,9 +1,10 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { AppState, DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DeviceEventEmitter } from 'react-native';
 import api from '../api/api';
 
 const AuthContext = createContext();
+const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 
 // Helper: extract user fields from the flat API response (strips success/token)
 const extractUser = (data) => {
@@ -17,30 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('userToken');
-        if (storedToken) {
-          setToken(storedToken);
-          await fetchUser();
-        }
-      } catch (e) {
-        console.error('Failed to load token', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadToken();
-
-    const logoutListener = DeviceEventEmitter.addListener('LOGOUT', logout);
-
-    return () => {
-      logoutListener.remove();
-    };
-  }, []);
+  const lastActivityAt = useRef(Date.now());
 
   const fetchUser = async () => {
     try {
@@ -63,6 +41,7 @@ export const AuthProvider = ({ children }) => {
       const newToken = response.data.token;
 
       await AsyncStorage.setItem('userToken', newToken);
+      lastActivityAt.current = Date.now();
       setToken(newToken);
       setUser(extractUser(response.data));
       return extractUser(response.data);
@@ -81,6 +60,7 @@ export const AuthProvider = ({ children }) => {
       const newToken = response.data.token;
 
       await AsyncStorage.setItem('userToken', newToken);
+      lastActivityAt.current = Date.now();
       setToken(newToken);
       setUser(extractUser(response.data));
       return extractUser(response.data);
@@ -91,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await AsyncStorage.removeItem('userToken');
       setToken(null);
@@ -100,7 +80,66 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.error('Logout failed', e);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('userToken');
+        if (storedToken) {
+          lastActivityAt.current = Date.now();
+          setToken(storedToken);
+          await fetchUser();
+        }
+      } catch (e) {
+        console.error('Failed to load token', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadToken();
+    const logoutListener = DeviceEventEmitter.addListener('LOGOUT', logout);
+
+    return () => logoutListener.remove();
+  }, [logout]);
+
+  useEffect(() => {
+    if (!token) return undefined;
+
+    let inactivityTimer;
+    const checkInactivity = () => {
+      clearTimeout(inactivityTimer);
+      const remaining = INACTIVITY_TIMEOUT_MS - (Date.now() - lastActivityAt.current);
+      if (remaining <= 0) {
+        logout();
+      } else {
+        inactivityTimer = setTimeout(checkInactivity, remaining);
+      }
+    };
+
+    const recordActivity = () => {
+      if (AppState.currentState !== 'active') return;
+      lastActivityAt.current = Date.now();
+      checkInactivity();
+    };
+
+    const activitySubscription = DeviceEventEmitter.addListener('USER_ACTIVITY', recordActivity);
+    const appStateSubscription = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        checkInactivity();
+      } else {
+        clearTimeout(inactivityTimer);
+      }
+    });
+
+    checkInactivity();
+    return () => {
+      clearTimeout(inactivityTimer);
+      activitySubscription.remove();
+      appStateSubscription.remove();
+    };
+  }, [token, logout]);
 
   const updateUser = async (data) => {
     try {

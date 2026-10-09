@@ -8,7 +8,8 @@ import {
   FlatList,
   RefreshControl,
   Image,
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,23 +42,24 @@ const DashboardScreen = () => {
         notificationsRes,
         recentRes,
       ] = await Promise.all([
-        api.get('/items/mine').catch(() => ({ data: { count: 0 } })),
-        api.get('/borrows/mine').catch(() => ({ data: { data: [] } })),
-        api.get('/borrows/incoming').catch(() => ({ data: { count: 0 } })),
-        api.get('/notifications/unread-count').catch(() => ({ data: { count: 0 } })),
-        api.get('/items?sort=-createdAt&limit=5').catch(() => ({ data: { data: [] } })),
+        api.get('/items/mine'),
+        api.get('/borrows/mine'),
+        api.get('/borrows/incoming'),
+        api.get('/notifications/unread-count'),
+        api.get('/items?sort=-createdAt&limit=5'),
       ]);
 
       setStats({
-        itemsListed: itemsRes.data.count || (itemsRes.data.data?.length || 0),
-        activeBorrows: borrowsRes.data.data ? borrowsRes.data.data.filter(b => b.status === 'active').length : 0,
-        pendingRequests: pendingRes.data.count || (pendingRes.data.data?.length || 0),
+        itemsListed: itemsRes.data.count,
+        activeBorrows: borrowsRes.data.borrows.filter(b => b.status === 'active').length,
+        pendingRequests: pendingRes.data.count,
         unreadAlerts: notificationsRes.data.count || 0,
       });
 
-      setRecentItems(recentRes.data.data || []);
+      setRecentItems(recentRes.data.items || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      Alert.alert('Error', 'Could not load your dashboard. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -102,13 +104,13 @@ const DashboardScreen = () => {
 
   const renderRecentItem = ({ item }) => {
     const categoryColors = {
-      Electronics: '#3b82f6',
-      Books: theme.colors.success,
-      Sports: theme.colors.accent,
-      Kitchen: theme.colors.error,
-      Others: '#8b5cf6',
+      electronics: '#3b82f6',
+      books: theme.colors.success,
+      sports: theme.colors.accent,
+      kitchen: theme.colors.error,
+      others: '#8b5cf6',
     };
-    const placeholderColor = categoryColors[item.category] || theme.colors.textSecondary;
+    const placeholderColor = categoryColors[item.category?.toLowerCase()] || theme.colors.textSecondary;
 
     return (
       <TouchableOpacity
@@ -117,12 +119,16 @@ const DashboardScreen = () => {
         activeOpacity={0.9}
       >
         <View style={[styles.recentItemImage, { backgroundColor: placeholderColor }]}>
-          <Ionicons name="cube-outline" size={40} color="#fff" />
+          {item.imageUrl ? (
+            <Image source={{ uri: item.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ) : (
+            <Ionicons name="cube-outline" size={40} color="#fff" />
+          )}
         </View>
         <View style={styles.recentItemInfo}>
           <Text style={styles.recentItemName} numberOfLines={1}>{item.name}</Text>
           <Text style={styles.recentItemCategory}>{item.category}</Text>
-          <Text style={styles.recentItemDeposit}>₹{item.deposit || 0}</Text>
+          <Text style={styles.recentItemDeposit}>₹{item.depositAmount || 0}</Text>
         </View>
       </TouchableOpacity>
     );

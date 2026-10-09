@@ -13,6 +13,8 @@ mobile client.
 | `server/` | Express API, authentication, MongoDB models, and AWS integrations. |
 | `mobile/` | Expo / React Native client for Android, iOS, and web. |
 | `borrowback.conf` | Nginx site configuration for serving the built web client and proxying API requests. |
+| `deploy/borrowback-certbot-renew.service` | Renews and installs the server's short-lived HTTPS certificate. |
+| `deploy/borrowback-certbot-renew.timer` | Runs the certificate renewal check every six hours. |
 
 ## Web client
 
@@ -88,7 +90,7 @@ mobile client.
 | `mobile/app.json` | Defines the Expo app name, platform settings, and bundled assets. |
 | `mobile/babel.config.js` | Configures Babel for the Expo project. |
 | `mobile/src/api/api.js` | Configures authenticated requests from the mobile app to the API. |
-| `mobile/src/context/AuthContext.js` | Manages mobile sign-in, registration, and session state. |
+| `mobile/src/context/AuthContext.js` | Manages mobile sign-in, registration, session state, and inactivity logout. |
 | `mobile/src/navigation/AppNavigator.js` | Declares the app's navigation stacks and tabs. |
 | `mobile/src/theme/index.js` | Shares colors, typography, and other visual tokens across mobile screens. |
 | `mobile/src/components/Badge.js` | Renders compact status and category labels. |
@@ -116,7 +118,8 @@ mobile client.
 
 ## Setup
 
-Install the web and server dependencies from their respective directories:
+Use Node.js 20 or later for the API, and install the web and server
+dependencies from their respective directories:
 
 ```powershell
 cd server
@@ -136,6 +139,28 @@ The API reads its database, token, and optional AWS configuration from
 environment variables. Keep actual credentials in a local `server/.env` file
 or the deployment platform's secret store; never commit them. The mobile app
 can be started with `npm install` and `npx expo start` from `mobile/`.
+The production web server redirects HTTP to HTTPS, serves the ACME renewal
+challenge over HTTP, and renews its short-lived IP certificate automatically.
+
+## Android APK
+
+The Android client can be built as a standalone APK without Expo Go. Install
+Java 17 and the Android SDK (platform 36, build tools 36.0.0, NDK 27.1.12297006,
+and CMake 3.22.1), then run this from PowerShell:
+
+```powershell
+cd mobile
+npm ci
+.\build-apk.ps1
+```
+
+The script creates a release signing key and DPAPI-protected password in
+`%LOCALAPPDATA%\BorrowBack\android-signing`. Back up this directory securely
+under the same Windows account because future APK updates must use the same
+signing key. The finished APK is copied to
+`client/public/downloads/BorrowBack.apk`, where the web login page links to it.
+The Android app connects to the HTTPS API URL configured by
+`EXPO_PUBLIC_API_URL` (defaulting to the production endpoint).
 
 ## Local utility scripts
 

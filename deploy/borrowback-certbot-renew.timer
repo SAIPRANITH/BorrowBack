@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the BorrowBack HTTPS certificate for renewal
+
+[Timer]
+OnBootSec=15m
+OnUnitActiveSec=6h
+Persistent=true
+Unit=borrowback-certbot-renew.service
+
+[Install]
+WantedBy=timers.target

@@ -49,7 +49,7 @@ const ItemDetailScreen = () => {
       setLoading(true);
       setError(null);
       const response = await api.get(`/items/${itemId}`);
-      setItem(response.data);
+      setItem(response.data.item);
     } catch (err) {
       console.error('Error fetching item details:', err);
       setError('Failed to load item details. Please try again.');
@@ -137,10 +137,10 @@ const ItemDetailScreen = () => {
           </View>
         </View>
 
-        {item.rating > 0 && (
+        {item.averageRating > 0 && (
           <View style={styles.ratingRow}>
             <Ionicons name="star" size={18} color={theme.colors.accent} />
-            <Text style={styles.ratingText}>{item.rating.toFixed(1)} / 5.0</Text>
+            <Text style={styles.ratingText}>{item.averageRating.toFixed(1)} / 5.0</Text>
           </View>
         )}
 
@@ -150,12 +150,12 @@ const ItemDetailScreen = () => {
           <View style={styles.financialRow}>
             <View style={styles.financialItem}>
               <Text style={styles.financialLabel}>Security Deposit</Text>
-              <Text style={styles.financialValue}>₹{item.securityDeposit}</Text>
+              <Text style={styles.financialValue}>₹{item.depositAmount}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.financialItem}>
               <Text style={styles.financialLabel}>Late Fine</Text>
-              <Text style={styles.financialValue}>₹{item.lateFine}/day</Text>
+              <Text style={styles.financialValue}>₹{item.finePerDay}/day</Text>
             </View>
           </View>
         </Card>
@@ -171,10 +171,10 @@ const ItemDetailScreen = () => {
                 <Text style={styles.ownerName}>{item.owner.name}</Text>
                 <Text style={styles.ownerEmail}>{item.owner.email}</Text>
               </View>
-              {item.owner.rating > 0 && (
+              {item.owner.averageRating > 0 && (
                 <View style={styles.ownerRating}>
                   <Ionicons name="star" size={14} color={theme.colors.accent} />
-                  <Text style={styles.ownerRatingText}>{item.owner.rating.toFixed(1)}</Text>
+                  <Text style={styles.ownerRatingText}>{item.owner.averageRating.toFixed(1)}</Text>
                 </View>
               )}
             </View>

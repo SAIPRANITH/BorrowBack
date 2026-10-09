@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Image,
   TextInput,
   FlatList,
   TouchableOpacity,
@@ -30,14 +31,14 @@ const CATEGORIES = [
 ];
 
 const categoryColors = {
-  Electronics: '#3b82f6',
-  Books: theme.colors.success,
-  Sports: theme.colors.accent,
-  Kitchen: theme.colors.error,
-  Stationery: '#8b5cf6',
-  Clothing: '#ec4899',
-  Tools: theme.colors.textSecondary,
-  Others: '#94a3b8',
+  electronics: '#3b82f6',
+  books: theme.colors.success,
+  sports: theme.colors.accent,
+  kitchen: theme.colors.error,
+  stationery: '#8b5cf6',
+  clothing: '#ec4899',
+  tools: theme.colors.textSecondary,
+  others: '#94a3b8',
 };
 
 const BrowseScreen = () => {
@@ -67,11 +68,11 @@ const BrowseScreen = () => {
         url += `search=${encodeURIComponent(debouncedSearch)}&`;
       }
       if (selectedCategory !== 'All') {
-        url += `category=${encodeURIComponent(selectedCategory)}`;
+        url += `category=${encodeURIComponent(selectedCategory.toLowerCase())}`;
       }
 
       const response = await api.get(url);
-      setItems(response.data.data || []);
+      setItems(response.data.items || []);
     } catch (error) {
       console.error('Error fetching items:', error);
     } finally {
@@ -107,8 +108,8 @@ const BrowseScreen = () => {
   };
 
   const renderItem = ({ item }) => {
-    const placeholderColor = categoryColors[item.category] || categoryColors.Others;
-    const isAvailable = item.status !== 'lent';
+    const placeholderColor = categoryColors[item.category?.toLowerCase()] || categoryColors.others;
+    const isAvailable = item.status === 'available';
 
     return (
       <TouchableOpacity
@@ -118,6 +119,13 @@ const BrowseScreen = () => {
       >
         <View style={[styles.itemImage, { backgroundColor: placeholderColor }]}>
           <Ionicons name="image-outline" size={32} color="#ffffff80" />
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+          ) : null}
           <View style={[styles.statusBadge, { backgroundColor: isAvailable ? theme.colors.success : theme.colors.error }]}>
             <Text style={styles.statusText}>{isAvailable ? 'Available' : 'Lent'}</Text>
           </View>
@@ -133,14 +141,14 @@ const BrowseScreen = () => {
           </View>
 
           <View style={styles.itemFooter}>
-            <Text style={styles.itemDeposit}>₹{item.deposit || 0}</Text>
+            <Text style={styles.itemDeposit}>₹{item.depositAmount || 0}</Text>
             <View style={styles.ownerRow}>
               <Ionicons name="person-circle-outline" size={14} color={theme.colors.textSecondary} />
               <Text style={styles.ownerName} numberOfLines={1}>
                 {item.owner?.name ? item.owner.name.split(' ')[0] : 'User'}
               </Text>
               <Ionicons name="star" size={12} color={theme.colors.accent} style={{ marginLeft: 4 }} />
-              <Text style={styles.ratingText}>{item.owner?.rating?.toFixed(1) || 'NEW'}</Text>
+              <Text style={styles.ratingText}>{item.owner?.averageRating?.toFixed(1) || 'NEW'}</Text>
             </View>
           </View>
         </View>

@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Image,
   FlatList,
   Alert,
   TouchableOpacity,
@@ -23,7 +24,7 @@ const MyItemsScreen = () => {
   const fetchMyItems = async () => {
     try {
       const response = await api.get('/items/mine');
-      setItems(response.data);
+      setItems(response.data.items || []);
     } catch (error) {
       console.error('Error fetching my items:', error);
       Alert.alert('Error', 'Failed to load your items.');
@@ -94,14 +95,17 @@ const MyItemsScreen = () => {
             color={isAvailable ? theme.colors.success : (isLent ? theme.colors.accent : theme.colors.error)} 
           />
         </View>
+        {item.imageUrl ? (
+          <Image source={{ uri: item.imageUrl }} style={styles.itemImage} resizeMode="cover" />
+        ) : null}
 
         <View style={styles.financialRow}>
           <Text style={styles.financialText}>
-            Deposit: <Text style={styles.financialValue}>₹{item.securityDeposit}</Text>
+            Deposit: <Text style={styles.financialValue}>₹{item.depositAmount}</Text>
           </Text>
           <Text style={styles.financialDivider}>•</Text>
           <Text style={styles.financialText}>
-            Fine: <Text style={styles.financialValue}>₹{item.lateFine}/day</Text>
+            Fine: <Text style={styles.financialValue}>₹{item.finePerDay}/day</Text>
           </Text>
         </View>
 
@@ -216,6 +220,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   itemCard: {
+    marginBottom: theme.spacing.md,
+  },
+  itemImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.md,
     padding: theme.spacing.md,
   },

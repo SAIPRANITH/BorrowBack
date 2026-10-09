@@ -15,7 +15,7 @@ const AdminScreen = () => {
     try {
       const res = await api.get('/admin');
       if (res.data.success) {
-        setDashboardData(res.data.data);
+        setDashboardData(res.data.dashboard);
       }
     } catch (err) {
       console.log('Admin fetch err', err);
