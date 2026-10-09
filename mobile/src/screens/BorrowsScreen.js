@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
@@ -9,6 +10,7 @@ import Button from '../components/Button';
 import Badge from '../components/Badge';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/LoadingScreen';
+import ExternalPaymentModal from '../components/ExternalPaymentModal';
 
 const TABS = {
   MINE: 'MINE',
@@ -16,19 +18,13 @@ const TABS = {
   LENDING: 'LENDING',
 };
 
-const STATUS_COLORS = {
-  pending: theme.colors.accent,
-  active: theme.colors.success,
-  returned: theme.colors.primary,
-  overdue: theme.colors.error,
-  rejected: theme.colors.textSecondary,
-};
-
 export default function BorrowsScreen() {
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState(TABS.MINE);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [payment, setPayment] = useState(null);
 
   const fetchBorrows = async () => {
     try {
@@ -63,7 +59,7 @@ export default function BorrowsScreen() {
     fetchBorrows();
   }, [activeTab]);
 
-  const handleAction = async (action, id, item) => {
+  const handleAction = async (action, id, { silent = false } = {}) => {
     try {
       let endpoint = '';
       let method = 'put';
@@ -75,11 +71,26 @@ export default function BorrowsScreen() {
       else if (action === 'confirm-return') endpoint = `/borrows/${id}/confirm-return`;
 
       await api[method](endpoint);
-      Alert.alert('Success', 'Action completed successfully.');
-      fetchBorrows();
+      if (!silent) Alert.alert('Success', 'Action completed successfully.');
+      await fetchBorrows();
+      return true;
     } catch (error) {
+      if (silent) throw error;
       Alert.alert('Error', error.response?.data?.message || 'Action failed.');
+      return false;
     }
+  };
+
+  const confirmExternalPayment = (action, item) => {
+    const label = action === 'pay-fine' ? 'fine' : 'security deposit';
+    const amount = action === 'pay-fine' ? item.fineAmount : item.depositAmount;
+    setPayment({
+      action,
+      id: item._id,
+      amount,
+      title: action === 'pay-fine' ? 'Record Fine Payment' : 'Record Security Deposit',
+      reference: item._id?.slice(0, 7).toUpperCase(),
+    });
   };
 
   const renderMyBorrowsItem = ({ item }) => (
@@ -89,11 +100,39 @@ export default function BorrowsScreen() {
           <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
           <Text style={styles.personName}>From: {item.owner?.name || 'Unknown'}</Text>
         </View>
-        <Badge 
+        <Badge
+          status={item.status}
           label={item.status} 
-          backgroundColor={STATUS_COLORS[item.status] || theme.colors.textSecondary} 
         />
       </View>
+      {(item.depositAmount > 0 || (item.fineAmount > 0 && item.status === 'returned')) && (
+        <View style={styles.paymentStates}>
+          {item.depositAmount > 0 && (
+            <View style={[styles.paymentState, item.depositPaid ? styles.paymentPaid : styles.paymentUnpaid]}>
+              <Ionicons
+                name={item.depositPaid ? 'checkmark-circle' : 'time-outline'}
+                size={14}
+                color={item.depositPaid ? theme.colors.success : theme.colors.accent}
+              />
+              <Text style={[styles.paymentStateText, item.depositPaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
+                Deposit · {item.depositPaid ? 'PAID' : 'UNPAID'}
+              </Text>
+            </View>
+          )}
+          {item.fineAmount > 0 && item.status === 'returned' && (
+            <View style={[styles.paymentState, item.finePaid ? styles.paymentPaid : styles.paymentUnpaid]}>
+              <Ionicons
+                name={item.finePaid ? 'checkmark-circle' : 'time-outline'}
+                size={14}
+                color={item.finePaid ? theme.colors.success : theme.colors.accent}
+              />
+              <Text style={[styles.paymentStateText, item.finePaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
+                Fine · {item.finePaid ? 'PAID' : 'UNPAID'}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
       <View style={styles.datesContainer}>
         <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
       </View>
@@ -103,10 +142,10 @@ export default function BorrowsScreen() {
           <Button title="Signal Return" onPress={() => handleAction('signal-return', item._id, item)} style={styles.actionButton} />
         )}
         {(item.status === 'active' || item.status === 'returned') && !item.depositPaid && item.depositAmount > 0 && (
-          <Button title="Pay Deposit" onPress={() => handleAction('pay-deposit', item._id, item)} style={styles.actionButton} />
+          <Button title="Record Deposit Paid" onPress={() => confirmExternalPayment('pay-deposit', item)} style={styles.actionButton} />
         )}
         {item.status === 'returned' && item.fineAmount > 0 && !item.finePaid && (
-          <Button title={`Pay Fine (\u20B9${item.fineAmount})`} onPress={() => handleAction('pay-fine', item._id, item)} style={[styles.actionButton, {backgroundColor: theme.colors.error}]} />
+          <Button title={`Record Fine Paid (₹${item.fineAmount})`} onPress={() => confirmExternalPayment('pay-fine', item)} style={[styles.actionButton, {backgroundColor: theme.colors.error}]} />
         )}
       </View>
     </Card>
@@ -119,7 +158,7 @@ export default function BorrowsScreen() {
           <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
           <Text style={styles.personName}>By: {item.borrower?.name || 'Unknown'}</Text>
         </View>
-        <Badge label="Pending" backgroundColor={theme.colors.accent} />
+        <Badge status="pending" label="Pending" />
       </View>
       <View style={styles.datesContainer}>
         <Text style={styles.dateText}>Req: {new Date(item.createdAt).toLocaleDateString()}</Text>
@@ -139,9 +178,9 @@ export default function BorrowsScreen() {
           <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
           <Text style={styles.personName}>To: {item.borrower?.name || 'Unknown'}</Text>
         </View>
-        <Badge 
+        <Badge
+          status={item.status}
           label={item.status} 
-          backgroundColor={STATUS_COLORS[item.status] || theme.colors.textSecondary} 
         />
       </View>
       <View style={styles.datesContainer}>
@@ -161,6 +200,24 @@ export default function BorrowsScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.shortcutRow}>
+        <TouchableOpacity
+          style={styles.shortcutButton}
+          onPress={() => navigation.navigate('MoneyLoans')}
+          accessibilityRole="button"
+        >
+          <Ionicons name="cash-outline" size={18} color={theme.colors.secondary} />
+          <Text style={styles.shortcutText}>Money Loans</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcutButton}
+          onPress={() => navigation.getParent()?.navigate('Home', { screen: 'Fines' })}
+          accessibilityRole="button"
+        >
+          <Ionicons name="wallet-outline" size={18} color={theme.colors.secondary} />
+          <Text style={styles.shortcutText}>Financials</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.tabContainer}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === TABS.MINE && styles.activeTab]} 
@@ -202,6 +259,14 @@ export default function BorrowsScreen() {
           />
         }
       />
+      <ExternalPaymentModal
+        visible={Boolean(payment)}
+        title={payment?.title}
+        amount={payment?.amount}
+        reference={payment?.reference}
+        onClose={() => setPayment(null)}
+        onConfirm={() => handleAction(payment.action, payment.id, { silent: true })}
+      />
     </View>
   );
 }
@@ -210,6 +275,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  shortcutRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+  },
+  shortcutButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.background,
+  },
+  shortcutText: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -272,6 +359,39 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: theme.typography.sizes.xs,
     color: theme.colors.textSecondary,
+  },
+  paymentStates: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
+  },
+  paymentState: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 5,
+    borderRadius: theme.borderRadius.full,
+    borderWidth: 1,
+  },
+  paymentPaid: {
+    backgroundColor: '#20382b',
+    borderColor: '#3d6949',
+  },
+  paymentUnpaid: {
+    backgroundColor: '#493a22',
+    borderColor: '#725b30',
+  },
+  paymentStateText: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+  },
+  paymentPaidText: {
+    color: theme.colors.success,
+  },
+  paymentUnpaidText: {
+    color: theme.colors.accent,
   },
   actionContainer: {
     marginTop: theme.spacing.sm,

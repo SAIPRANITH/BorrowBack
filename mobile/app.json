@@ -2,18 +2,18 @@
   "expo": {
     "name": "BorrowBack",
     "slug": "borrowback",
-    "version": "1.0.2",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "com.borrowback.campus",
-      "versionCode": 3,
+      "versionCode": 7,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#101713",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -28,6 +28,17 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow BorrowBack to select an image for your item listing."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "backgroundColor": "#101713",
+          "dark": {
+            "image": "./assets/icon.png",
+            "backgroundColor": "#101713"
+          }
         }
       ]
     ]

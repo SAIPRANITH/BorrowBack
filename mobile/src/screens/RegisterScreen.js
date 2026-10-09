@@ -79,7 +79,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.logoContainer}>
-            <Ionicons name="person-add-outline" size={40} color="#0d9488" />
+            <Ionicons name="person-add-outline" size={40} color={theme.colors.primary} />
           </View>
           <Text style={styles.appName}>Join BorrowBack</Text>
           <Text style={styles.tagline}>Create your account to get started</Text>
@@ -197,7 +197,7 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a5f',
+    backgroundColor: theme.colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   header: {
     minHeight: 250,
     paddingVertical: 32,
-    backgroundColor: '#1e3a5f',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 70,
     height: 70,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.accent,
     borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
@@ -244,18 +244,20 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 15,
-    color: '#94a3b8',
+    color: '#e3ddcc',
     textAlign: 'center',
   },
   bottomSheet: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 24,
     minHeight: 480,
+    borderTopWidth: 3,
+    borderColor: theme.colors.paperShade,
   },
   sheetHeader: {
     marginBottom: 24,
@@ -263,7 +265,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   formContainer: {
@@ -275,14 +277,14 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffe4e6',
+    backgroundColor: '#3a2520',
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
-    color: '#e11d48',
+    color: theme.colors.error,
     marginLeft: 8,
     fontSize: 14,
     flex: 1,
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
   registerBtn: {
     marginTop: 8,
     marginBottom: 24,
-    backgroundColor: '#0d9488',
+    backgroundColor: theme.colors.secondary,
   },
   loginContainer: {
     flexDirection: 'row',
@@ -303,11 +305,11 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   loginText: {
-    color: '#64748b',
+    color: theme.colors.textSecondary,
     fontSize: 15,
   },
   loginLink: {
-    color: '#0d9488',
+    color: theme.colors.secondary,
     fontSize: 15,
     fontWeight: 'bold',
   },

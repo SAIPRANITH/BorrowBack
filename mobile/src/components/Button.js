@@ -48,6 +48,7 @@ const Button = ({
         styles.button,
         size === 'large' && styles.largeButton,
         fullWidth && styles.fullWidth,
+        variant === 'primary' && !disabled && styles.primaryShadow,
         { 
           backgroundColor: getBackgroundColor(),
           borderColor: getBorderColor(),
@@ -69,8 +70,8 @@ const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 48,
-    borderRadius: theme.borderRadius.md,
+    minHeight: 50,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
@@ -79,6 +80,13 @@ const styles = StyleSheet.create({
   largeButton: {
     height: 56,
     borderRadius: theme.borderRadius.lg,
+  },
+  primaryShadow: {
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 2,
   },
   fullWidth: {
     width: '100%',

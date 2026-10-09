@@ -46,7 +46,7 @@ const HomeStack = () => (
     <Stack.Screen name="Dashboard" component={DashboardScreen} />
     <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
-    <Stack.Screen name="Fines" component={FinesScreen} />
+    <Stack.Screen name="Fines" component={FinesScreen} options={{ title: 'Financials' }} />
   </Stack.Navigator>
 );
 
@@ -67,8 +67,8 @@ const ItemsStack = () => (
 const ActivityStack = () => (
   <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
     <Stack.Screen name="Borrows" component={BorrowsScreen} options={{ title: 'Activity' }} />
-    <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} />
-    <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestScreen} />
+    <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} options={{ title: 'Peer Loans' }} />
+    <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestScreen} options={{ title: 'Request a Loan' }} />
   </Stack.Navigator>
 );
 
@@ -130,15 +130,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    elevation: 0,
-    shadowOpacity: 0,
-    height: 60,
-    paddingBottom: 8,
+    elevation: 8,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    height: 68,
+    paddingBottom: 10,
     paddingTop: 8,
   },
   tabBarLabel: {
-    fontSize: 10,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: theme.typography.weights.semibold,
   }
 });
 

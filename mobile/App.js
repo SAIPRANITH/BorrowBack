@@ -9,7 +9,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
         <View
           style={{ flex: 1 }}
           onTouchStartCapture={() => DeviceEventEmitter.emit('USER_ACTIVITY')}

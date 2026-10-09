@@ -37,7 +37,7 @@ const moneyLoanSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'active', 'repaid', 'overdue', 'rejected'],
+      enum: ['pending', 'active', 'repaid_pending', 'repaid', 'overdue', 'rejected'],
       default: 'pending',
     },
     purpose: {

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 
 import api from '../api/api'
 
-import PaymentModal from '../components/PaymentModal'
 
 import {
 
@@ -22,7 +21,6 @@ import {
 
  CheckCircle2,
 
- Wallet,
 
  ArrowDownLeft,
 
@@ -177,46 +175,6 @@ export default function Fines() {
  const [loanSummary, setLoanSummary] = useState(null)
 
  const [loading, setLoading] = useState(true)
-
- const [processingId, setProcessingId] = useState(null)
-
- const [paidIds, setPaidIds] = useState(new Set())
-
-
-
- const [paymentModal, setPaymentModal] = useState({ isOpen: false, id: null, amount: 0, title: '' })
-
-
-
- const handlePayClick = (row) => {
-
- setPaymentModal({
-
- isOpen: true,
-
- id: row.id,
-
- amount: row.amount,
-
- title: `Pay ${row.type}`
-
- })
-
- }
-
-
-
- const handlePaymentSuccess = () => {
-
- if (paymentModal.id) {
-
- setPaidIds(prev => new Set(prev).add(paymentModal.id))
-
- }
-
- }
-
-
 
  useEffect(() => {
 
@@ -504,7 +462,7 @@ export default function Fines() {
 
  badgeClass: lb.totalPending === 0 && lb.totalBorrowed > 0 ? 'badge-repaid' : 'badge-active animate-pulse-glow',
 
- note: `Repaid: ₹${lb.totalRepaid || 0} | Pending: ₹${lb.totalPending || 0}`
+ note: `Repaid: ₹${lb.totalRepaid || 0} | Pending: ₹${lb.totalPending || 0} | Awaiting confirmation: ₹${lb.awaitingConfirmation || 0}`
 
  },
 
@@ -952,15 +910,11 @@ export default function Fines() {
 
  {transactionEntries.map((row, idx) => {
 
- const isPaid = paidIds.has(row.id)
+ const displayStatus = row.status
 
- const displayStatus = isPaid ? 'Paid' : row.status
-
- const displayBadge = isPaid ? 'badge-returned' : row.badgeClass
+ const displayBadge = row.badgeClass
 
  const isOwed = row.role.includes('Borrower') && (row.type === 'Pending' || row.status === 'Overdue' || row.status === 'Active' || row.status === 'Pending')
-
- const showPayButton = isOwed && !isPaid && row.amount > 0
 
 
 
@@ -1024,29 +978,14 @@ export default function Fines() {
 
  <td className="py-3.5 px-4 sm:px-6 text-right text-zinc-500 text-[11px]">
 
- {showPayButton ? (
-
- <button
-
- onClick={() => handlePayClick(row)}
-
- disabled={processingId === row.id}
-
- className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-semibold transition-colors flex items-center justify-center gap-1.5 ml-auto w-full sm:w-auto"
-
+ {isOwed ? (
+ <Link
+ to={row.category === 'Peer Loan Borrowed' ? '/money-loans' : '/my-borrows'}
+ className="font-semibold text-cyan-400 hover:text-cyan-300"
  >
-
- <Wallet className="w-3.5 h-3.5" />
-
- Pay Now
-
- </button>
-
- ) : (
-
- row.note
-
- )}
+ {row.category === 'Peer Loan Borrowed' ? 'Manage in Peer Money Loans' : 'Open My Borrows to record an external payment'}
+ </Link>
+ ) : row.note}
 
  </td>
 
@@ -1064,25 +1003,8 @@ export default function Fines() {
 
  </div>
 
- <PaymentModal
-
- isOpen={paymentModal.isOpen}
-
- onClose={() => setPaymentModal({ ...paymentModal, isOpen: false })}
-
- amount={paymentModal.amount}
-
- title={paymentModal.title}
-
- invoiceId={`F${paymentModal.id?.substring(0, 7).toUpperCase()}`}
-
- onSuccess={handlePaymentSuccess}
-
- />
-
  </div>
 
  )
 
 }
-

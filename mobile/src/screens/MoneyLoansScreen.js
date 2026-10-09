@@ -3,15 +3,20 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Ale
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import api from '../api/api';
-import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Badge from '../components/Badge';
 import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/LoadingScreen';
+import ExternalPaymentModal from '../components/ExternalPaymentModal';
 
 const TABS = ['My Loans', 'Requests', 'Lending', 'Summary'];
+const formatStatus = (status) => {
+  if (status === 'repaid_pending') return 'AWAITING CONFIRMATION';
+  if (status === 'repaid') return 'PAID';
+  return (status || 'unknown').replace(/_/g, ' ').toUpperCase();
+};
 
 const MoneyLoansScreen = () => {
   const [activeTab, setActiveTab] = useState('My Loans');
@@ -19,10 +24,13 @@ const MoneyLoansScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
-  const { user } = useAuth();
+  const [loadError, setLoadError] = useState('');
+  const [acting, setActing] = useState('');
+  const [payment, setPayment] = useState(null);
   const navigation = useNavigation();
 
-  const fetchLoans = async () => {
+  const fetchLoans = useCallback(async () => {
+    setLoadError('');
     try {
       let response;
       switch (activeTab) {
@@ -42,31 +50,35 @@ const MoneyLoansScreen = () => {
           response = await api.get('/money-loans/financial');
           setSummaryData(response.data.summary);
           break;
+        default:
+          throw new Error('Unknown money-loan section.');
       }
     } catch (error) {
       console.error('Error fetching loans:', error);
-      Alert.alert('Error', 'Failed to fetch loan data. Please try again.');
+      setLoadError(error.response?.data?.message || 'Could not load loan information. Pull down to retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [activeTab]);
 
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
       fetchLoans();
-    }, [activeTab])
+    }, [fetchLoans])
   );
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchLoans();
-  };
+  }, [fetchLoans]);
 
-  const handleStatusChange = async (id, action) => {
+  const handleStatusChange = async (id, action, showAlerts = true) => {
+    const requestKey = `${id}:${action}`;
+    setActing(requestKey);
     try {
-      let endpoint = '';
+      let endpoint;
       switch (action) {
         case 'repay':
           endpoint = `/money-loans/${id}/repay`;
@@ -80,36 +92,88 @@ const MoneyLoansScreen = () => {
         case 'confirm-repay':
           endpoint = `/money-loans/${id}/confirm-repay`;
           break;
+        default:
+          throw new Error('Unsupported loan action.');
       }
       
       await api.put(endpoint);
-      Alert.alert('Success', 'Loan successfully updated.');
-      onRefresh();
+      await fetchLoans();
+      if (showAlerts) Alert.alert('Updated', 'The loan status has been updated.');
+      return true;
     } catch (error) {
       console.error(`Error updating loan ${id} with action ${action}:`, error);
-      Alert.alert('Error', 'Failed to update loan status.');
+      if (!showAlerts) throw error;
+      Alert.alert('Could not update loan', error.response?.data?.message || 'Please try again.');
+      return false;
+    } finally {
+      setActing('');
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return theme.colors.primary;
-      case 'pending': return theme.colors.accent;
-      case 'repaid': return theme.colors.success;
-      case 'overdue': return theme.colors.error;
-      case 'rejected': return theme.colors.textSecondary;
-      default: return theme.colors.primary;
+  const confirmAction = (loan, action) => {
+    if (action === 'repay') {
+      setPayment({
+        id: loan._id,
+        amount: loan.totalRepayable || loan.amount,
+        title: 'Record External Loan Repayment',
+        reference: loan._id?.slice(0, 7).toUpperCase(),
+      });
+      return;
     }
+
+    const messages = {
+      accept: {
+        title: 'Accept loan request?',
+        message: `Accept the ₹${loan.amount} loan request? BorrowBack records the agreement but does not transfer money.`,
+        confirm: 'Accept request',
+      },
+      reject: {
+        title: 'Reject loan request?',
+        message: 'The borrower will be notified that you declined this request.',
+        confirm: 'Reject request',
+      },
+      'confirm-repay': {
+        title: 'Confirm repayment received?',
+        message: 'Only confirm after you have received the repayment outside BorrowBack.',
+        confirm: 'Confirm received',
+      },
+    };
+    const copy = messages[action];
+    Alert.alert(copy.title, copy.message, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: copy.confirm, style: action === 'reject' ? 'destructive' : 'default', onPress: () => handleStatusChange(loan._id, action) },
+    ]);
+  };
+
+  const ratePerson = async (loan, side, rating) => {
+    try {
+      await api.put(`/money-loans/${loan._id}/rate-${side}`, { rating });
+      await fetchLoans();
+      Alert.alert('Thank you', 'Your rating has been saved.');
+    } catch (error) {
+      console.error(`Error rating ${side} for loan ${loan._id}:`, error);
+      Alert.alert('Could not save rating', error.response?.data?.message || 'Please try again.');
+    }
+  };
+
+  const chooseRating = (loan, side) => {
+    Alert.alert(`Rate ${side === 'lender' ? 'lender' : 'borrower'}`, 'Choose a rating from 1 to 5 stars.', [
+      ...[1, 2, 3, 4, 5].map((rating) => ({
+        text: `${rating} ★`,
+        onPress: () => ratePerson(loan, side, rating),
+      })),
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const renderMyLoansItem = ({ item }) => {
-    const totalRepayable = item.amount + (item.amount * (item.interestRate / 100));
+    const totalRepayable = item.totalRepayable ?? item.amount + (item.amount * (item.interestRate / 100));
     
     return (
       <Card style={styles.card}>
         <View style={styles.cardHeader}>
-          <Text style={styles.userName}>{item.lenderName || 'Lender'}</Text>
-          <Badge text={item.status.toUpperCase()} color={getStatusColor(item.status)} />
+          <Text style={styles.userName}>{item.lender?.name || 'Lender'}</Text>
+          <Badge status={item.status} label={formatStatus(item.status)} />
         </View>
         <View style={styles.loanDetails}>
           <View style={styles.detailRow}>
@@ -135,19 +199,24 @@ const MoneyLoansScreen = () => {
         <View style={styles.actionContainer}>
           {item.status === 'active' && (
             <Button 
-              title="Mark Repaid" 
-              onPress={() => handleStatusChange(item.id, 'repay')} 
+              title={acting === `${item._id}:repay` ? 'Saving...' : 'I repaid outside the app'}
+              onPress={() => confirmAction(item, 'repay')}
+              disabled={Boolean(acting)}
               style={styles.actionButton}
             />
           )}
-          {item.status === 'repaid' && (
+          {item.status === 'repaid_pending' && (
+            <Text style={styles.waitingText}>Repayment recorded — waiting for lender confirmation.</Text>
+          )}
+          {item.status === 'repaid' && !item.lenderRating && (
             <Button 
               title="Rate Lender" 
               variant="outline"
-              onPress={() => Alert.alert('Coming Soon', 'Rating feature is under development.')} 
+              onPress={() => chooseRating(item, 'lender')}
               style={styles.actionButton}
             />
           )}
+          {item.lenderRating ? <Text style={styles.ratingSaved}>Your lender rating: {item.lenderRating}/5</Text> : null}
         </View>
       </Card>
     );
@@ -156,8 +225,8 @@ const MoneyLoansScreen = () => {
   const renderRequestsItem = ({ item }) => (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.userName}>{item.borrowerName || 'Borrower'}</Text>
-        <Text style={styles.amountText}>₹{item.amount}</Text>
+        <Text style={styles.userName}>{item.borrower?.name || 'Borrower'}</Text>
+        <Text style={styles.amountText}>₹{Number(item.amount).toLocaleString('en-IN')}</Text>
       </View>
       <View style={styles.loanDetails}>
         <Text style={styles.purposeText}><Text style={{fontWeight: 'bold'}}>Purpose:</Text> {item.purpose}</Text>
@@ -176,14 +245,16 @@ const MoneyLoansScreen = () => {
         <Button 
           title="Reject" 
           variant="outline"
-          onPress={() => handleStatusChange(item.id, 'reject')} 
+          onPress={() => confirmAction(item, 'reject')}
+          disabled={Boolean(acting)}
           style={[styles.flexButton, { borderColor: theme.colors.error }]}
           textStyle={{ color: theme.colors.error }}
         />
         <View style={{ width: theme.spacing.md }} />
         <Button 
           title="Accept" 
-          onPress={() => handleStatusChange(item.id, 'accept')} 
+          onPress={() => confirmAction(item, 'accept')}
+          disabled={Boolean(acting)}
           style={styles.flexButton}
         />
       </View>
@@ -193,13 +264,17 @@ const MoneyLoansScreen = () => {
   const renderLendingItem = ({ item }) => (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.userName}>{item.borrowerName || 'Borrower'}</Text>
-        <Badge text={item.status.toUpperCase()} color={getStatusColor(item.status)} />
+        <Text style={styles.userName}>{item.borrower?.name || 'Borrower'}</Text>
+        <Badge status={item.status} label={formatStatus(item.status)} />
       </View>
       <View style={styles.loanDetails}>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Amount Lent:</Text>
-          <Text style={styles.detailValue}>₹{item.amount}</Text>
+          <Text style={styles.detailValue}>₹{Number(item.amount).toLocaleString('en-IN')}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Total repayable:</Text>
+          <Text style={styles.detailValue}>₹{Number(item.totalRepayable || item.amount).toLocaleString('en-IN')}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Due Date:</Text>
@@ -210,11 +285,21 @@ const MoneyLoansScreen = () => {
       <View style={styles.actionContainer}>
         {item.status === 'repaid_pending' && (
           <Button 
-            title="Confirm Repayment" 
-            onPress={() => handleStatusChange(item.id, 'confirm-repay')} 
+            title={acting === `${item._id}:confirm-repay` ? 'Saving...' : 'Confirm Repayment Received'}
+            onPress={() => confirmAction(item, 'confirm-repay')}
+            disabled={Boolean(acting)}
             style={styles.actionButton}
           />
         )}
+        {item.status === 'repaid' && !item.borrowerRating && (
+          <Button
+            title="Rate Borrower"
+            variant="outline"
+            onPress={() => chooseRating(item, 'borrower')}
+            style={styles.actionButton}
+          />
+        )}
+        {item.borrowerRating ? <Text style={styles.ratingSaved}>Your borrower rating: {item.borrowerRating}/5</Text> : null}
       </View>
     </Card>
   );
@@ -241,6 +326,10 @@ const MoneyLoansScreen = () => {
             <Text style={styles.summaryLabel}>Total Pending</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.borrower.totalPending || 0}</Text>
           </Card>
+          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+            <Text style={styles.summaryLabel}>Awaiting confirmation</Text>
+            <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.borrower.awaitingConfirmation || 0}</Text>
+          </Card>
         </View>
 
         <Text style={[styles.sectionTitle, { marginTop: theme.spacing.lg }]}>As Lender</Text>
@@ -255,7 +344,7 @@ const MoneyLoansScreen = () => {
           </Card>
           <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
             <Text style={styles.summaryLabel}>Outstanding</Text>
-            <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.lender.outstanding || 0}</Text>
+            <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.lender.totalOutstanding || 0}</Text>
           </Card>
         </View>
       </ScrollView>
@@ -284,12 +373,18 @@ const MoneyLoansScreen = () => {
         </ScrollView>
       </View>
 
-      {activeTab === 'Summary' ? (
+      {loadError ? (
+        <View style={styles.errorContainer}>
+          <Ionicons name="cloud-offline-outline" size={24} color={theme.colors.error} />
+          <Text style={styles.errorText}>{loadError}</Text>
+          <Button title="Retry" onPress={onRefresh} style={styles.retryButton} />
+        </View>
+      ) : activeTab === 'Summary' ? (
         renderSummary()
       ) : (
         <FlatList
           data={loans}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item._id || item.id}
           renderItem={
             activeTab === 'My Loans' ? renderMyLoansItem :
             activeTab === 'Requests' ? renderRequestsItem :
@@ -301,7 +396,11 @@ const MoneyLoansScreen = () => {
             <EmptyState 
               icon="wallet-outline" 
               title="No Loans Found" 
-              message={`You have no ${activeTab.toLowerCase()} at the moment.`} 
+              message={
+                activeTab === 'My Loans'
+                  ? 'Request a peer loan to see its status and repayment details here.'
+                  : `You have no ${activeTab.toLowerCase()} at the moment.`
+              }
             />
           }
         />
@@ -315,6 +414,14 @@ const MoneyLoansScreen = () => {
           <Ionicons name="add" size={24} color={theme.colors.surface} />
         </TouchableOpacity>
       )}
+      <ExternalPaymentModal
+        visible={Boolean(payment)}
+        title={payment?.title}
+        amount={payment?.amount}
+        reference={payment?.reference}
+        onClose={() => setPayment(null)}
+        onConfirm={() => handleStatusChange(payment.id, 'repay', false)}
+      />
     </View>
   );
 };
@@ -396,6 +503,17 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.normal,
     color: theme.colors.text,
   },
+  waitingText: {
+    color: theme.colors.accent,
+    fontSize: theme.typography.sizes.sm,
+    lineHeight: 20,
+    marginTop: theme.spacing.sm,
+  },
+  ratingSaved: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    marginTop: theme.spacing.sm,
+  },
   purposeText: {
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.normal,
@@ -425,6 +543,19 @@ const styles = StyleSheet.create({
   summaryContainer: {
     flex: 1,
     padding: theme.spacing.md,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xl,
+    gap: theme.spacing.md,
+  },
+  errorText: {
+    color: theme.colors.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    maxWidth: 180,
   },
   sectionTitle: {
     fontSize: theme.typography.sizes.xl,

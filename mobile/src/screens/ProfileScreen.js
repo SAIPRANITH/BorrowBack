@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
+import appConfig from '../../app.json';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -21,6 +22,7 @@ export default function ProfileScreen() {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
+  const memberYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : null;
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
@@ -77,6 +79,10 @@ export default function ProfileScreen() {
         
         {/* Profile Header */}
         <View style={styles.header}>
+          <View style={styles.memberStamp}>
+            <Ionicons name="leaf-outline" size={12} color="#f1d69a" />
+            <Text style={styles.memberStampText}>BORROWBACK MEMBER</Text>
+          </View>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
           </View>
@@ -91,9 +97,7 @@ export default function ProfileScreen() {
               {user?.averageRating?.toFixed(1) || '0.0'} ({user?.totalRatings || 0} reviews)
             </Text>
           </View>
-          <Text style={styles.memberSince}>
-            Member since {new Date(user?.createdAt).getFullYear()}
-          </Text>
+          {memberYear ? <Text style={styles.memberSince}>A neighbor since {memberYear}</Text> : null}
         </View>
 
         {/* Edit Profile Section */}
@@ -149,7 +153,7 @@ export default function ProfileScreen() {
           
           <TouchableOpacity 
             style={styles.actionItem} 
-            onPress={() => navigation.navigate('Fines')}
+            onPress={() => navigation.navigate('Home', { screen: 'Fines' })}
           >
             <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.primary}15` }]}>
               <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
@@ -160,7 +164,7 @@ export default function ProfileScreen() {
 
           <TouchableOpacity 
             style={styles.actionItem} 
-            onPress={() => navigation.navigate('MoneyLoans')}
+            onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
           >
             <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.success}15` }]}>
               <Ionicons name="cash-outline" size={22} color={theme.colors.success} />
@@ -189,7 +193,7 @@ export default function ProfileScreen() {
           textStyle={{ color: theme.colors.error }}
         />
         
-        <Text style={styles.versionText}>BorrowBack v1.0.0</Text>
+        <Text style={styles.versionText}>BorrowBack v{appConfig.expo.version}</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -206,14 +210,42 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
+    backgroundColor: theme.colors.primary,
     marginBottom: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
+    overflow: 'hidden',
+    borderBottomWidth: 3,
+    borderBottomColor: theme.colors.accent,
+  },
+  memberStamp: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: '#f1d69a99',
+    borderRadius: 4,
+    marginBottom: theme.spacing.md,
+    transform: [{ rotate: '-1deg' }],
+  },
+  memberStampText: {
+    color: '#f1d69a',
+    fontSize: 9,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 1,
   },
   avatarContainer: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 3,
+    borderColor: '#f1d69a',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: theme.spacing.md,
@@ -221,25 +253,25 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 36,
-    color: theme.colors.surface,
+    color: theme.colors.primary,
     fontWeight: theme.typography.weights.bold,
   },
   nameText: {
     fontSize: theme.typography.sizes.xxl,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text,
+    color: theme.colors.surface,
     marginBottom: 4,
   },
   emailText: {
     fontSize: theme.typography.sizes.md,
-    color: theme.colors.textSecondary,
+    color: '#e7e2d4',
     marginBottom: theme.spacing.sm,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: theme.spacing.xs,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceRaised,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.full,
@@ -251,12 +283,12 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textSecondary,
+    color: theme.colors.text,
     fontWeight: theme.typography.weights.medium,
   },
   memberSince: {
     fontSize: theme.typography.sizes.xs,
-    color: theme.colors.textSecondary,
+    color: '#e7e2d4',
     marginTop: theme.spacing.sm,
   },
   sectionCard: {
@@ -343,7 +375,7 @@ const styles = StyleSheet.create({
   },
   versionText: {
     textAlign: 'center',
-    color: theme.colors.border,
+    color: theme.colors.inkMuted,
     fontSize: theme.typography.sizes.xs,
   },
 });

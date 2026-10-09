@@ -31,14 +31,26 @@ const CATEGORIES = [
 ];
 
 const categoryColors = {
-  electronics: '#3b82f6',
+  electronics: '#557c91',
   books: theme.colors.success,
   sports: theme.colors.accent,
   kitchen: theme.colors.error,
-  stationery: '#8b5cf6',
-  clothing: '#ec4899',
-  tools: theme.colors.textSecondary,
-  others: '#94a3b8',
+  stationery: '#87704f',
+  clothing: '#aa665b',
+  tools: '#747568',
+  others: '#a49b85',
+};
+
+const categoryIcons = {
+  All: 'sparkles-outline',
+  Electronics: 'phone-portrait-outline',
+  Books: 'book-outline',
+  Sports: 'american-football-outline',
+  Kitchen: 'restaurant-outline',
+  Stationery: 'pencil-outline',
+  Clothing: 'shirt-outline',
+  Tools: 'hammer-outline',
+  Others: 'grid-outline',
 };
 
 const BrowseScreen = () => {
@@ -99,7 +111,14 @@ const BrowseScreen = () => {
         style={[styles.chip, isSelected && styles.chipSelected]}
         onPress={() => setSelectedCategory(category)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isSelected }}
       >
+        <Ionicons
+          name={categoryIcons[category]}
+          size={15}
+          color={isSelected ? theme.colors.surface : theme.colors.textSecondary}
+        />
         <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
           {category}
         </Text>
@@ -116,6 +135,8 @@ const BrowseScreen = () => {
         style={styles.itemCard}
         onPress={() => navigation.navigate('ItemDetail', { itemId: item._id })}
         activeOpacity={0.9}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name}, ${isAvailable ? 'available' : 'lent'}, security deposit ₹${item.depositAmount || 0}`}
       >
         <View style={[styles.itemImage, { backgroundColor: placeholderColor }]}>
           <Ionicons name="image-outline" size={32} color="#ffffff80" />
@@ -141,7 +162,10 @@ const BrowseScreen = () => {
           </View>
 
           <View style={styles.itemFooter}>
-            <Text style={styles.itemDeposit}>₹{item.depositAmount || 0}</Text>
+              <View>
+                <Text style={styles.depositLabel}>SECURITY DEPOSIT</Text>
+                <Text style={styles.itemDeposit}>₹{item.depositAmount || 0}</Text>
+              </View>
             <View style={styles.ownerRow}>
               <Ionicons name="person-circle-outline" size={14} color={theme.colors.textSecondary} />
               <Text style={styles.ownerName} numberOfLines={1}>
@@ -160,6 +184,16 @@ const BrowseScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
+          <View style={styles.headerIntro}>
+            <View>
+              <Text style={styles.headerEyebrow}>THE CAMPUS EXCHANGE</Text>
+              <Text style={styles.headerTitle}>Find something useful.</Text>
+            </View>
+            <View style={styles.resultPill}>
+              <Ionicons name="cube-outline" size={14} color={theme.colors.secondary} />
+              <Text style={styles.resultText}>{items.length} items</Text>
+            </View>
+          </View>
           <View style={styles.searchContainer}>
             <Ionicons name="search" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
             <TextInput
@@ -169,8 +203,19 @@ const BrowseScreen = () => {
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCorrect={false}
-              clearButtonMode="while-editing"
+              returnKeyType="search"
+              accessibilityLabel="Search items to borrow"
             />
+            {searchQuery ? (
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
+                hitSlop={8}
+              >
+                <Ionicons name="close-circle" size={19} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
 
@@ -226,16 +271,50 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.md,
+    paddingTop: theme.spacing.lg,
     paddingBottom: 12,
+  },
+  headerIntro: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  headerEyebrow: {
+    color: theme.colors.secondary,
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 1.2,
+    marginBottom: 5,
+  },
+  headerTitle: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+  },
+  resultPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#39775514',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 7,
+    borderRadius: theme.borderRadius.full,
+    gap: 5,
+  },
+  resultText: {
+    color: theme.colors.secondary,
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.paperShade,
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: 12,
     height: 44,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   searchIcon: {
     marginRight: theme.spacing.sm,
@@ -257,6 +336,9 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     borderRadius: 20,
@@ -291,6 +373,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     ...theme.shadows.card,
   },
   itemImage: {
@@ -319,7 +403,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.primary,
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   categoryRow: {
@@ -348,6 +432,13 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.secondary,
+  },
+  depositLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: 8,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   ownerRow: {
     flexDirection: 'row',

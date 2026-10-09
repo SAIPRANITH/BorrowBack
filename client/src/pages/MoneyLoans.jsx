@@ -61,9 +61,8 @@ export default function MoneyLoans() {
  const [lending, setLending] = useState([])
 
  const [summary, setSummary] = useState(null)
-
  const [loading, setLoading] = useState(true)
-
+ const [loadError, setLoadError] = useState('')
  const [acting, setActing] = useState('')
 
  const [paymentModal, setPaymentModal] = useState({ isOpen: false, id: null, action: null, amount: 0, title: '' })
@@ -71,6 +70,8 @@ export default function MoneyLoans() {
 
 
  const load = async () => {
+
+ setLoadError('')
 
  try {
 
@@ -86,6 +87,10 @@ export default function MoneyLoans() {
 
  ])
 
+ if (![mR, iR, lR, fR].every(response => response.data.success)) {
+ throw new Error('The server returned incomplete loan information.')
+ }
+
  if (mR.data.success) setLoans(mR.data.loans || [])
 
  if (iR.data.success) setRequests(iR.data.requests || [])
@@ -94,9 +99,12 @@ export default function MoneyLoans() {
 
  if (fR.data.success) setSummary(fR.data.summary)
 
- } catch {}
-
+ } catch (error) {
+ console.error('Error loading peer loans:', error)
+ setLoadError(error.response?.data?.message || error.message || 'Could not load loan information. Please retry.')
+ } finally {
  setLoading(false)
+ }
 
  }
 
@@ -118,11 +126,15 @@ export default function MoneyLoans() {
 
  await api.put(`/money-loans/${id}/${action}`)
 
- load()
+ await load()
+ return true
 
- } catch {}
-
+ } catch (error) {
+ window.alert(error.response?.data?.message || 'Could not update the loan. Please try again.')
+ return false
+ } finally {
  setActing('')
+ }
 
  }
 
@@ -140,9 +152,11 @@ export default function MoneyLoans() {
 
  if (paymentModal.id && paymentModal.action) {
 
- act(paymentModal.id, paymentModal.action)
+ return act(paymentModal.id, paymentModal.action)
 
  }
+
+ return false
 
  }
 
@@ -218,9 +232,9 @@ export default function MoneyLoans() {
 
  </div>
 
- <span className={`badge-${loan.status} capitalize tracking-wider`}>
+ <span className={`badge-${loan.status === 'repaid_pending' ? 'pending' : loan.status} capitalize tracking-wider`}>
 
- {loan.status}
+ {loan.status === 'repaid_pending' ? 'Awaiting confirmation' : loan.status === 'repaid' ? 'Paid' : loan.status}
 
  </span>
 
@@ -379,6 +393,14 @@ export default function MoneyLoans() {
  return (
 
  <div className="space-y-6">
+ {loadError ? (
+ <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+ <span>{loadError}</span>
+ <button type="button" onClick={() => { setLoading(true); load() }} className="font-semibold text-red-100 underline underline-offset-2">
+ Retry
+ </button>
+ </div>
+ ) : null}
 
  {/* Hero Section */}
 
@@ -794,7 +816,7 @@ export default function MoneyLoans() {
 
  actions={
 
- l.status === 'repaid' ? (
+ l.status === 'repaid_pending' ? (
 
  <button
 
@@ -814,7 +836,7 @@ export default function MoneyLoans() {
 
  <>
 
- <Check className="w-3.5 h-3.5" /> Confirm Repayment
+ <Check className="w-3.5 h-3.5" /> Confirm Repayment Received
 
  </>
 
@@ -949,6 +971,20 @@ export default function MoneyLoans() {
  icon: AlertCircle,
 
  bg: 'bg-amber-500/10'
+
+ },
+
+ {
+
+ label: 'Awaiting Lender Confirmation',
+
+ value: summary.borrower?.awaitingConfirmation,
+
+ color: 'text-cyan-400',
+
+ icon: Clock,
+
+ bg: 'bg-cyan-500/10'
 
  }
 
@@ -1173,4 +1209,3 @@ export default function MoneyLoans() {
  )
 
 }
-

@@ -19,14 +19,14 @@ import { Button, Badge, LoadingScreen, Card } from '../components';
 
 const getCategoryColor = (category) => {
   const colors = {
-    electronics: '#3b82f6',
-    books: '#8b5cf6',
-    sports: '#f97316',
-    kitchen: '#10b981',
-    stationery: '#ec4899',
-    clothing: '#f43f5e',
+    electronics: '#557c91',
+    books: '#557c45',
+    sports: '#c58d32',
+    kitchen: '#397755',
+    stationery: '#87704f',
+    clothing: '#aa665b',
     tools: '#64748b',
-    others: '#0d9488',
+    others: '#397755',
   };
   return colors[category?.toLowerCase()] || colors.others;
 };

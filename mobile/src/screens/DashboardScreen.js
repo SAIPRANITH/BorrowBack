@@ -89,10 +89,10 @@ const DashboardScreen = () => {
     </View>
   );
 
-  const renderActionBtn = (title, icon, screen) => (
+  const renderActionBtn = (title, icon, screen, params) => (
     <TouchableOpacity
       style={styles.actionBtn}
-      onPress={() => navigation.navigate(screen)}
+      onPress={() => navigation.navigate(screen, params)}
       activeOpacity={0.7}
     >
       <View style={styles.actionIconContainer}>
@@ -104,11 +104,11 @@ const DashboardScreen = () => {
 
   const renderRecentItem = ({ item }) => {
     const categoryColors = {
-      electronics: '#3b82f6',
+      electronics: '#557c91',
       books: theme.colors.success,
       sports: theme.colors.accent,
       kitchen: theme.colors.error,
-      others: '#8b5cf6',
+      others: '#7e7257',
     };
     const placeholderColor = categoryColors[item.category?.toLowerCase()] || theme.colors.textSecondary;
 
@@ -141,27 +141,36 @@ const DashboardScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
       >
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hello, {user?.name || 'User'}!</Text>
-            <Text style={styles.subGreeting}>Welcome back to BorrowBack</Text>
+          <View style={styles.headerTop}>
+            <View style={styles.headerCopy}>
+              <Text style={styles.headerEyebrow}>YOUR CAMPUS COMMUNITY</Text>
+              <Text style={styles.greeting}>Hello, {user?.name || 'User'}!</Text>
+              <Text style={styles.subGreeting}>Good things are better shared.</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.notificationBtn}
+              onPress={() => navigation.navigate('Notifications')}
+              accessibilityRole="button"
+              accessibilityLabel={stats.unreadAlerts ? `Notifications, ${stats.unreadAlerts} unread` : 'Notifications'}
+            >
+              <Ionicons name="notifications-outline" size={23} color={theme.colors.surface} />
+              {stats.unreadAlerts > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{stats.unreadAlerts > 9 ? '9+' : stats.unreadAlerts}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.notificationBtn}
-            onPress={() => navigation.navigate('Notifications')}
-          >
-            <Ionicons name="notifications-outline" size={26} color={theme.colors.primary} />
-            {stats.unreadAlerts > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{stats.unreadAlerts > 9 ? '9+' : stats.unreadAlerts}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerFooter}>
+            <Ionicons name="heart" size={13} color="#f1d69a" />
+            <Text style={styles.headerFooterText}>Borrow what you need. Lend what you can.</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overview</Text>
+          <Text style={styles.sectionTitle}>Your activity</Text>
           <View style={styles.statsGrid}>
-            {renderStatCard('Items Listed', stats.itemsListed, 'list-circle-outline', '#3b82f6')}
+            {renderStatCard('Items Listed', stats.itemsListed, 'list-circle-outline', '#557c91')}
             {renderStatCard('Active Borrows', stats.activeBorrows, 'swap-horizontal-outline', theme.colors.success)}
             {renderStatCard('Pending', stats.pendingRequests, 'time-outline', theme.colors.accent)}
             {renderStatCard('Alerts', stats.unreadAlerts, 'alert-circle-outline', theme.colors.error)}
@@ -173,7 +182,7 @@ const DashboardScreen = () => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.actionsScroll}>
             {renderActionBtn('Browse', 'search-outline', 'Browse')}
             {renderActionBtn('Add Item', 'add-circle-outline', 'MyItems')}
-            {renderActionBtn('Loans', 'cash-outline', 'MoneyLoans')}
+            {renderActionBtn('Money Loans', 'cash-outline', 'Activity', { screen: 'MoneyLoans' })}
             {renderActionBtn('Financials', 'wallet-outline', 'Fines')}
             <View style={{ width: 16 }} />
           </ScrollView>
@@ -216,30 +225,65 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    backgroundColor: theme.colors.primary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 22,
+    borderBottomWidth: 4,
+    borderBottomColor: theme.colors.accent,
+    ...theme.shadows.card,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 20,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+  },
+  headerCopy: {
+    flex: 1,
+    paddingRight: theme.spacing.md,
+  },
+  headerEyebrow: {
+    color: '#f1d69a',
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    letterSpacing: 1.2,
+    marginBottom: 7,
   },
   greeting: {
     fontSize: theme.typography.sizes.xxl,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.primary,
+    color: theme.colors.surface,
     marginBottom: 4,
   },
   subGreeting: {
     fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textSecondary,
+    color: '#f0ead9',
+  },
+  headerFooter: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff20',
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    marginTop: theme.spacing.lg,
+  },
+  headerFooterText: {
+    color: theme.colors.surface,
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.medium,
+    marginLeft: 6,
   },
   notificationBtn: {
-    padding: 8,
-    borderRadius: 50,
-    backgroundColor: '#f1f5f9',
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff24',
     position: 'relative',
   },
   badge: {
@@ -266,7 +310,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: theme.typography.sizes.lg,
     fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.primary,
+    color: theme.colors.text,
     marginLeft: 20,
     marginBottom: 16,
   },
@@ -294,6 +338,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     ...theme.shadows.card,
   },
   statIconContainer: {
@@ -326,11 +372,13 @@ const styles = StyleSheet.create({
   actionIconContainer: {
     width: 60,
     height: 60,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 20,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     ...theme.shadows.card,
   },
   actionText: {
