@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: '#b84f3f14',
+    backgroundColor: `${theme.colors.accent}18`,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing.sm,
@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
   amountLabel: { color: theme.colors.textSecondary, fontSize: theme.typography.sizes.xs, fontWeight: theme.typography.weights.bold, textTransform: 'uppercase', letterSpacing: 1 },
   amount: { color: theme.colors.text, fontSize: 34, fontWeight: theme.typography.weights.bold, marginTop: theme.spacing.xs },
   notice: {
-    backgroundColor: '#362d1d',
-    borderColor: '#65502e',
+    backgroundColor: '#292a27',
+    borderColor: '#514a37',
     borderWidth: 1,
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   noticeBody: { color: theme.colors.text, fontSize: theme.typography.sizes.xs, lineHeight: 18, marginTop: theme.spacing.xs },
   error: {
     color: theme.colors.error,
-    backgroundColor: '#b84f3f12',
+    backgroundColor: `${theme.colors.error}14`,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.sm,
     marginTop: theme.spacing.md,

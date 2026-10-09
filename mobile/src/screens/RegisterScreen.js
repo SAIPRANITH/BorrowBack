@@ -238,13 +238,13 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: theme.colors.surface,
     marginBottom: 8,
     letterSpacing: 0.5,
   },
   tagline: {
     fontSize: 15,
-    color: '#e3ddcc',
+    color: theme.colors.surface,
     textAlign: 'center',
   },
   bottomSheet: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3a2520',
+    backgroundColor: '#3c242a',
     padding: 12,
     borderRadius: 8,
     marginTop: 16,

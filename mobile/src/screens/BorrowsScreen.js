@@ -376,11 +376,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   paymentPaid: {
-    backgroundColor: '#20382b',
-    borderColor: '#3d6949',
+    backgroundColor: '#17352f',
+    borderColor: '#256b59',
   },
   paymentUnpaid: {
-    backgroundColor: '#493a22',
+    backgroundColor: '#3d3221',
     borderColor: '#725b30',
   },
   paymentStateText: {

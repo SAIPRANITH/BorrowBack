@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#33221e',
+    backgroundColor: '#3c242a',
     marginBottom: theme.spacing.md,
   },
   errorTitle: {
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   heroEyebrow: {
-    color: '#f1d69a',
+    color: theme.colors.accent,
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
     letterSpacing: 1.2,
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.md,
   },
   heroTotalLabel: {
-    color: '#f1d69a',
+    color: theme.colors.accent,
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
     textTransform: 'uppercase',
@@ -589,9 +589,9 @@ const styles = StyleSheet.create({
   inlineError: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#33221e',
+    backgroundColor: '#3c242a',
     borderWidth: 1,
-    borderColor: '#69443a',
+    borderColor: '#6f3942',
     borderRadius: theme.borderRadius.md,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
