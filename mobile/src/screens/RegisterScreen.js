@@ -6,8 +6,7 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ScrollView, 
-  TouchableOpacity, 
-  Dimensions 
+  TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -15,10 +14,8 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { theme } from '../theme';
 
-const { width, height } = Dimensions.get('window');
-
 const RegisterScreen = ({ navigation }) => {
-  const { register, loading, error } = useAuth();
+  const { register, loading, error, clearError } = useAuth();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,12 +23,19 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleRegister = async () => {
+    if (submitting) return;
     setValidationError('');
-    
-    if (!name || !email || !phone || !password || !confirmPassword) {
+
+    if (!name.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
       setValidationError('All fields are required.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setValidationError('Enter a valid email address.');
       return;
     }
     
@@ -45,20 +49,27 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
+    setSubmitting(true);
     try {
-      await register(name, email, password, phone);
-      // If auto-login isn't part of register, navigation logic can be placed here or handled in context
+      await register(name.trim(), email.trim().toLowerCase(), password, phone.trim());
     } catch (err) {
-      console.log('Registration error:', err);
+      console.error('Registration failed:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <KeyboardAvoidingView 
       style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header Section */}
         <View style={styles.header}>
           <TouchableOpacity 
@@ -84,7 +95,11 @@ const RegisterScreen = ({ navigation }) => {
             <Input
               placeholder="Full Name"
               value={name}
-              onChangeText={setName}
+              onChangeText={(value) => {
+                setName(value);
+                setValidationError('');
+                clearError();
+              }}
               autoCapitalize="words"
               icon={<Ionicons name="person-outline" size={20} color="#64748b" />}
             />
@@ -94,9 +109,16 @@ const RegisterScreen = ({ navigation }) => {
             <Input
               placeholder="Email Address"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(value) => {
+                setEmail(value);
+                setValidationError('');
+                clearError();
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
               icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
             />
             
@@ -105,7 +127,11 @@ const RegisterScreen = ({ navigation }) => {
             <Input
               placeholder="Phone Number"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(value) => {
+                setPhone(value);
+                setValidationError('');
+                clearError();
+              }}
               keyboardType="phone-pad"
               icon={<Ionicons name="call-outline" size={20} color="#64748b" />}
             />
@@ -115,7 +141,11 @@ const RegisterScreen = ({ navigation }) => {
             <Input
               placeholder="Password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(value) => {
+                setPassword(value);
+                setValidationError('');
+                clearError();
+              }}
               secureTextEntry
               icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
             />
@@ -125,7 +155,11 @@ const RegisterScreen = ({ navigation }) => {
             <Input
               placeholder="Confirm Password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(value) => {
+                setConfirmPassword(value);
+                setValidationError('');
+                clearError();
+              }}
               secureTextEntry
               icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
             />
@@ -142,7 +176,8 @@ const RegisterScreen = ({ navigation }) => {
             <Button
               title="Register"
               onPress={handleRegister}
-              loading={loading}
+              loading={loading || submitting}
+              disabled={submitting}
               style={styles.registerBtn}
             />
 
@@ -168,7 +203,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    height: height * 0.35,
+    minHeight: 250,
+    paddingVertical: 32,
     backgroundColor: '#1e3a5f',
     justifyContent: 'center',
     alignItems: 'center',
@@ -219,7 +255,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 24,
-    minHeight: height * 0.7,
+    minHeight: 480,
   },
   sheetHeader: {
     marginBottom: 24,

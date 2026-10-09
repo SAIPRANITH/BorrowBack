@@ -46,7 +46,12 @@ export const AuthProvider = ({ children }) => {
       setUser(extractUser(response.data));
       return extractUser(response.data);
     } catch (e) {
-      const msg = e.response?.data?.message || 'Login failed';
+      const msg = e.response?.data?.message
+        || (e.code === 'ECONNABORTED'
+          ? 'The request timed out. Please try again.'
+          : e.message === 'Network Error'
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : 'Login failed. Please try again.');
       setError(msg);
       throw e;
     }
@@ -146,6 +151,10 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await api.put('/auth/profile', data);
       // Backend returns flat: { success, _id, name, email, token, ... }
+      if (response.data.token) {
+        await AsyncStorage.setItem('userToken', response.data.token);
+        setToken(response.data.token);
+      }
       setUser(extractUser(response.data));
       return extractUser(response.data);
     } catch (e) {
@@ -154,6 +163,8 @@ export const AuthProvider = ({ children }) => {
       throw e;
     }
   };
+
+  const clearError = useCallback(() => setError(null), []);
 
   return (
     <AuthContext.Provider
@@ -166,6 +177,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateUser,
+        clearError,
       }}
     >
       {children}

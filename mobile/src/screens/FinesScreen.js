@@ -5,18 +5,22 @@ import api from '../api/api';
 import { theme } from '../theme';
 import Card from '../components/Card';
 import LoadingScreen from '../components/LoadingScreen';
+import Button from '../components/Button';
 
 export default function FinesScreen() {
   const [finances, setFinances] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const fetchFinances = async () => {
+    setLoadError('');
     try {
       const response = await api.get('/borrows/financial');
       setFinances(response.data.summary);
     } catch (error) {
       console.error('Failed to fetch finances', error);
+      setLoadError(error.response?.data?.message || 'Could not load your financial details. Check your connection and try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -34,6 +38,19 @@ export default function FinesScreen() {
 
   if (loading && !refreshing) {
     return <LoadingScreen message="Loading financial details..." />;
+  }
+
+  if (!finances && loadError) {
+    return (
+      <View style={styles.errorState}>
+        <View style={styles.errorIcon}>
+          <Ionicons name="cloud-offline-outline" size={30} color={theme.colors.error} />
+        </View>
+        <Text style={styles.errorTitle}>Financial details unavailable</Text>
+        <Text style={styles.errorMessage}>{loadError}</Text>
+        <Button title="Try again" onPress={onRefresh} loading={refreshing} />
+      </View>
+    );
   }
 
   const borrowerStats = finances?.borrower || { 
@@ -94,6 +111,12 @@ export default function FinesScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />
       }
     >
+      {loadError ? (
+        <View style={styles.inlineError}>
+          <Ionicons name="alert-circle-outline" size={18} color={theme.colors.error} />
+          <Text style={styles.inlineErrorText}>{loadError}</Text>
+        </View>
+      ) : null}
       <Text style={styles.sectionTitle}>As Borrower</Text>
       
       <View style={styles.row}>
@@ -162,6 +185,52 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  errorState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.xl,
+  },
+  errorIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef2f2',
+    marginBottom: theme.spacing.md,
+  },
+  errorTitle: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+    marginBottom: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    lineHeight: 21,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  inlineError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  inlineErrorText: {
+    flex: 1,
+    color: theme.colors.error,
+    fontSize: theme.typography.sizes.sm,
+    marginLeft: theme.spacing.sm,
   },
   scrollContent: {
     padding: theme.spacing.md,

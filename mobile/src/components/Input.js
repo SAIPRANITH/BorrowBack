@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 
@@ -24,14 +24,20 @@ const Input = ({
         isFocused && styles.inputFocused,
         error && styles.inputError
       ]}>
-        {icon && (
-          <Ionicons 
-            name={icon} 
-            size={20} 
-            color={isFocused ? theme.colors.primary : theme.colors.textSecondary}
-            style={styles.icon}
-          />
-        )}
+        {icon && (React.isValidElement(icon)
+          ? React.cloneElement(icon, {
+              size: icon.props.size || 20,
+              color: isFocused ? theme.colors.primary : theme.colors.textSecondary,
+              style: [styles.icon, icon.props.style],
+            })
+          : (
+            <Ionicons
+              name={icon}
+              size={20}
+              color={isFocused ? theme.colors.primary : theme.colors.textSecondary}
+              style={styles.icon}
+            />
+          ))}
         
         <TextInput
           style={[styles.input, style]}
@@ -43,13 +49,20 @@ const Input = ({
         />
 
         {secureTextEntry && (
-          <Ionicons
-            name={isPasswordVisible ? 'eye-off' : 'eye'}
-            size={20}
-            color={theme.colors.textSecondary}
-            style={styles.eyeIcon}
+          <TouchableOpacity
+            style={styles.eyeButton}
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-          />
+            accessibilityRole="button"
+            accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
+            accessibilityState={{ selected: isPasswordVisible }}
+            hitSlop={8}
+          >
+            <Ionicons
+              name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
         )}
       </View>
       
@@ -95,8 +108,10 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.sizes.md,
   },
-  eyeIcon: {
+  eyeButton: {
     padding: theme.spacing.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     color: theme.colors.error,

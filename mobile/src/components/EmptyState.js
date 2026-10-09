@@ -8,19 +8,24 @@ const EmptyState = ({
   icon = 'cube-outline', 
   title = 'No Items Found', 
   subtitle = 'There is nothing to see here right now.', 
+  message,
   actionTitle, 
+  actionLabel,
   onAction 
 }) => {
+  const description = message || subtitle;
+  const buttonTitle = actionTitle || actionLabel;
+
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         <Ionicons name={icon} size={64} color={theme.colors.textSecondary} />
       </View>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
-      {actionTitle && onAction && (
+      <Text style={styles.subtitle}>{description}</Text>
+      {buttonTitle && onAction && (
         <Button 
-          title={actionTitle} 
+          title={buttonTitle}
           onPress={onAction} 
           style={styles.button}
           fullWidth={false}
