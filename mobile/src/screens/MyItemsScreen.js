@@ -8,6 +8,7 @@ import {
   Alert,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -20,14 +21,16 @@ const MyItemsScreen = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const fetchMyItems = async () => {
+    setLoadError('');
     try {
       const response = await api.get('/items/mine');
       setItems(response.data.items || []);
     } catch (error) {
       console.error('Error fetching my items:', error);
-      Alert.alert('Error', 'Failed to load your items.');
+      setLoadError(error.response?.data?.message || 'Failed to load your items. Check your connection and try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -162,6 +165,24 @@ const MyItemsScreen = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={theme.colors.secondary} />
+                <Text style={styles.loadingText}>Loading your items...</Text>
+              </View>
+            ) : null}
+            {loadError ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{loadError}</Text>
+                <TouchableOpacity onPress={fetchMyItems} style={styles.retryButton}>
+                  <Text style={styles.retryText}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </>
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -170,12 +191,12 @@ const MyItemsScreen = () => {
           />
         }
         ListEmptyComponent={
-          !loading ? (
+          !loading && !loadError ? (
             <EmptyState
               title="No items listed yet"
-              message="Add your first item to start sharing with the community!"
+              subtitle="Add your first item to start sharing with the community."
               icon="cube-outline"
-              actionLabel="Add Item"
+              actionTitle="Add item"
               onAction={() => navigation.navigate('AddItem')}
             />
           ) : null
@@ -218,6 +239,41 @@ const styles = StyleSheet.create({
   listContent: {
     padding: theme.spacing.md,
     flexGrow: 1,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.xl * 2,
+  },
+  loadingText: {
+    marginTop: theme.spacing.md,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  errorText: {
+    color: theme.colors.error,
+    flex: 1,
+    marginRight: theme.spacing.sm,
+    fontSize: theme.typography.sizes.sm,
+  },
+  retryButton: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  retryText: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.weights.bold,
   },
   itemCard: {
     marginBottom: theme.spacing.md,

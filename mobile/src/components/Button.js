@@ -9,6 +9,7 @@ const Button = ({
   loading = false, 
   disabled = false,
   fullWidth = true,
+  size = 'medium',
   style,
   textStyle
 }) => {
@@ -41,8 +42,11 @@ const Button = ({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={[
         styles.button,
+        size === 'large' && styles.largeButton,
         fullWidth && styles.fullWidth,
         { 
           backgroundColor: getBackgroundColor(),
@@ -71,6 +75,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
     flexDirection: 'row',
+  },
+  largeButton: {
+    height: 56,
+    borderRadius: theme.borderRadius.lg,
   },
   fullWidth: {
     width: '100%',

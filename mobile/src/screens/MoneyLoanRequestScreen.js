@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import api from '../api/api';
@@ -13,6 +13,9 @@ const MoneyLoanRequestScreen = () => {
   const [lenders, setLenders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [lendersError, setLendersError] = useState('');
   const navigation = useNavigation();
 
   // Form State
@@ -23,44 +26,72 @@ const MoneyLoanRequestScreen = () => {
   const [purpose, setPurpose] = useState('');
   const [note, setNote] = useState('');
 
-  useEffect(() => {
-    fetchLenders();
-  }, []);
-
-  const fetchLenders = async () => {
+  const fetchLenders = useCallback(async () => {
+    setLendersError('');
     try {
       const response = await api.get('/money-loans/lenders');
       setLenders(response.data.lenders || []);
     } catch (error) {
       console.error('Error fetching lenders:', error);
-      Alert.alert('Error', 'Failed to load potential lenders.');
+      setLendersError(error.response?.data?.message || 'Could not load lenders. Check your connection and try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchLenders();
+  }, [fetchLenders]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchLenders();
   };
 
   const calculateTotal = () => {
-    const numAmount = parseFloat(amount) || 0;
-    const numRate = parseFloat(interestRate) || 0;
-    return (numAmount + (numAmount * numRate / 100)).toFixed(2);
+    const numAmount = Number(amount) || 0;
+    const numRate = Number(interestRate) || 0;
+    return (numAmount + (numAmount * numRate / 100)).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   const handleSubmit = async () => {
+    setErrorMessage('');
     if (!selectedLenderId) {
-      Alert.alert('Validation Error', 'Please select a lender.');
+      setErrorMessage('Please select a lender.');
       return;
     }
-    const numAmount = parseFloat(amount);
-    if (!amount || isNaN(numAmount) || numAmount < 100) {
-      Alert.alert('Validation Error', 'Amount must be at least \u20B9100.');
+    const numAmount = Number(amount);
+    if (!amount || !Number.isFinite(numAmount) || numAmount < 100) {
+      setErrorMessage('Enter a valid amount of at least ₹100.');
       return;
     }
-    if (!dueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      Alert.alert('Validation Error', 'Due Date must be in YYYY-MM-DD format.');
+    const numInterestRate = Number(interestRate);
+    if (!Number.isFinite(numInterestRate) || numInterestRate < 0) {
+      setErrorMessage('Enter a valid, non-negative interest rate.');
+      return;
+    }
+    const dateParts = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const selectedDate = dateParts
+      ? new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]))
+      : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (
+      !selectedDate ||
+      selectedDate.getFullYear() !== Number(dateParts[1]) ||
+      selectedDate.getMonth() !== Number(dateParts[2]) - 1 ||
+      selectedDate.getDate() !== Number(dateParts[3]) ||
+      selectedDate <= today
+    ) {
+      setErrorMessage('Choose a valid repayment date in the future (YYYY-MM-DD).');
       return;
     }
     if (!purpose.trim()) {
-      Alert.alert('Validation Error', 'Please provide a purpose for the loan.');
+      setErrorMessage('Please provide a purpose for the loan.');
       return;
     }
 
@@ -69,7 +100,7 @@ const MoneyLoanRequestScreen = () => {
       await api.post('/money-loans', {
         lenderId: selectedLenderId,
         amount: numAmount,
-        interestRate: parseFloat(interestRate) || 0,
+        interestRate: numInterestRate,
         dueDate,
         purpose,
         note
@@ -79,7 +110,7 @@ const MoneyLoanRequestScreen = () => {
       ]);
     } catch (error) {
       console.error('Error submitting loan request:', error);
-      Alert.alert('Error', 'Failed to submit loan request. Please try again.');
+      setErrorMessage(error.response?.data?.message || 'Failed to submit loan request. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -90,30 +121,56 @@ const MoneyLoanRequestScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[theme.colors.secondary]}
+        />
+      }
+    >
       <Text style={styles.sectionTitle}>Select a Lender</Text>
+      {lendersError ? (
+        <TouchableOpacity
+          style={styles.lendersError}
+          onPress={fetchLenders}
+          accessibilityRole="button"
+          accessibilityLabel="Retry loading lenders"
+        >
+          <Ionicons name="cloud-offline-outline" size={20} color={theme.colors.error} />
+          <Text style={styles.lendersErrorText}>{lendersError}</Text>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      ) : null}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.lendersContainer}>
         {lenders.length === 0 ? (
-          <Text style={styles.noLendersText}>No lenders available.</Text>
+          <Text style={styles.noLendersText}>
+            {lendersError ? 'Lenders could not be loaded.' : 'No lenders available right now.'}
+          </Text>
         ) : (
           lenders.map((lender) => (
             <TouchableOpacity
-              key={lender.id}
+              key={lender._id}
               style={[
                 styles.lenderCard,
-                selectedLenderId === lender.id && styles.selectedLenderCard
+                selectedLenderId === lender._id && styles.selectedLenderCard
               ]}
-              onPress={() => setSelectedLenderId(lender.id)}
+              onPress={() => setSelectedLenderId(lender._id)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedLenderId === lender._id }}
             >
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={24} color={selectedLenderId === lender.id ? theme.colors.primary : theme.colors.textSecondary} />
+                <Ionicons name="person" size={24} color={selectedLenderId === lender._id ? theme.colors.primary : theme.colors.textSecondary} />
               </View>
-              <Text style={[styles.lenderName, selectedLenderId === lender.id && styles.selectedLenderText]}>
+              <Text style={[styles.lenderName, selectedLenderId === lender._id && styles.selectedLenderText]}>
                 {lender.name}
               </Text>
               <View style={styles.ratingContainer}>
                 <Ionicons name="star" size={12} color={theme.colors.accent} />
-                <Text style={styles.ratingText}>{lender.rating || 'New'}</Text>
+                <Text style={styles.ratingText}>{lender.averageRating ? lender.averageRating.toFixed(1) : 'New'}</Text>
               </View>
             </TouchableOpacity>
           ))
@@ -122,11 +179,18 @@ const MoneyLoanRequestScreen = () => {
 
       <Card style={styles.formCard}>
         <Text style={styles.cardTitle}>Loan Details</Text>
+        {errorMessage ? (
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle-outline" size={18} color={theme.colors.error} />
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
         
         <Input
           label="Amount (₹)"
           placeholder="Min. 100"
-          keyboardType="numeric"
+          keyboardType="decimal-pad"
+          returnKeyType="next"
           value={amount}
           onChangeText={setAmount}
         />
@@ -134,7 +198,8 @@ const MoneyLoanRequestScreen = () => {
         <Input
           label="Interest Rate (%)"
           placeholder="e.g. 5"
-          keyboardType="numeric"
+          keyboardType="decimal-pad"
+          returnKeyType="next"
           value={interestRate}
           onChangeText={setInterestRate}
         />
@@ -145,8 +210,8 @@ const MoneyLoanRequestScreen = () => {
         </View>
 
         <Input
-          label="Due Date (YYYY-MM-DD)"
-          placeholder="2024-12-31"
+          label="Due Date (YYYY-MM-DD, must be in the future)"
+          placeholder="YYYY-MM-DD"
           value={dueDate}
           onChangeText={setDueDate}
         />
@@ -282,6 +347,42 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: theme.spacing.md,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: `${theme.colors.error}40`,
+    backgroundColor: `${theme.colors.error}12`,
+  },
+  errorText: {
+    flex: 1,
+    color: theme.colors.error,
+    fontSize: theme.typography.sizes.sm,
+  },
+  lendersError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  lendersErrorText: {
+    flex: 1,
+    color: theme.colors.error,
+    fontSize: theme.typography.sizes.sm,
+    marginHorizontal: theme.spacing.sm,
+  },
+  retryText: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.weights.bold,
   },
 });
 
