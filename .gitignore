@@ -1,0 +1,17 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+coverage/
+.playwright-cli/
+
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+
+*.log
+*.zip
+*.tar
+*.tar.gz
