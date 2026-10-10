@@ -1,5 +1,6 @@
 import Item from '../models/Item.js';
 import Borrow from '../models/Borrow.js';
+import { reconcileLentItems } from '../utils/itemAvailability.js';
 
 export const createItem = async (req, res, next) => {
   try {
@@ -33,6 +34,9 @@ export const getItems = async (req, res, next) => {
   try {
     const { search, category, sort } = req.query;
 
+    const lentItems = await Item.find({ status: 'lent' }).select('_id status');
+    await reconcileLentItems(lentItems);
+
     let query = { status: 'available' };
 
     if (search) {
@@ -62,6 +66,7 @@ export const getItems = async (req, res, next) => {
 export const getMyItems = async (req, res, next) => {
   try {
     const items = await Item.find({ owner: req.user._id }).sort('-createdAt');
+    await reconcileLentItems(items);
     res.json({ success: true, count: items.length, items });
   } catch (error) {
     next(error);
@@ -73,6 +78,7 @@ export const getItemById = async (req, res, next) => {
     const item = await Item.findById(req.params.id).populate('owner', 'name email averageRating');
 
     if (item) {
+      await reconcileLentItems([item]);
       res.json({ success: true, item });
     } else {
       res.status(404);
@@ -158,10 +164,16 @@ export const toggleVisibility = async (req, res, next) => {
       res.status(401);
       throw new Error('Not authorized to update this item');
     }
+    const wasLent = item.status === 'lent';
+    await reconcileLentItems([item]);
 
     if (item.status === 'lent') {
       res.status(400);
       throw new Error('Cannot toggle visibility of a lent item');
+    }
+
+    if (wasLent) {
+      return res.json({ success: true, item });
     }
 
     item.status = item.status === 'available' ? 'unavailable' : 'available';

@@ -67,6 +67,9 @@ export default function MoneyLoans() {
 
  const [paymentModal, setPaymentModal] = useState({ isOpen: false, id: null, action: null, amount: 0, title: '' })
 
+ const isLoanOverdue = loan => loan.status === 'overdue'
+  || (loan.status === 'active' && new Date(loan.dueDate) < new Date())
+
 
 
  const load = async () => {
@@ -184,12 +187,19 @@ export default function MoneyLoans() {
 
  { key: 'mine', label: 'My Loans', count: loans.length },
 
+ { key: 'overdue', label: 'Overdue', count: loans.filter(isLoanOverdue).length + lending.filter(isLoanOverdue).length },
+
  { key: 'incoming', label: 'Incoming Requests', count: requests.length, alert: requests.length > 0 },
 
  { key: 'lending', label: 'Lending History', count: lending.length },
 
  { key: 'summary', label: 'Financial Summary' },
 
+ ]
+
+ const overdueLoans = [
+ ...loans.filter(isLoanOverdue).map(loan => ({ loan, side: 'borrower' })),
+ ...lending.filter(isLoanOverdue).map(loan => ({ loan, side: 'lender' }))
  ]
 
 
@@ -206,7 +216,7 @@ export default function MoneyLoans() {
 
  })
 
- const isOverdue = loan.status === 'active' && new Date(loan.dueDate) < new Date()
+ const isOverdue = isLoanOverdue(loan)
 
 
 
@@ -250,6 +260,14 @@ export default function MoneyLoans() {
 
  </div>
 
+ {loan.status === 'repaid_pending' && (
+ <p className="text-xs font-medium text-amber-300">
+ {loan.borrower
+  ? 'Borrower reported payment — confirm only after you receive it to complete this loan.'
+  : 'Payment reported — waiting for your lender to confirm receipt.'}
+ </p>
+ )}
+
 
 
  {/* Purpose */}
@@ -288,13 +306,20 @@ export default function MoneyLoans() {
 
  {loan.borrower && (
 
- <div className="flex items-center gap-1.5 bg-zinc-900/60 px-3 py-1.5 rounded-lg border border-zinc-800/60">
+  <div className="flex flex-col gap-1 bg-zinc-900/60 px-3 py-1.5 rounded-lg border border-zinc-800/60">
 
- <User className="w-3.5 h-3.5 text-cyan-400" />
+  <span className="flex items-center gap-1.5">
+  <User className="w-3.5 h-3.5 text-cyan-400" />
 
  <span className="text-zinc-500">Borrower:</span>
 
  <span className="text-zinc-200 font-medium truncate">{loan.borrower.name}</span>
+  </span>
+  {loan.borrower.phone && (
+  <a href={`tel:${loan.borrower.phone}`} className="pl-5 text-cyan-300 hover:text-cyan-200">
+  {loan.borrower.phone}
+  </a>
+  )}
 
  </div>
 
@@ -626,7 +651,7 @@ export default function MoneyLoans() {
 
  actions={
 
- l.status === 'active' ? (
+ ['active', 'overdue'].includes(l.status) ? (
 
  <button
 
@@ -657,6 +682,60 @@ export default function MoneyLoans() {
  ) : null
 
  }
+
+ />
+
+ ))}
+
+ </div>
+
+ )
+
+ )}
+
+ {/* Tab: Overdue Loans */}
+
+ {tab === 'overdue' && (
+
+ overdueLoans.length === 0 ? (
+
+ <div className="glass-card text-center py-16 px-4 border border-zinc-800/60">
+
+ <h3 className="text-zinc-200 font-semibold text-base mb-1">No overdue loans</h3>
+
+ <p className="text-zinc-500 text-sm">Loans past their due date will appear here.</p>
+
+ </div>
+
+ ) : (
+
+ <div className="space-y-4 animate-card-enter stagger-2">
+
+ {overdueLoans.map(({ loan, side }) => (
+
+ <LoanCard
+
+ key={`${side}-${loan._id}`}
+
+ loan={loan}
+
+ actions={side === 'borrower' ? (
+
+ <button
+
+ onClick={() => handlePayClick(loan._id, 'repay', loan.totalRepayable || loan.amount, 'Repay Overdue Loan')}
+
+ disabled={acting === loan._id + 'repay'}
+
+ className="btn-success text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
+
+ >
+
+ {acting === loan._id + 'repay' ? <Loader className="w-3.5 h-3.5 animate-rotate-in" /> : <><IndianRupee className="w-3.5 h-3.5" /> Pay Now</>}
+
+ </button>
+
+ ) : <span className="text-xs text-amber-400">Awaiting borrower repayment</span>}
 
  />
 

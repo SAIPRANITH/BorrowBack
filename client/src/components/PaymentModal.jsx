@@ -79,7 +79,7 @@ export default function PaymentModal({
     <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
      <p className="text-sm font-semibold text-amber-200">BorrowBack does not process online payments.</p>
      <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-      No money will be transferred or charged here. Continue only if you have already paid the other person using an agreed method outside the app.
+      No money will be transferred or charged here. Continue only after paying outside the app. The other person may still need to confirm receipt before the record is complete.
      </p>
     </div>
 
@@ -101,7 +101,7 @@ export default function PaymentModal({
       className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
      >
       {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
-      {isProcessing ? 'Saving...' : 'I already paid — mark as paid'}
+      {isProcessing ? 'Saving...' : 'I already paid — report payment'}
      </button>
     </div>
    </section>

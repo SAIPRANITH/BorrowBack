@@ -2,6 +2,18 @@ import mongoose from 'mongoose';
 import MoneyLoan from '../models/MoneyLoan.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import { transitionMoneyLoanStatus } from '../utils/moneyLoanWorkflow.js';
+
+const updateOverdueLoans = async (userId) => {
+  await MoneyLoan.updateMany(
+    {
+      $or: [{ borrower: userId }, { lender: userId }],
+      status: 'active',
+      dueDate: { $lt: new Date() },
+    },
+    { $set: { status: 'overdue' } }
+  );
+};
 
 export const createLoanRequest = async (req, res, next) => {
   try {
@@ -72,6 +84,7 @@ export const getAvailableLenders = async (req, res, next) => {
 
 export const getMyLoanRequests = async (req, res, next) => {
   try {
+    await updateOverdueLoans(req.user._id);
     const loans = await MoneyLoan.find({ borrower: req.user._id })
       .populate('lender', 'name email averageRating');
 
@@ -84,7 +97,7 @@ export const getMyLoanRequests = async (req, res, next) => {
 export const getIncomingLoanRequests = async (req, res, next) => {
   try {
     const requests = await MoneyLoan.find({ lender: req.user._id, status: 'pending' })
-      .populate('borrower', 'name email averageRating');
+      .populate('borrower', 'name email phone averageRating');
 
     res.status(200).json({ success: true, count: requests.length, requests });
   } catch (error) {
@@ -94,8 +107,9 @@ export const getIncomingLoanRequests = async (req, res, next) => {
 
 export const getLendingHistory = async (req, res, next) => {
   try {
+    await updateOverdueLoans(req.user._id);
     const loans = await MoneyLoan.find({ lender: req.user._id })
-      .populate('borrower', 'name email averageRating');
+      .populate('borrower', 'name email phone averageRating');
 
     res.status(200).json({ success: true, count: loans.length, loans });
   } catch (error) {
@@ -152,10 +166,11 @@ export const repayLoan = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.borrower.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
-    if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can be marked as repaid' });
+    const nextStatus = transitionMoneyLoanStatus(loan, 'report_repayment');
+    if (!nextStatus) return res.status(400).json({ success: false, message: 'Only active or overdue loans can be marked as repaid' });
 
-    loan.status = 'repaid_pending';
-    loan.returnDate = Date.now();
+    loan.status = nextStatus;
+    loan.repaymentReportedAt = new Date();
     await loan.save();
 
     await Notification.create({
@@ -175,9 +190,12 @@ export const confirmRepayment = async (req, res, next) => {
     const loan = await MoneyLoan.findById(req.params.id);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
-    if (loan.status !== 'repaid_pending') return res.status(400).json({ success: false, message: 'There is no repayment awaiting confirmation' });
+    const nextStatus = transitionMoneyLoanStatus(loan, 'confirm_repayment');
+    if (!nextStatus) return res.status(400).json({ success: false, message: 'There is no repayment awaiting confirmation' });
 
-    loan.status = 'repaid';
+    loan.status = nextStatus;
+    loan.returnDate = new Date();
+    loan.repaymentConfirmedAt = loan.returnDate;
     await loan.save();
 
     await Notification.create({
@@ -246,6 +264,7 @@ export const getLoanFinancialSummary = async (req, res, next) => {
   try {
     const userId = req.user._id;
 
+    await updateOverdueLoans(userId);
     const asBorrower = await MoneyLoan.find({ borrower: userId });
     const asLender = await MoneyLoan.find({ lender: userId });
 

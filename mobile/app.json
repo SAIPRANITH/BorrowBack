@@ -2,7 +2,7 @@
   "expo": {
     "name": "BorrowBack",
     "slug": "borrowback",
-    "version": "1.0.7",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.borrowback.campus",
-      "versionCode": 8,
+      "versionCode": 11,
       "adaptiveIcon": {
         "backgroundColor": "#0c1117",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -40,7 +40,8 @@
             "backgroundColor": "#0c1117"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }

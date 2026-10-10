@@ -165,6 +165,10 @@ The Android app connects to the HTTPS API URL configured by
 Peer loans, deposits, and fines are tracking records only. BorrowBack does not
 currently transfer money or connect to a payment provider; users must settle
 payments using an agreed method outside the app and only then record them.
+For peer loans and security deposits, the paying user reports the payment and
+the lender must confirm receipt. When an item with a confirmed deposit is
+returned, the lender records that the deposit was sent back and the borrower
+acknowledges receipt to complete the deposit return.
 
 ## Local utility scripts
 

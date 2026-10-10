@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 import api from '../api/api'
 
@@ -175,23 +176,28 @@ export default function Fines() {
  const [loanSummary, setLoanSummary] = useState(null)
 
  const [loading, setLoading] = useState(true)
+ const [loadError, setLoadError] = useState('')
+
+ const loadFinancialSummary = async () => {
+ setLoading(true)
+ setLoadError('')
+ try {
+ const [fR, mR] = await Promise.all([api.get('/borrows/financial'), api.get('/money-loans/financial')])
+ if (!fR.data.success || !mR.data.success) {
+  throw new Error('The server returned incomplete financial information.')
+ }
+ setSummary(fR.data.summary)
+ setLoanSummary(mR.data.summary)
+ } catch (error) {
+ console.error('Failed to load financial summaries:', error)
+ setLoadError(error.response?.data?.message || error.message || 'Could not load financial details. Please try again.')
+ } finally {
+ setLoading(false)
+ }
+ }
 
  useEffect(() => {
-
- Promise.all([api.get('/borrows/financial'), api.get('/money-loans/financial')])
-
- .then(([fR, mR]) => {
-
- if (fR.data.success) setSummary(fR.data.summary)
-
- if (mR.data.success) setLoanSummary(mR.data.summary)
-
- })
-
- .catch(() => {})
-
- .finally(() => setLoading(false))
-
+ loadFinancialSummary()
  }, [])
 
 
@@ -212,6 +218,18 @@ export default function Fines() {
 
  }
 
+ if (loadError && !summary && !loanSummary) {
+ return (
+  <div className="mx-auto max-w-2xl rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-center" role="alert">
+   <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-400" />
+   <p className="text-sm text-red-200">{loadError}</p>
+   <button type="button" onClick={loadFinancialSummary} className="mt-4 rounded-lg border border-red-400/30 px-4 py-2 text-sm font-semibold text-red-100 hover:bg-red-500/10">
+    Retry
+   </button>
+  </div>
+ )
+ }
+
 
 
  const b = summary?.borrower || {}
@@ -221,19 +239,23 @@ export default function Fines() {
  const lb = loanSummary?.borrower || {}
 
  const ll = loanSummary?.lender || {}
+ const loanAwaitingConfirmation = (lb.awaitingConfirmation || 0) > 0
+ const loanFullyRepaid = lb.totalPending === 0
+  && !loanAwaitingConfirmation
+  && lb.totalBorrowed > 0
 
  const allVals = [
 
  b.totalDepositsPaid || 0,
 
  b.totalDepositsPending || 0,
-
+ b.totalDepositsAwaitingConfirmation || 0,
  b.totalFinesPaid || 0,
-
  b.totalFinesPending || 0,
-
  o.totalDepositsCollected || 0,
-
+ o.totalDepositsHeld || 0,
+ o.totalDepositsReturnPending || 0,
+ o.totalDepositsReturned || 0,
  o.totalFinesCollected || 0
 
  ]
@@ -252,7 +274,7 @@ export default function Fines() {
 
  value: b.totalDepositsPaid || 0,
 
- sub: `Pending: ₹${b.totalDepositsPending || 0}`,
+ sub: `Pending: ₹${b.totalDepositsPending || 0} · Verification: ₹${b.totalDepositsAwaitingConfirmation || 0}`,
 
  icon: ShieldCheck,
 
@@ -342,7 +364,7 @@ export default function Fines() {
 
  badgeClass: 'badge-returned',
 
- note: 'Refundable upon safe item return'
+ note: 'Returned by the owner after the item is safely returned'
 
  },
 
@@ -363,7 +385,16 @@ export default function Fines() {
  badgeClass: 'badge-pending animate-pulse-glow',
 
  note: 'Awaiting deposit payment'
-
+ },
+ {
+ id: 'tx-2-confirmation',
+ category: 'Security Deposit Verification',
+ role: 'Borrower',
+ type: 'Reported paid',
+ amount: b.totalDepositsAwaitingConfirmation || 0,
+ status: 'Awaiting owner confirmation',
+ badgeClass: 'badge-pending animate-pulse-glow',
+ note: 'The owner must confirm receipt before the deposit is treated as paid'
  },
 
  {
@@ -422,8 +453,27 @@ export default function Fines() {
 
  badgeClass: 'badge-active animate-pulse-glow',
 
- note: 'Security deposits held for your items'
-
+ note: 'Total deposits confirmed by borrowers over time'
+ },
+ {
+ id: 'tx-5-held',
+ category: 'Deposits Currently Held',
+ role: 'Item Owner',
+ type: 'Held',
+ amount: o.totalDepositsHeld || 0,
+ status: 'Held',
+ badgeClass: 'badge-active animate-pulse-glow',
+ note: `₹${o.totalDepositsReturnPending || 0} in the return/acknowledgement process`
+ },
+ {
+ id: 'tx-5-returned',
+ category: 'Deposits Returned',
+ role: 'Item Owner',
+ type: 'Returned',
+ amount: o.totalDepositsReturned || 0,
+ status: 'Acknowledged',
+ badgeClass: 'badge-returned',
+ note: 'Borrowers acknowledged receipt of returned deposits'
  },
 
  {
@@ -458,9 +508,8 @@ export default function Fines() {
 
  amount: lb.totalBorrowed || 0,
 
- status: lb.totalPending === 0 && lb.totalBorrowed > 0 ? 'Fully Repaid' : 'Active',
-
- badgeClass: lb.totalPending === 0 && lb.totalBorrowed > 0 ? 'badge-repaid' : 'badge-active animate-pulse-glow',
+ status: loanFullyRepaid ? 'Fully Repaid' : loanAwaitingConfirmation ? 'Awaiting lender confirmation' : 'Active',
+ badgeClass: loanFullyRepaid ? 'badge-repaid' : loanAwaitingConfirmation ? 'badge-pending animate-pulse-glow' : 'badge-active animate-pulse-glow',
 
  note: `Repaid: ₹${lb.totalRepaid || 0} | Pending: ₹${lb.totalPending || 0} | Awaiting confirmation: ₹${lb.awaitingConfirmation || 0}`
 
@@ -493,6 +542,14 @@ export default function Fines() {
  return (
 
  <div className="max-w-5xl mx-auto space-y-8">
+ {loadError ? (
+ <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+ <span>{loadError}</span>
+ <button type="button" onClick={loadFinancialSummary} className="font-semibold text-red-100 underline underline-offset-2">
+  Retry
+ </button>
+ </div>
+ ) : null}
 
  {/* Hero with background */}
 
@@ -659,6 +716,8 @@ export default function Fines() {
  <HBar label="Deposits Paid" value={b.totalDepositsPaid || 0} maxVal={maxVal} color="#6366f1" />
 
  <HBar label="Deposits Pending" value={b.totalDepositsPending || 0} maxVal={maxVal} color="#f59e0b" />
+ <HBar label="Deposits Awaiting Verification" value={b.totalDepositsAwaitingConfirmation || 0} maxVal={maxVal} color="#06b6d4" />
+ <HBar label="Deposit Return In Progress" value={b.totalDepositsReturnPending || 0} maxVal={maxVal} color="#a78bfa" />
 
  <HBar label="Fines Paid" value={b.totalFinesPaid || 0} maxVal={maxVal} color="#10b981" />
 
@@ -723,6 +782,9 @@ export default function Fines() {
  <div className="space-y-3.5">
 
  <HBar label="Deposits Collected" value={o.totalDepositsCollected || 0} maxVal={maxVal} color="#10b981" />
+ <HBar label="Deposits Held" value={o.totalDepositsHeld || 0} maxVal={maxVal} color="#06b6d4" />
+ <HBar label="Deposit Return In Progress" value={o.totalDepositsReturnPending || 0} maxVal={maxVal} color="#a78bfa" />
+ <HBar label="Deposits Returned" value={o.totalDepositsReturned || 0} maxVal={maxVal} color="#6366f1" />
 
  <HBar label="Fines Collected" value={o.totalFinesCollected || 0} maxVal={maxVal} color="#8b5cf6" />
 
@@ -757,6 +819,10 @@ export default function Fines() {
  Credit & Lending Stats
 
  </span>
+
+ <Link to="/money-loans" className="text-xs font-semibold text-cyan-400 hover:text-cyan-300">
+ Manage repayments
+ </Link>
 
  </div>
 
@@ -914,7 +980,10 @@ export default function Fines() {
 
  const displayBadge = row.badgeClass
 
- const isOwed = row.role.includes('Borrower') && (row.type === 'Pending' || row.status === 'Overdue' || row.status === 'Active' || row.status === 'Pending')
+ const isPeerLoan = row.category === 'Peer Loan Borrowed'
+ const isOwed = isPeerLoan
+  ? row.amount > 0 && !loanFullyRepaid
+  : row.role.includes('Borrower') && ['Pending', 'Overdue', 'Active', 'Awaiting owner confirmation'].includes(row.status)
 
 
 
@@ -983,7 +1052,7 @@ export default function Fines() {
  to={row.category === 'Peer Loan Borrowed' ? '/money-loans' : '/my-borrows'}
  className="font-semibold text-cyan-400 hover:text-cyan-300"
  >
- {row.category === 'Peer Loan Borrowed' ? 'Manage in Peer Money Loans' : 'Open My Borrows to record an external payment'}
+ {isPeerLoan ? 'Manage in Peer Money Loans' : 'Open My Borrows to record an external payment'}
  </Link>
  ) : row.note}
 

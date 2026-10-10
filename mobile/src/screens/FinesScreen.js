@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import api from '../api/api';
 import { theme } from '../theme';
 import Card from '../components/Card';
@@ -21,6 +22,7 @@ export default function FinesScreen() {
   const [loadError, setLoadError] = useState('');
   const [payment, setPayment] = useState(null);
   const [acting, setActing] = useState('');
+  const navigation = useNavigation();
 
   const fetchFinances = useCallback(async () => {
     setLoadError('');
@@ -200,6 +202,12 @@ export default function FinesScreen() {
             </View>
           </View>
         </View>
+
+        <Button
+          title="Manage peer loans and repayments"
+          onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
+          style={styles.loanButton}
+        />
 
         <View style={styles.paymentHeading}>
           <View>
@@ -383,6 +391,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#fffaf055',
     marginTop: theme.spacing.lg,
     paddingTop: theme.spacing.md,
+  },
+  loanButton: {
+    marginBottom: theme.spacing.lg,
   },
   heroTotalLabel: {
     color: theme.colors.accent,

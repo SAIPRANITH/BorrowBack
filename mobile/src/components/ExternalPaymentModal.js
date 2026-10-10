@@ -67,7 +67,7 @@ const ExternalPaymentModal = ({ visible, title, amount, reference, onClose, onCo
           <View style={styles.notice}>
             <Text style={styles.noticeTitle}>Record it, don’t pay it here.</Text>
             <Text style={styles.noticeBody}>
-              BorrowBack does not process online payments. No money will be transferred or charged here. Continue only after paying the other person outside the app.
+              BorrowBack does not process online payments. No money will be transferred or charged here. Continue only after paying outside the app. The other person may still need to confirm receipt before the record is complete.
             </Text>
           </View>
 
@@ -92,7 +92,7 @@ const ExternalPaymentModal = ({ visible, title, amount, reference, onClose, onCo
               {processing
                 ? <ActivityIndicator size="small" color={theme.colors.surface} />
                 : <Ionicons name="checkmark-circle-outline" size={18} color={theme.colors.surface} />}
-              <Text style={styles.confirmText}>{processing ? 'Saving...' : 'I already paid — mark as paid'}</Text>
+              <Text style={styles.confirmText}>{processing ? 'Saving...' : 'I already paid — report payment'}</Text>
             </TouchableOpacity>
           </View>
         </View>
