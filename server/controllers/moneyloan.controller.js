@@ -124,13 +124,64 @@ export const acceptLoan = async (req, res, next) => {
     if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
     if (loan.status !== 'pending') return res.status(400).json({ success: false, message: 'Only pending loans can be accepted' });
 
-    loan.status = 'active';
+    const nextStatus = transitionMoneyLoanStatus(loan, 'accept');
+    if (!nextStatus) return res.status(400).json({ success: false, message: 'Only pending loans can be accepted' });
+
+    loan.status = nextStatus;
     await loan.save();
 
     await Notification.create({
       user: loan.borrower,
       type: 'approval',
-      message: `Your loan request for ${loan.amount} has been accepted.`
+      message: `Your loan request for ${loan.amount} has been accepted. The lender must send the funds and mark them sent before you acknowledge receipt.`
+    });
+
+    res.status(200).json({ success: true, loan });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reportDisbursement = async (req, res, next) => {
+  try {
+    const loan = await MoneyLoan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.lender.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    const nextStatus = transitionMoneyLoanStatus(loan, 'report_disbursement');
+    if (!nextStatus) return res.status(400).json({ success: false, message: 'Only accepted loans awaiting funds can be marked as sent' });
+
+    loan.status = nextStatus;
+    loan.fundsSentAt = new Date();
+    await loan.save();
+
+    await Notification.create({
+      user: loan.borrower,
+      type: 'approval',
+      message: `The lender marked ₹${loan.amount} as sent. Confirm only after you receive the funds.`
+    });
+
+    res.status(200).json({ success: true, loan });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirmDisbursement = async (req, res, next) => {
+  try {
+    const loan = await MoneyLoan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.borrower.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+    const nextStatus = transitionMoneyLoanStatus(loan, 'confirm_disbursement');
+    if (!nextStatus) return res.status(400).json({ success: false, message: 'There is no loan disbursement awaiting your confirmation' });
+
+    loan.status = nextStatus;
+    loan.fundsReceivedAt = new Date();
+    await loan.save();
+
+    await Notification.create({
+      user: loan.lender,
+      type: 'approval',
+      message: `The borrower confirmed receipt of the ₹${loan.amount} loan funds.`
     });
 
     res.status(200).json({ success: true, loan });
@@ -271,14 +322,14 @@ export const getLoanFinancialSummary = async (req, res, next) => {
     const borrowerSummary = {
       totalBorrowed: asBorrower.reduce((acc, curr) => acc + (curr.status !== 'rejected' ? curr.amount : 0), 0),
       totalRepaid: asBorrower.reduce((acc, curr) => acc + (curr.status === 'repaid' ? (curr.totalRepayable || curr.amount) : 0), 0),
-      totalPending: asBorrower.reduce((acc, curr) => acc + (['pending', 'active', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0),
+      totalPending: asBorrower.reduce((acc, curr) => acc + (['pending', 'disbursement_pending', 'disbursement_sent', 'active', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0),
       awaitingConfirmation: asBorrower.reduce((acc, curr) => acc + (curr.status === 'repaid_pending' ? (curr.totalRepayable || curr.amount) : 0), 0)
     };
 
     const lenderSummary = {
       totalLent: asLender.reduce((acc, curr) => acc + (curr.status !== 'rejected' ? curr.amount : 0), 0),
       totalRecovered: asLender.reduce((acc, curr) => acc + (curr.status === 'repaid' ? (curr.totalRepayable || curr.amount) : 0), 0),
-      totalOutstanding: asLender.reduce((acc, curr) => acc + (['pending', 'active', 'repaid_pending', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0)
+      totalOutstanding: asLender.reduce((acc, curr) => acc + (['pending', 'disbursement_pending', 'disbursement_sent', 'active', 'repaid_pending', 'overdue'].includes(curr.status) ? (curr.totalRepayable || curr.amount) : 0), 0)
     };
 
     res.status(200).json({

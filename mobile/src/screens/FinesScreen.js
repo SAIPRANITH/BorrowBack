@@ -14,8 +14,16 @@ const formatMoney = (amount) => Number(amount || 0).toLocaleString('en-IN', {
   maximumFractionDigits: 2,
 });
 
+const getDepositStatus = (borrow) => borrow.depositStatus
+  || (Number(borrow.depositAmount ?? borrow.item?.depositAmount) > 0
+    ? (borrow.depositPaid
+      ? (['returned', 'rejected'].includes(borrow.status) ? 'return_pending' : 'held')
+      : 'pending')
+    : 'not_required');
+
 export default function FinesScreen() {
   const [finances, setFinances] = useState(null);
+  const [loanFinances, setLoanFinances] = useState(null);
   const [borrows, setBorrows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,14 +35,20 @@ export default function FinesScreen() {
   const fetchFinances = useCallback(async () => {
     setLoadError('');
     try {
-      const [financeResponse, borrowResponse] = await Promise.all([
+      const [financeResponse, borrowResponse, loanFinanceResponse] = await Promise.all([
         api.get('/borrows/financial'),
         api.get('/borrows/mine'),
+        api.get('/money-loans/financial'),
       ]);
-      if (!financeResponse.data?.summary || !Array.isArray(borrowResponse.data?.borrows)) {
+      if (
+        !financeResponse.data?.summary
+        || !Array.isArray(borrowResponse.data?.borrows)
+        || !loanFinanceResponse.data?.summary
+      ) {
         throw new Error('The server returned incomplete financial information. Please try again.');
       }
       setFinances(financeResponse.data.summary);
+      setLoanFinances(loanFinanceResponse.data.summary);
       setBorrows(borrowResponse.data.borrows);
       return true;
     } catch (error) {
@@ -59,8 +73,8 @@ export default function FinesScreen() {
   const duePayments = useMemo(() => borrows.flatMap((borrow) => {
     const payments = [];
     if (
-      ['active', 'returned'].includes(borrow.status)
-      && !borrow.depositPaid
+      ['pending', 'active', 'overdue'].includes(borrow.status)
+      && getDepositStatus(borrow) === 'pending'
       && Number(borrow.depositAmount) > 0
     ) {
       payments.push({
@@ -72,7 +86,12 @@ export default function FinesScreen() {
         icon: 'shield-checkmark-outline',
       });
     }
-    if (borrow.status === 'returned' && !borrow.finePaid && Number(borrow.fineAmount) > 0) {
+    if (
+      borrow.status === 'returned'
+      && !borrow.finePaid
+      && borrow.finePaymentStatus !== 'payment_pending'
+      && Number(borrow.fineAmount) > 0
+    ) {
       payments.push({
         id: `${borrow._id}:pay-fine`,
         borrowId: borrow._id,
@@ -132,6 +151,8 @@ export default function FinesScreen() {
     totalDepositsCollected: 0,
     totalFinesCollected: 0,
   };
+  const loanBorrowerStats = loanFinances?.borrower || {};
+  const loanOwnerStats = loanFinances?.lender || {};
   const amountDue = duePayments.reduce((total, entry) => total + Number(entry.amount || 0), 0);
 
   const renderStatCard = (title, amount, icon, color, subtitle) => (
@@ -273,6 +294,10 @@ export default function FinesScreen() {
           {renderStatCard('Fines paid', borrowerStats.totalFinesPaid, 'cash-outline', theme.colors.primary)}
           {renderStatCard('Fines pending', borrowerStats.totalFinesPending, 'alert-circle-outline', theme.colors.error)}
         </View>
+        <View style={styles.row}>
+          {renderStatCard('Payments awaiting confirmation', Number(borrowerStats.totalDepositsAwaitingConfirmation || 0) + Number(borrowerStats.totalFinesAwaitingConfirmation || 0), 'hourglass-outline', theme.colors.accent)}
+          {renderStatCard('Deposits awaiting return', borrowerStats.totalDepositsReturnPending, 'return-down-back-outline', theme.colors.accent)}
+        </View>
 
         {(Number(borrowerStats.totalFinesPaid) > 0 || Number(borrowerStats.totalFinesPending) > 0) ? (
           <Card style={styles.vizCard}>
@@ -291,6 +316,41 @@ export default function FinesScreen() {
           {renderStatCard('Deposits collected', ownerStats.totalDepositsCollected, 'wallet-outline', theme.colors.success)}
           {renderStatCard('Fines collected', ownerStats.totalFinesCollected, 'trending-up-outline', theme.colors.secondary)}
         </View>
+        <View style={styles.row}>
+          {renderStatCard('Deposit returns due', ownerStats.totalDepositsReturnPending, 'return-down-back-outline', theme.colors.accent)}
+          {renderStatCard('Payments to confirm', Number(ownerStats.totalDepositsAwaitingConfirmation || 0) + Number(ownerStats.totalFinesAwaitingConfirmation || 0), 'hourglass-outline', theme.colors.accent)}
+        </View>
+
+        <View style={styles.loanSectionHeader}>
+          <Text style={styles.sectionTitle}>Peer loan ledger</Text>
+          <TouchableOpacity
+            style={styles.loanTextButton}
+            onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
+            accessibilityRole="button"
+          >
+            <Text style={styles.loanTextButtonLabel}>Manage loans</Text>
+            <Ionicons name="arrow-forward" size={15} color={theme.colors.secondary} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.row}>
+          {renderStatCard('Total borrowed', loanBorrowerStats.totalBorrowed, 'arrow-down-outline', theme.colors.accent)}
+          {renderStatCard('Total repaid', loanBorrowerStats.totalRepaid, 'checkmark-circle-outline', theme.colors.success)}
+        </View>
+        <View style={styles.row}>
+          {renderStatCard('Repayment outstanding', loanBorrowerStats.totalPending, 'time-outline', theme.colors.accent)}
+          {renderStatCard('Repayment awaiting confirmation', loanBorrowerStats.awaitingConfirmation, 'hourglass-outline', theme.colors.secondary)}
+        </View>
+        <View style={styles.row}>
+          {renderStatCard('Total lent', loanOwnerStats.totalLent, 'arrow-up-outline', theme.colors.secondary)}
+          {renderStatCard('Repayments recovered', loanOwnerStats.totalRecovered, 'wallet-outline', theme.colors.success)}
+        </View>
+        <Card style={styles.loanSummaryCard}>
+          <Text style={styles.vizTitle}>Lending outstanding</Text>
+          <Text style={styles.loanOutstanding}>₹{formatMoney(loanOwnerStats.totalOutstanding)}</Text>
+          <Text style={styles.sectionCaption}>
+            Includes loans awaiting funds, active repayments, and borrower-reported repayments awaiting confirmation.
+          </Text>
+        </Card>
       </ScrollView>
 
       <ExternalPaymentModal
@@ -345,12 +405,14 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   hero: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.surfaceRaised,
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
-    borderBottomWidth: 4,
-    borderBottomColor: theme.colors.accent,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderBottomWidth: 3,
+    borderBottomColor: theme.colors.secondary,
     ...theme.shadows.card,
   },
   heroTop: {
@@ -368,7 +430,7 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   heroEyebrow: {
-    color: theme.colors.accent,
+    color: theme.colors.secondary,
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
     letterSpacing: 1.2,
@@ -394,6 +456,34 @@ const styles = StyleSheet.create({
   },
   loanButton: {
     marginBottom: theme.spacing.lg,
+  },
+  loanSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
+  },
+  loanTextButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  loanTextButtonLabel: {
+    color: theme.colors.secondary,
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.semibold,
+  },
+  loanSummaryCard: {
+    padding: theme.spacing.md,
+  },
+  loanOutstanding: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.bold,
+    marginBottom: theme.spacing.xs,
   },
   heroTotalLabel: {
     color: theme.colors.accent,

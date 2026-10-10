@@ -20,13 +20,9 @@ import {
 
  User,
 
- Clock,
-
  CheckCircle2,
 
  AlertTriangle,
-
- ArrowUpRight,
 
  ShieldAlert,
 
@@ -38,7 +34,7 @@ import {
 
 const getDepositStatus = (borrow) => borrow.depositStatus
  || (Number(borrow.depositAmount) > 0
-  ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+ ? (borrow.depositPaid ? (['returned', 'rejected'].includes(borrow.status) ? 'return_pending' : 'held') : 'pending')
   : 'not_required')
 
 const depositStatusLabels = {
@@ -565,10 +561,8 @@ export default function MyBorrows() {
  </span>
 
  ) : (
-
  <span className="text-[10px] text-red-400 bg-red-500/10 px-1.5 py-0.2 rounded font-medium flex items-center gap-0.5">
-
- <ShieldAlert className="w-2.5 h-2.5" /> Pending
+ <ShieldAlert className="w-2.5 h-2.5" /> {b.finePaymentStatus === 'payment_pending' ? 'Awaiting confirmation' : 'Pending'}
 
  </span>
 
@@ -628,7 +622,7 @@ export default function MyBorrows() {
 
 
 
- {['active', 'overdue'].includes(b.status) && depositStatus === 'pending' && Number(b.depositAmount) > 0 && (
+ {['pending', 'active', 'overdue'].includes(b.status) && depositStatus === 'pending' && Number(b.depositAmount) > 0 && (
 
  <button
 
@@ -650,7 +644,7 @@ export default function MyBorrows() {
 
  <IndianRupee className="w-3.5 h-3.5" />
 
- Pay Deposit
+ {b.status === 'pending' ? 'Pay Deposit to Continue' : 'Pay Deposit'}
 
  </>
 
@@ -666,10 +660,10 @@ export default function MyBorrows() {
  {depositStatus === 'return_pending' && (
  <span className="text-xs text-amber-300">The owner needs to return your deposit</span>
  )}
- {depositStatus === 'return_sent' && b.status === 'returned' && (
+ {depositStatus === 'return_sent' && ['returned', 'rejected'].includes(b.status) && (
  <button
  type="button"
- onClick={() => act(b._id, 'acknowledge-deposit-return')}
+ onClick={() => window.confirm('Acknowledge only after you have received the deposit from the owner.') && act(b._id, 'acknowledge-deposit-return')}
  disabled={acting === b._id + 'acknowledge-deposit-return'}
  className="btn-success text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
  >
@@ -682,7 +676,11 @@ export default function MyBorrows() {
 
 
 
- {b.fineAmount > 0 && !b.finePaid && (
+ {b.status === 'returned' && b.finePaymentStatus === 'payment_pending' && (
+ <span className="text-xs text-cyan-300">Fine payment reported — waiting for owner confirmation</span>
+ )}
+
+ {b.status === 'returned' && b.fineAmount > 0 && !b.finePaid && b.finePaymentStatus !== 'payment_pending' && (
 
  <button
 

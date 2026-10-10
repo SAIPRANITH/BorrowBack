@@ -19,7 +19,7 @@ const TABS = {
 
 const getDepositStatus = (borrow) => borrow.depositStatus
   || (Number(borrow.depositAmount ?? borrow.item?.depositAmount) > 0
-    ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+    ? (borrow.depositPaid ? (['returned', 'rejected'].includes(borrow.status) ? 'return_pending' : 'held') : 'pending')
     : 'not_required');
 
 const DEPOSIT_STATUS_LABELS = {
@@ -87,6 +87,8 @@ export default function BorrowsScreen() {
       else if (action === 'reject-deposit') endpoint = `/borrows/${id}/reject-deposit`;
       else if (action === 'return-deposit') endpoint = `/borrows/${id}/return-deposit`;
       else if (action === 'acknowledge-deposit-return') endpoint = `/borrows/${id}/acknowledge-deposit-return`;
+      else if (action === 'confirm-fine') endpoint = `/borrows/${id}/confirm-fine`;
+      else if (action === 'reject-fine') endpoint = `/borrows/${id}/reject-fine`;
       else throw new Error('Unsupported borrow action.');
 
       await api[method](endpoint);
@@ -106,7 +108,11 @@ export default function BorrowsScreen() {
       action,
       id: item._id,
       amount,
-      title: action === 'pay-fine' ? 'Record Fine Payment' : 'Record Security Deposit',
+      title: action === 'pay-fine'
+        ? 'Record Fine Payment'
+        : action === 'return-deposit'
+          ? 'Return Security Deposit'
+          : 'Record Security Deposit',
       reference: item._id?.slice(0, 7).toUpperCase(),
     });
   };
@@ -145,7 +151,11 @@ export default function BorrowsScreen() {
                   color={item.finePaid ? theme.colors.success : theme.colors.accent}
                 />
                 <Text style={[styles.paymentStateText, item.finePaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
-                  Fine · {item.finePaid ? 'PAID' : 'UNPAID'}
+                  Fine · {item.finePaid
+                    ? 'Paid'
+                    : item.finePaymentStatus === 'payment_pending'
+                      ? 'Awaiting owner confirmation'
+                      : 'Unpaid'}
                 </Text>
               </View>
             )}
@@ -162,8 +172,12 @@ export default function BorrowsScreen() {
           {item.returnSignaledAt && item.status !== 'returned' && (
             <Text style={styles.dateText}>Return signalled · waiting for owner confirmation</Text>
           )}
-          {['active', 'overdue'].includes(item.status) && depositStatus === 'pending' && item.depositAmount > 0 && (
-            <Button title="Record Deposit Paid" onPress={() => confirmExternalPayment('pay-deposit', item)} style={styles.actionButton} />
+          {['pending', 'active', 'overdue'].includes(item.status) && depositStatus === 'pending' && Number(item.depositAmount) > 0 && (
+            <Button
+              title={item.status === 'pending' ? 'Pay Deposit to Continue' : 'Record Deposit Paid'}
+              onPress={() => confirmExternalPayment('pay-deposit', item)}
+              style={styles.actionButton}
+            />
           )}
           {depositStatus === 'payment_pending' && (
             <Text style={styles.dateText}>Deposit payment reported · waiting for owner confirmation</Text>
@@ -171,7 +185,7 @@ export default function BorrowsScreen() {
           {depositStatus === 'return_pending' && (
             <Text style={styles.dateText}>The owner needs to return your deposit</Text>
           )}
-          {depositStatus === 'return_sent' && item.status === 'returned' && (
+          {depositStatus === 'return_sent' && ['returned', 'rejected'].includes(item.status) && (
             <Button
               title="Acknowledge Deposit Received"
               onPress={() => Alert.alert(
@@ -185,7 +199,10 @@ export default function BorrowsScreen() {
               style={styles.actionButton}
             />
           )}
-          {item.status === 'returned' && item.fineAmount > 0 && !item.finePaid && (
+          {item.status === 'returned' && item.finePaymentStatus === 'payment_pending' && (
+            <Text style={styles.dateText}>Fine payment reported · waiting for owner confirmation</Text>
+          )}
+          {item.status === 'returned' && item.fineAmount > 0 && !item.finePaid && item.finePaymentStatus !== 'payment_pending' && (
             <Button title={`Record Fine Paid (₹${item.fineAmount})`} onPress={() => confirmExternalPayment('pay-fine', item)} style={[styles.actionButton, {backgroundColor: theme.colors.error}]} />
           )}
         </View>
@@ -193,7 +210,11 @@ export default function BorrowsScreen() {
     );
   };
 
-  const renderRequestsItem = ({ item }) => (
+  const renderRequestsItem = ({ item }) => {
+    const depositStatus = getDepositStatus(item);
+    const depositAmount = Number(item.depositAmount ?? item.item?.depositAmount ?? 0);
+    const depositReady = depositAmount <= 0 || depositStatus === 'held';
+    return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleContainer}>
@@ -206,12 +227,40 @@ export default function BorrowsScreen() {
         <Text style={styles.dateText}>Req: {new Date(item.createdAt).toLocaleDateString()}</Text>
         <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
       </View>
+      {depositAmount > 0 && (
+        <Text style={styles.dateText}>Deposit ₹{depositAmount} · {DEPOSIT_STATUS_LABELS[depositStatus] || 'Unpaid'}</Text>
+      )}
+      {depositStatus === 'payment_pending' && (
+        <View style={styles.actionContainer}>
+          <Button
+            title="Confirm Deposit Received"
+            onPress={() => Alert.alert(
+              'Confirm deposit received?',
+              `Confirm only after receiving ₹${depositAmount} from the borrower.`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Confirm received', onPress: () => handleAction('confirm-deposit', item._id) },
+              ]
+            )}
+            style={styles.actionButton}
+          />
+          <Button title="Not Received" variant="outline" onPress={() => handleAction('reject-deposit', item._id)} style={styles.actionButton} />
+        </View>
+      )}
+      {depositAmount > 0 && !depositReady && (
+        <Text style={styles.waitingText}>
+          {depositStatus === 'payment_pending'
+            ? 'Confirm receipt before accepting this request.'
+            : 'The borrower must pay and you must confirm the deposit before acceptance.'}
+        </Text>
+      )}
       <View style={styles.rowActions}>
-        <Button title="Reject" onPress={() => handleAction('reject', item._id, item)} style={[styles.flexBtn, {backgroundColor: theme.colors.error, marginRight: 8}]} />
-        <Button title="Accept" onPress={() => handleAction('accept', item._id, item)} style={[styles.flexBtn, {backgroundColor: theme.colors.success}]} />
+        <Button title="Reject" onPress={() => handleAction('reject', item._id, item)} disabled={depositStatus === 'payment_pending'} style={[styles.flexBtn, {backgroundColor: theme.colors.error, marginRight: 8}]} />
+        <Button title="Accept" onPress={() => handleAction('accept', item._id, item)} disabled={!depositReady} style={[styles.flexBtn, {backgroundColor: theme.colors.success}]} />
       </View>
     </Card>
-  );
+    );
+  };
 
   const renderLendingItem = ({ item }) => {
     const depositStatus = getDepositStatus(item);
@@ -232,7 +281,7 @@ export default function BorrowsScreen() {
           )}
         </View>
         <View style={styles.actionContainer}>
-          {depositStatus === 'payment_pending' && ['active', 'overdue'].includes(item.status) && (
+          {depositStatus === 'payment_pending' && ['pending', 'active', 'overdue'].includes(item.status) && (
             <>
               <Button
                 title="Confirm Deposit Received"
@@ -256,7 +305,18 @@ export default function BorrowsScreen() {
           )}
           {['active', 'overdue'].includes(item.status) && depositStatus !== 'payment_pending' && (
             item.returnSignaledAt ? (
-              <Button title="Confirm Return" onPress={() => handleAction('confirm-return', item._id, item)} style={styles.actionButton} />
+              <Button
+                title="Confirm Return"
+                onPress={() => Alert.alert(
+                  'Confirm item returned?',
+                  'Confirm only after you have received and checked the item. This completes the return and calculates any late fine.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Confirm return', onPress: () => handleAction('confirm-return', item._id, item) },
+                  ]
+                )}
+                style={styles.actionButton}
+              />
             ) : (
               <Text style={styles.dateText}>Waiting for borrower to signal return</Text>
             )
@@ -264,22 +324,28 @@ export default function BorrowsScreen() {
           {['active', 'overdue'].includes(item.status) && depositStatus === 'payment_pending' && (
             <Text style={styles.dateText}>Resolve the reported deposit payment before confirming the return</Text>
           )}
-          {item.status === 'returned' && depositStatus === 'return_pending' && (
-            <Button
-              title="Mark Deposit Returned"
-              onPress={() => Alert.alert(
-                'Confirm deposit returned?',
-                `Confirm only after you have returned ₹${depositAmount} to the borrower.`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'I returned it', onPress: () => handleAction('return-deposit', item._id) },
-                ]
-              )}
-              style={styles.actionButton}
-            />
+          {['returned', 'rejected'].includes(item.status) && depositStatus === 'return_pending' && (
+            <Button title={`Record Deposit Returned (₹${depositAmount})`} onPress={() => confirmExternalPayment('return-deposit', item)} style={styles.actionButton} />
           )}
-          {item.status === 'returned' && depositStatus === 'return_sent' && (
+          {['returned', 'rejected'].includes(item.status) && depositStatus === 'return_sent' && (
             <Text style={styles.dateText}>Deposit marked returned · waiting for borrower acknowledgement</Text>
+          )}
+          {item.status === 'returned' && item.finePaymentStatus === 'payment_pending' && (
+            <>
+              <Button
+                title="Confirm Fine Received"
+                onPress={() => Alert.alert(
+                  'Confirm fine received?',
+                  `Confirm only after you have received ₹${item.fineAmount} from the borrower.`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Confirm received', onPress: () => handleAction('confirm-fine', item._id) },
+                  ]
+                )}
+                style={styles.actionButton}
+              />
+              <Button title="Fine Not Received" variant="outline" onPress={() => handleAction('reject-fine', item._id)} style={styles.actionButton} />
+            </>
           )}
         </View>
       </Card>
@@ -329,6 +395,28 @@ export default function BorrowsScreen() {
         >
           <Text style={[styles.tabText, activeTab === TABS.LENDING && styles.activeTabText]}>Lending</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.activityIntro}>
+        <View style={styles.activityIntroIcon}>
+          <Ionicons
+            name={activeTab === TABS.REQUESTS ? 'file-tray-outline' : activeTab === TABS.LENDING ? 'swap-horizontal-outline' : 'cube-outline'}
+            size={21}
+            color={theme.colors.secondary}
+          />
+        </View>
+        <View style={styles.activityIntroCopy}>
+          <Text style={styles.activityIntroTitle}>
+            {activeTab === TABS.REQUESTS ? 'Requests to review' : activeTab === TABS.LENDING ? 'Items you lend' : 'Your borrowed items'}
+          </Text>
+          <Text style={styles.activityIntroCaption}>
+            Keep payments, handover, and return confirmations in the right order.
+          </Text>
+        </View>
+        <View style={styles.activityCount}>
+          <Text style={styles.activityCountValue}>{data.length}</Text>
+          <Text style={styles.activityCountLabel}>records</Text>
+        </View>
       </View>
 
       <FlatList
@@ -410,6 +498,54 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.medium,
     color: theme.colors.textSecondary,
+  },
+  activityIntro: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+  },
+  activityIntroIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: '#68aeb814',
+    borderWidth: 1,
+    borderColor: '#68aeb82e',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  activityIntroCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  activityIntroTitle: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.md,
+    fontWeight: theme.typography.weights.bold,
+  },
+  activityIntroCaption: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    lineHeight: 17,
+    marginTop: 2,
+  },
+  activityCount: {
+    alignItems: 'flex-end',
+    marginLeft: theme.spacing.sm,
+  },
+  activityCountValue: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.md,
+    fontWeight: theme.typography.weights.bold,
+  },
+  activityCountLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: 10,
   },
   activeTabText: {
     color: theme.colors.secondary,

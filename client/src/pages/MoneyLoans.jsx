@@ -22,8 +22,6 @@ import {
 
  Package,
 
- RotateCcw,
-
  Calendar,
 
  User,
@@ -39,8 +37,6 @@ import {
  FileText,
 
  ShieldCheck,
-
- TrendingUp,
 
  Clock,
 
@@ -69,6 +65,12 @@ export default function MoneyLoans() {
 
  const isLoanOverdue = loan => loan.status === 'overdue'
   || (loan.status === 'active' && new Date(loan.dueDate) < new Date())
+ const loanStatusLabel = status => ({
+  disbursement_pending: 'Accepted · Awaiting funds',
+  disbursement_sent: 'Funds sent · Awaiting receipt',
+  repaid_pending: 'Repayment awaiting confirmation',
+  repaid: 'Paid',
+ }[status] || status)
 
 
 
@@ -242,9 +244,9 @@ export default function MoneyLoans() {
 
  </div>
 
- <span className={`badge-${loan.status === 'repaid_pending' ? 'pending' : loan.status} capitalize tracking-wider`}>
+ <span className={`badge-${['repaid_pending', 'disbursement_pending', 'disbursement_sent'].includes(loan.status) ? 'pending' : loan.status} capitalize tracking-wider`}>
 
- {loan.status === 'repaid_pending' ? 'Awaiting confirmation' : loan.status === 'repaid' ? 'Paid' : loan.status}
+ {loanStatusLabel(loan.status)}
 
  </span>
 
@@ -265,6 +267,20 @@ export default function MoneyLoans() {
  {loan.borrower
   ? 'Borrower reported payment — confirm only after you receive it to complete this loan.'
   : 'Payment reported — waiting for your lender to confirm receipt.'}
+ </p>
+ )}
+ {loan.status === 'disbursement_pending' && (
+ <p className="text-xs font-medium text-amber-300">
+  {loan.borrower
+   ? 'Accepted — send the funds outside BorrowBack, then mark them sent for borrower verification.'
+   : 'Accepted — waiting for the lender to send and report the funds.'}
+ </p>
+ )}
+ {loan.status === 'disbursement_sent' && (
+ <p className="text-xs font-medium text-amber-300">
+  {loan.borrower
+   ? 'Funds marked as sent — waiting for the borrower to confirm receipt.'
+   : 'The lender reports sending funds — confirm only after you receive them.'}
  </p>
  )}
 
@@ -650,8 +666,15 @@ export default function MoneyLoans() {
  loan={l}
 
  actions={
-
- ['active', 'overdue'].includes(l.status) ? (
+ l.status === 'disbursement_sent' ? (
+ <button
+  onClick={() => window.confirm('Confirm only after you have received the loan funds outside BorrowBack.') && act(l._id, 'confirm-disbursement')}
+  disabled={acting === l._id + 'confirm-disbursement'}
+  className="btn-success text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
+ >
+  {acting === l._id + 'confirm-disbursement' ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5" /> Confirm Funds Received</>}
+ </button>
+ ) : ['active', 'overdue'].includes(l.status) ? (
 
  <button
 
@@ -735,6 +758,14 @@ export default function MoneyLoans() {
 
  </button>
 
+ ) : side === 'lender' && loan.status === 'disbursement_pending' ? (
+ <button
+  onClick={() => handlePayClick(loan._id, 'report-disbursement', loan.amount, 'Record Loan Funds Sent')}
+  disabled={acting === loan._id + 'report-disbursement'}
+  className="btn-primary text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
+ >
+  {acting === loan._id + 'report-disbursement' ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5" /> I Sent the Loan Funds</>}
+ </button>
  ) : <span className="text-xs text-amber-400">Awaiting borrower repayment</span>}
 
  />
@@ -895,11 +926,21 @@ export default function MoneyLoans() {
 
  actions={
 
- l.status === 'repaid_pending' ? (
+ l.status === 'disbursement_pending' ? (
+ <button
+  onClick={() => handlePayClick(l._id, 'report-disbursement', l.amount, 'Record Loan Funds Sent')}
+  disabled={acting === l._id + 'report-disbursement'}
+  className="btn-primary text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
+ >
+  {acting === l._id + 'report-disbursement' ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5" /> I Sent the Loan Funds</>}
+ </button>
+ ) : l.status === 'disbursement_sent' ? (
+ <span className="text-xs text-amber-300">Funds marked sent — waiting for borrower acknowledgement</span>
+ ) : l.status === 'repaid_pending' ? (
 
  <button
 
- onClick={() => act(l._id, 'confirm-repay')}
+ onClick={() => window.confirm('Confirm only after you have received the repayment outside BorrowBack.') && act(l._id, 'confirm-repay')}
 
  disabled={acting === l._id + 'confirm-repay'}
 

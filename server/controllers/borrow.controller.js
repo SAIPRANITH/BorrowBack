@@ -4,8 +4,13 @@ import Item from '../models/Item.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
 import { calculateFine } from '../utils/fineCalculator.js';
+import { transitionFinePaymentStatus } from '../utils/finePaymentWorkflow.js';
 import { reconcileLentItems } from '../utils/itemAvailability.js';
-import { resolveDepositStatus, transitionDepositStatus } from '../utils/depositWorkflow.js';
+import {
+  isDepositReadyForAcceptance,
+  resolveDepositStatus,
+  transitionDepositStatus,
+} from '../utils/depositWorkflow.js';
 
 const updateOverdueBorrows = async (userId) => {
   await Borrow.updateMany(
@@ -156,18 +161,92 @@ export const acceptRequest = async (req, res, next) => {
       throw new Error('Can only accept pending requests');
     }
 
-    borrow.status = 'active';
-    await borrow.save();
+    if (!isDepositReadyForAcceptance(borrow)) {
+      res.status(400);
+      throw new Error(Number(borrow.depositAmount) > 0
+        ? 'The deposit must be paid and confirmed before accepting this request'
+        : 'This borrow request is not ready to be accepted');
+    }
 
-    const item = await Item.findById(borrow.item._id);
-    item.status = 'lent';
-    await item.save();
+    const competingRequests = await Borrow.find({
+      item: borrow.item._id,
+      status: 'pending',
+      _id: { $ne: borrow._id },
+    });
+    if (competingRequests.some((request) => resolveDepositStatus(request) === 'payment_pending')) {
+      res.status(409);
+      throw new Error('Resolve other reported deposit payments for this item before accepting a request');
+    }
 
-    // Reject other pending requests for the same item
-    await Borrow.updateMany(
-      { item: item._id, status: 'pending', _id: { $ne: borrow._id } },
-      { $set: { status: 'rejected' } }
+    await reconcileLentItems([borrow.item]);
+    const item = await Item.findOneAndUpdate(
+      { _id: borrow.item._id, status: 'available' },
+      { $set: { status: 'lent' } },
+      { new: true }
     );
+    if (!item) {
+      res.status(400);
+      throw new Error('This item is no longer available');
+    }
+
+    const nextStatus = transitionDepositStatus(borrow, 'accept_request');
+    const updatedBorrow = await Borrow.findOneAndUpdate(
+      {
+        _id: borrow._id,
+        status: 'pending',
+        ...(Number(borrow.depositAmount) > 0
+          ? {
+              $or: [
+                { depositStatus: 'held' },
+                { depositStatus: { $exists: false }, depositPaid: true },
+              ],
+            }
+          : {}),
+      },
+      { $set: { status: nextStatus } },
+      { new: true }
+    );
+    if (!updatedBorrow) {
+      const activeBorrowExists = await Borrow.exists({
+        item: item._id,
+        status: { $in: ['active', 'overdue'] },
+      });
+      if (!activeBorrowExists) {
+        await Item.updateOne({ _id: item._id, status: 'lent' }, { $set: { status: 'available' } });
+      }
+      res.status(409);
+      throw new Error('This request changed before it could be accepted. Refresh and try again.');
+    }
+
+    for (const request of competingRequests) {
+      const nextDepositStatus = transitionDepositStatus(request, 'reject_request');
+      if (nextDepositStatus === undefined) continue;
+
+      request.status = 'rejected';
+      request.depositStatus = nextDepositStatus;
+      await request.save();
+      await Notification.create({
+        user: request.borrower,
+        borrow: request._id,
+        message: `Another request for ${item.name} was accepted, so your request was declined.`,
+        type: 'rejection',
+      });
+
+      if (nextDepositStatus === 'return_pending') {
+        await Notification.create({
+          user: request.owner,
+          borrow: request._id,
+          message: `Return the ₹${request.depositAmount} deposit to the declined borrower for ${item.name}.`,
+          type: 'return',
+        });
+        await Notification.create({
+          user: request.borrower,
+          borrow: request._id,
+          message: `The owner must return your ₹${request.depositAmount} deposit.`,
+          type: 'return',
+        });
+      }
+    }
 
     await Notification.create({
       user: borrow.borrower,
@@ -176,7 +255,7 @@ export const acceptRequest = async (req, res, next) => {
       type: 'approval',
     });
 
-    res.json({ success: true, borrow });
+    res.json({ success: true, borrow: updatedBorrow });
   } catch (error) {
     next(error);
   }
@@ -201,7 +280,17 @@ export const rejectRequest = async (req, res, next) => {
       throw new Error('Can only reject pending requests');
     }
 
+    const depositStatus = resolveDepositStatus(borrow);
+    const nextDepositStatus = transitionDepositStatus(borrow, 'reject_request');
+    if (nextDepositStatus === undefined) {
+      res.status(400);
+      throw new Error(depositStatus === 'payment_pending'
+        ? 'Resolve the reported deposit payment before rejecting this request'
+        : 'This request cannot be rejected in its current state');
+    }
+
     borrow.status = 'rejected';
+    borrow.depositStatus = nextDepositStatus;
     await borrow.save();
 
     await Notification.create({
@@ -210,6 +299,21 @@ export const rejectRequest = async (req, res, next) => {
       message: `Your request to borrow ${borrow.item.name} has been rejected`,
       type: 'rejection',
     });
+
+    if (nextDepositStatus === 'return_pending') {
+      await Notification.create({
+        user: borrow.owner,
+        borrow: borrow._id,
+        message: `Return the ₹${borrow.depositAmount} deposit to the borrower and mark it sent.`,
+        type: 'return',
+      });
+      await Notification.create({
+        user: borrow.borrower,
+        borrow: borrow._id,
+        message: `Your request was declined. The owner must return your ₹${borrow.depositAmount} deposit.`,
+        type: 'return',
+      });
+    }
 
     res.json({ success: true, borrow });
   } catch (error) {
@@ -354,9 +458,9 @@ export const payDeposit = async (req, res, next) => {
       throw new Error('Not authorized');
     }
 
-    if (!['active', 'overdue'].includes(borrow.status) || !(Number(borrow.depositAmount) > 0)) {
+    if (!['pending', 'active', 'overdue'].includes(borrow.status) || !(Number(borrow.depositAmount) > 0)) {
       res.status(400);
-      throw new Error('A deposit can only be reported for an active borrow that requires one');
+      throw new Error('A deposit can only be reported for a pending or active borrow that requires one');
     }
     const nextDepositStatus = transitionDepositStatus(borrow, 'report_payment');
     if (!nextDepositStatus) {
@@ -532,15 +636,95 @@ export const payFine = async (req, res, next) => {
       throw new Error('Not authorized');
     }
 
-    if (borrow.status !== 'returned' || !(Number(borrow.fineAmount) > 0) || borrow.finePaid) {
+    const nextStatus = transitionFinePaymentStatus(borrow, 'report_payment');
+    if (!nextStatus) {
       res.status(400);
-      throw new Error('There is no unpaid fine for this returned item');
+      throw new Error('There is no unpaid fine available to report');
+    }
+
+    borrow.finePaymentStatus = nextStatus;
+    borrow.finePaymentReportedAt = new Date();
+    await borrow.save();
+
+    await Notification.create({
+      user: borrow.owner,
+      borrow: borrow._id,
+      message: `${req.user.name} reports paying the ₹${borrow.fineAmount} late fine. Confirm receipt after checking.`,
+      type: 'fine',
+    });
+
+    res.json({ success: true, message: 'Fine payment reported; waiting for owner confirmation', borrow });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirmFineReceived = async (req, res, next) => {
+  try {
+    const borrow = await Borrow.findById(req.params.id);
+    if (!borrow) {
+      res.status(404);
+      throw new Error('Borrow record not found');
+    }
+    if (borrow.owner.toString() !== req.user._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized');
+    }
+
+    const nextStatus = transitionFinePaymentStatus(borrow, 'confirm_payment');
+    if (!nextStatus) {
+      res.status(400);
+      throw new Error('There is no fine payment awaiting confirmation');
     }
 
     borrow.finePaid = true;
+    borrow.finePaymentStatus = nextStatus;
+    borrow.finePaymentConfirmedAt = new Date();
     borrow.paymentStatus = 'paid';
-
     await borrow.save();
+
+    await Notification.create({
+      user: borrow.borrower,
+      borrow: borrow._id,
+      message: `The owner confirmed receipt of your ₹${borrow.fineAmount} late fine.`,
+      type: 'fine',
+    });
+
+    res.json({ success: true, borrow });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectFinePayment = async (req, res, next) => {
+  try {
+    const borrow = await Borrow.findById(req.params.id);
+    if (!borrow) {
+      res.status(404);
+      throw new Error('Borrow record not found');
+    }
+    if (borrow.owner.toString() !== req.user._id.toString()) {
+      res.status(401);
+      throw new Error('Not authorized');
+    }
+
+    const nextStatus = transitionFinePaymentStatus(borrow, 'reject_payment');
+    if (!nextStatus) {
+      res.status(400);
+      throw new Error('There is no fine payment awaiting confirmation');
+    }
+
+    borrow.finePaymentStatus = nextStatus;
+    borrow.finePaymentReportedAt = undefined;
+    await borrow.save();
+
+    await Notification.create({
+      user: borrow.borrower,
+      borrow: borrow._id,
+      message: 'The owner could not confirm receipt of your fine payment. Contact the owner and report payment again after it is received.',
+      type: 'fine',
+    });
+
     res.json({ success: true, borrow });
   } catch (error) {
     next(error);
@@ -657,7 +841,7 @@ export const getFinancialSummary = async (req, res, next) => {
                 {
                   $cond: [
                     '$depositPaid',
-                    { $cond: [{ $eq: ['$status', 'returned'] }, 'return_pending', 'held'] },
+                    { $cond: [{ $in: ['$status', ['returned', 'rejected']] }, 'return_pending', 'held'] },
                     'pending',
                   ],
                 },
@@ -681,7 +865,7 @@ export const getFinancialSummary = async (req, res, next) => {
               $cond: [
                 {
                   $and: [
-                    { $in: ['$status', ['active', 'overdue']] },
+                    { $in: ['$status', ['pending', 'active', 'overdue']] },
                     { $eq: ['$effectiveDepositStatus', 'pending'] },
                   ],
                 },
@@ -720,6 +904,11 @@ export const getFinancialSummary = async (req, res, next) => {
           },
           totalFinesPaid: { $sum: { $cond: ['$finePaid', '$fineAmount', 0] } },
           totalFinesPending: { $sum: { $cond: [{ $not: '$finePaid' }, '$fineAmount', 0] } },
+          totalFinesAwaitingConfirmation: {
+            $sum: {
+              $cond: [{ $eq: ['$finePaymentStatus', 'payment_pending'] }, '$fineAmount', 0],
+            },
+          },
         },
       },
     ]);
@@ -731,6 +920,11 @@ export const getFinancialSummary = async (req, res, next) => {
         $group: {
           _id: null,
           totalDepositsCollected: { $sum: { $cond: ['$depositPaid', '$depositAmount', 0] } },
+          totalDepositsAwaitingConfirmation: {
+            $sum: {
+              $cond: [{ $eq: ['$effectiveDepositStatus', 'payment_pending'] }, '$depositAmount', 0],
+            },
+          },
           totalDepositsHeld: {
             $sum: {
               $cond: [{ $eq: ['$effectiveDepositStatus', 'held'] }, '$depositAmount', 0],
@@ -751,6 +945,11 @@ export const getFinancialSummary = async (req, res, next) => {
             },
           },
           totalFinesCollected: { $sum: { $cond: ['$finePaid', '$fineAmount', 0] } },
+          totalFinesAwaitingConfirmation: {
+            $sum: {
+              $cond: [{ $eq: ['$finePaymentStatus', 'payment_pending'] }, '$fineAmount', 0],
+            },
+          },
         },
       },
     ]);
@@ -767,13 +966,16 @@ export const getFinancialSummary = async (req, res, next) => {
           totalDepositsReturned: 0,
           totalFinesPaid: 0,
           totalFinesPending: 0,
+          totalFinesAwaitingConfirmation: 0,
         },
         owner: asOwner[0] || {
           totalDepositsCollected: 0,
+          totalDepositsAwaitingConfirmation: 0,
           totalDepositsHeld: 0,
           totalDepositsReturnPending: 0,
           totalDepositsReturned: 0,
           totalFinesCollected: 0,
+          totalFinesAwaitingConfirmation: 0,
         },
       },
     });
