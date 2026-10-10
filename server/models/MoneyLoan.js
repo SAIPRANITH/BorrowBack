@@ -35,6 +35,12 @@ const moneyLoanSchema = new mongoose.Schema(
     returnDate: {
       type: Date,
     },
+    fundsSentAt: {
+      type: Date,
+    },
+    fundsReceivedAt: {
+      type: Date,
+    },
     repaymentReportedAt: {
       type: Date,
     },
@@ -43,7 +49,16 @@ const moneyLoanSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'active', 'repaid_pending', 'repaid', 'overdue', 'rejected'],
+      enum: [
+        'pending',
+        'disbursement_pending',
+        'disbursement_sent',
+        'active',
+        'repaid_pending',
+        'repaid',
+        'overdue',
+        'rejected',
+      ],
       default: 'pending',
     },
     purpose: {

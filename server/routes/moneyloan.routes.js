@@ -7,6 +7,8 @@ import {
   getLendingHistory,
   acceptLoan,
   rejectLoan,
+  reportDisbursement,
+  confirmDisbursement,
   repayLoan,
   confirmRepayment,
   rateLender,
@@ -29,6 +31,8 @@ router.post('/', createLoanRequest);
 
 router.put('/:id/accept', acceptLoan);
 router.put('/:id/reject', rejectLoan);
+router.put('/:id/report-disbursement', reportDisbursement);
+router.put('/:id/confirm-disbursement', confirmDisbursement);
 router.put('/:id/repay', repayLoan);
 router.put('/:id/confirm-repay', confirmRepayment);
 router.put('/:id/rate-lender', rateLender);

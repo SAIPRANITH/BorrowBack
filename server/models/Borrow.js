@@ -68,6 +68,16 @@ const borrowSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    finePaymentStatus: {
+      type: String,
+      enum: ['pending', 'payment_pending', 'paid'],
+    },
+    finePaymentReportedAt: {
+      type: Date,
+    },
+    finePaymentConfirmedAt: {
+      type: Date,
+    },
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'overdue'],

@@ -1,29 +1,31 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api/api'
+import PaymentModal from '../components/PaymentModal'
 import { 
  Check, 
  X, 
  RotateCcw, 
- Package, 
  Loader, 
- Clock, 
  Calendar, 
  IndianRupee, 
- Sparkles, 
- CheckCircle2, 
- AlertCircle, 
  ArrowRight, 
- User,
- ShieldCheck,
  Inbox,
- Send
 } from 'lucide-react'
 
 const getDepositStatus = (borrow) => borrow.depositStatus
  || (Number(borrow.depositAmount ?? borrow.item?.depositAmount) > 0
-  ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+  ? (borrow.depositPaid ? (['returned', 'rejected'].includes(borrow.status) ? 'return_pending' : 'held') : 'pending')
   : 'not_required')
+const depositStatusLabels = {
+ not_required: 'Not required',
+ pending: 'Payment required',
+ payment_pending: 'Awaiting confirmation',
+ held: 'Confirmed',
+ return_pending: 'Return required',
+ return_sent: 'Awaiting borrower acknowledgement',
+ returned: 'Returned and acknowledged',
+}
 
 export default function BorrowRequests() {
  const [requests, setRequests] = useState([])
@@ -31,6 +33,7 @@ export default function BorrowRequests() {
  const [loading, setLoading] = useState(true)
  const [acting, setActing] = useState('')
  const [loadError, setLoadError] = useState('')
+ const [paymentModal, setPaymentModal] = useState({ isOpen: false, id: null, amount: 0 })
 
  const load = async () => {
  setLoadError('')
@@ -42,7 +45,10 @@ export default function BorrowRequests() {
  if (reqR.data.success) setRequests(reqR.data.requests.filter(r => r.status === 'pending'))
  if (lendR.data.success) setActive(lendR.data.history.filter(b =>
   ['active', 'overdue'].includes(b.status)
-  || (b.status === 'returned' && ['return_pending', 'return_sent'].includes(getDepositStatus(b)))
+  || (['returned', 'rejected'].includes(b.status) && (
+   ['return_pending', 'return_sent'].includes(getDepositStatus(b))
+   || b.finePaymentStatus === 'payment_pending'
+  ))
  ))
  } catch (err) {
  console.error('Failed to load borrow requests:', err)
@@ -65,6 +71,18 @@ export default function BorrowRequests() {
  window.alert(err.response?.data?.message || 'Could not update this borrow. Please try again.')
  }
  setActing('')
+ }
+
+ const recordDepositReturn = async () => {
+  if (!paymentModal.id) return false
+  try {
+   await api.put(`/borrows/${paymentModal.id}/return-deposit`)
+   await load()
+   return true
+  } catch (err) {
+   window.alert(err.response?.data?.message || 'Could not record the deposit return. Please try again.')
+   return false
+  }
  }
 
  if (loading) {
@@ -172,9 +190,13 @@ export default function BorrowRequests() {
  <div className="space-y-4">
  {requests.map(r => {
  const initials = getInitials(r.borrower?.name)
+ const depositStatus = getDepositStatus(r)
+ const depositAmount = Number(r.depositAmount ?? r.item?.depositAmount ?? 0)
+ const depositReady = depositAmount <= 0 || depositStatus === 'held'
  const isActingAccept = acting === r._id + 'accept'
  const isActingReject = acting === r._id + 'reject'
- const isActing = isActingAccept || isActingReject
+ const isActingDeposit = acting === r._id + 'confirm-deposit' || acting === r._id + 'reject-deposit'
+ const isActing = isActingAccept || isActingReject || isActingDeposit
 
  return (
  <div 
@@ -213,10 +235,10 @@ export default function BorrowRequests() {
  Due: <strong className="text-zinc-200">{new Date(r.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
  </span>
 
- {r.item?.depositAmount !== undefined && (
+ {depositAmount > 0 && (
  <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 font-medium">
  <IndianRupee className="w-3.5 h-3.5" />
- {r.item.depositAmount} Deposit
+ ₹{depositAmount} Deposit · {depositStatusLabels[depositStatus] || 'Unpaid'}
  </span>
  )}
 
@@ -229,11 +251,37 @@ export default function BorrowRequests() {
  </div>
  </div>
 
- {/* Right Side: Action Buttons */}
- <div className="flex items-center gap-3 self-end md:self-center shrink-0 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-white/5">
+ {/* Right Side: Deposit verification must finish before accepting the request. */}
+ <div className="flex flex-col gap-2 self-end md:self-center shrink-0 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-white/5">
+ {depositStatus === 'payment_pending' && (
+ <div className="flex flex-wrap gap-2">
+  <button
+   onClick={() => window.confirm(`Confirm only after you have received the ₹${depositAmount} deposit.`) && act(r._id, 'confirm-deposit')}
+   disabled={isActing}
+   className="btn-success flex-1 text-xs py-2.5 px-4"
+  >
+   {acting === r._id + 'confirm-deposit' ? <Loader className="w-4 h-4 animate-spin" /> : 'Confirm Deposit Received'}
+  </button>
+  <button
+   onClick={() => act(r._id, 'reject-deposit')}
+   disabled={isActing}
+   className="btn-outline text-xs py-2.5 px-4"
+  >
+   Not Received
+  </button>
+ </div>
+ )}
+ {depositAmount > 0 && !depositReady && (
+  <p className="max-w-xs text-xs text-amber-300">
+   {depositStatus === 'payment_pending'
+    ? 'Confirm the deposit after receipt; then you can accept this request.'
+    : 'The borrower must pay and you must confirm the deposit before accepting.'}
+  </p>
+ )}
+ <div className="flex items-center gap-3">
  <button 
  onClick={() => act(r._id, 'accept')} 
- disabled={isActing} 
+ disabled={isActing || !depositReady}
  className="btn-success flex-1 md:flex-initial text-xs py-2.5 px-5 flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
  title="Accept this request"
  >
@@ -249,7 +297,7 @@ export default function BorrowRequests() {
 
  <button 
  onClick={() => act(r._id, 'reject')} 
- disabled={isActing} 
+ disabled={isActing || depositStatus === 'payment_pending'}
  className="btn-danger flex-1 md:flex-initial text-xs py-2.5 px-5 flex items-center justify-center gap-2 shadow-md shadow-red-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
  title="Decline this request"
  >
@@ -262,6 +310,7 @@ export default function BorrowRequests() {
  </>
  )}
  </button>
+ </div>
  </div>
  </div>
  )
@@ -358,9 +407,9 @@ export default function BorrowRequests() {
 
  {/* Right Side: Action Button */}
  <div className="self-end md:self-center shrink-0 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-white/5">
- {b.status === 'returned' && depositStatus === 'return_pending' ? (
+ {['returned', 'rejected'].includes(b.status) && depositStatus === 'return_pending' ? (
  <button
-  onClick={() => act(b._id, 'return-deposit')}
+  onClick={() => setPaymentModal({ isOpen: true, id: b._id, amount: depositAmount })}
   disabled={acting === b._id + 'return-deposit'}
   className="btn-primary w-full md:w-auto text-xs py-2.5 px-6 flex items-center justify-center gap-2"
   title="Confirm you returned the deposit to the borrower"
@@ -368,14 +417,27 @@ export default function BorrowRequests() {
   {acting === b._id + 'return-deposit' ? <Loader className="w-4 h-4 animate-rotate-in" /> : <IndianRupee className="w-4 h-4" />}
   Mark Deposit Returned
  </button>
- ) : b.status === 'returned' && depositStatus === 'return_sent' ? (
+ ) : ['returned', 'rejected'].includes(b.status) && depositStatus === 'return_sent' ? (
  <span className="text-xs text-cyan-300">Deposit marked returned — waiting for borrower acknowledgement</span>
+ ) : b.status === 'returned' && b.finePaymentStatus === 'payment_pending' ? (
+ <div className="flex flex-wrap gap-2">
+  <button
+   onClick={() => window.confirm(`Confirm only after receiving the ₹${b.fineAmount} fine payment.`) && act(b._id, 'confirm-fine')}
+   disabled={acting === b._id + 'confirm-fine' || acting === b._id + 'reject-fine'}
+   className="btn-success text-xs py-2.5 px-4"
+  >Confirm Fine Received</button>
+  <button
+   onClick={() => act(b._id, 'reject-fine')}
+   disabled={acting === b._id + 'confirm-fine' || acting === b._id + 'reject-fine'}
+   className="btn-outline text-xs py-2.5 px-4"
+  >Not Received</button>
+ </div>
  ) : b.status === 'returned' ? (
  <span className="text-xs text-zinc-400">Return complete</span>
  ) : depositStatus === 'payment_pending' ? (
  <div className="flex flex-wrap gap-2">
   <button
-   onClick={() => act(b._id, 'confirm-deposit')}
+   onClick={() => window.confirm(`Confirm only after you have received the ₹${depositAmount} deposit.`) && act(b._id, 'confirm-deposit')}
    disabled={acting === b._id + 'confirm-deposit' || acting === b._id + 'reject-deposit'}
    className="btn-success text-xs py-2.5 px-4"
   >
@@ -391,7 +453,7 @@ export default function BorrowRequests() {
  </div>
  ) : b.returnSignaledAt ? (
  <button 
- onClick={() => act(b._id, 'confirm-return')} 
+ onClick={() => window.confirm('Confirm only after you have received and checked the item. This completes the return and calculates any late fine.') && act(b._id, 'confirm-return')}
  disabled={isActingReturn} 
  className="btn-primary hover:animate-border-glow w-full md:w-auto text-xs py-2.5 px-6 flex items-center justify-center gap-2 shadow-md shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
  title="Confirm that the borrower has returned this item"
@@ -415,6 +477,14 @@ export default function BorrowRequests() {
  </div>
  </div>
  )}
+ <PaymentModal
+  isOpen={paymentModal.isOpen}
+  title="Return Security Deposit"
+  amount={paymentModal.amount}
+  invoiceId={paymentModal.id?.slice(0, 7).toUpperCase()}
+  onClose={() => setPaymentModal({ isOpen: false, id: null, amount: 0 })}
+  onSuccess={recordDepositReturn}
+ />
  </div>
  )}
  </div>

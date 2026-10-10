@@ -14,6 +14,8 @@ import {
   confirmDepositReturnSent,
   acknowledgeDepositReturn,
   payFine,
+  confirmFineReceived,
+  rejectFinePayment,
   rateBorrower,
   rateOwnerAndItem,
   getFinancialSummary,
@@ -39,6 +41,8 @@ router.put('/:id/reject-deposit', protect, rejectDepositPayment);
 router.put('/:id/return-deposit', protect, confirmDepositReturnSent);
 router.put('/:id/acknowledge-deposit-return', protect, acknowledgeDepositReturn);
 router.put('/:id/pay-fine', protect, payFine);
+router.put('/:id/confirm-fine', protect, confirmFineReceived);
+router.put('/:id/reject-fine', protect, rejectFinePayment);
 
 router.put('/:id/rate-borrower', protect, rateBorrower);
 router.put('/:id/rate-owner-item', protect, rateOwnerAndItem);

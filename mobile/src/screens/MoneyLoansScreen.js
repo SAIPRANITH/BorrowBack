@@ -15,6 +15,8 @@ const TABS = ['My Loans', 'Overdue', 'Requests', 'Lending', 'Summary'];
 const formatStatus = (status) => {
   if (status === 'repaid_pending') return 'AWAITING CONFIRMATION';
   if (status === 'repaid') return 'PAID';
+  if (status === 'disbursement_pending') return 'ACCEPTED · AWAITING FUNDS';
+  if (status === 'disbursement_sent') return 'FUNDS SENT · AWAITING RECEIPT';
   return (status || 'unknown').replace(/_/g, ' ').toUpperCase();
 };
 const isLoanOverdue = (loan) => loan.status === 'overdue'
@@ -103,6 +105,12 @@ const MoneyLoansScreen = () => {
         case 'accept':
           endpoint = `/money-loans/${id}/accept`;
           break;
+        case 'report-disbursement':
+          endpoint = `/money-loans/${id}/report-disbursement`;
+          break;
+        case 'confirm-disbursement':
+          endpoint = `/money-loans/${id}/confirm-disbursement`;
+          break;
         case 'reject':
           endpoint = `/money-loans/${id}/reject`;
           break;
@@ -137,12 +145,27 @@ const MoneyLoansScreen = () => {
       });
       return;
     }
+    if (action === 'report-disbursement') {
+      setPayment({
+        id: loan._id,
+        action,
+        amount: loan.amount,
+        title: 'Record Loan Funds Sent',
+        reference: loan._id?.slice(0, 7).toUpperCase(),
+      });
+      return;
+    }
 
     const messages = {
       accept: {
         title: 'Accept loan request?',
-        message: `Accept the ₹${loan.amount} loan request? BorrowBack records the agreement but does not transfer money.`,
+        message: `Accept the ₹${loan.amount} loan request? You will still need to send the funds outside BorrowBack and mark them sent.`,
         confirm: 'Accept request',
+      },
+      'confirm-disbursement': {
+        title: 'Confirm loan funds received?',
+        message: 'Confirm only after you have received the loan funds outside BorrowBack.',
+        confirm: 'Confirm received',
       },
       reject: {
         title: 'Reject loan request?',
@@ -234,6 +257,20 @@ const MoneyLoansScreen = () => {
               />
             </>
           )}
+          {item.status === 'disbursement_pending' && (
+            <Text style={styles.waitingText}>Your request was accepted. Waiting for the lender to send and record the funds.</Text>
+          )}
+          {item.status === 'disbursement_sent' && (
+            <>
+              <Text style={styles.waitingText}>The lender marked the funds sent. Confirm only after you receive them.</Text>
+              <Button
+                title="Confirm Funds Received"
+                onPress={() => confirmAction(item, 'confirm-disbursement')}
+                disabled={Boolean(acting)}
+                style={styles.actionButton}
+              />
+            </>
+          )}
           {item.status === 'repaid_pending' && (
             <Text style={styles.waitingText}>Repayment recorded — waiting for lender confirmation.</Text>
           )}
@@ -318,6 +355,20 @@ const MoneyLoansScreen = () => {
       </View>
 
       <View style={styles.actionContainer}>
+        {item.status === 'disbursement_pending' && (
+          <>
+            <Text style={styles.paymentHint}>After sending the loan amount outside BorrowBack, report it here. The borrower must confirm receipt before the loan becomes active.</Text>
+            <Button
+              title="I Sent the Loan Funds"
+              onPress={() => confirmAction(item, 'report-disbursement')}
+              disabled={Boolean(acting)}
+              style={styles.actionButton}
+            />
+          </>
+        )}
+        {item.status === 'disbursement_sent' && (
+          <Text style={styles.waitingText}>Funds marked as sent · waiting for borrower to confirm receipt.</Text>
+        )}
         {isLoanOverdue(item) && (
           <Text style={styles.waitingText}>Repayment is overdue — waiting for the borrower to record payment.</Text>
         )}
@@ -465,7 +516,7 @@ const MoneyLoansScreen = () => {
         amount={payment?.amount}
         reference={payment?.reference}
         onClose={() => setPayment(null)}
-        onConfirm={() => handleStatusChange(payment.id, 'repay', false)}
+        onConfirm={() => handleStatusChange(payment.id, payment.action || 'repay', false)}
       />
     </View>
   );
