@@ -36,6 +36,20 @@ import {
 
 } from 'lucide-react'
 
+const getDepositStatus = (borrow) => borrow.depositStatus
+ || (Number(borrow.depositAmount) > 0
+  ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+  : 'not_required')
+
+const depositStatusLabels = {
+ not_required: 'Not required',
+ pending: 'Unpaid',
+ payment_pending: 'Awaiting owner confirmation',
+ held: 'Received by owner',
+ return_pending: 'Awaiting owner return',
+ return_sent: 'Awaiting your acknowledgement',
+ returned: 'Returned and acknowledged'
+}
 
 
 export default function MyBorrows() {
@@ -407,6 +421,7 @@ export default function MyBorrows() {
  {filtered.map(b => {
 
  const isOverdue = b.status === 'overdue' || (b.status === 'active' && new Date(b.dueDate) < new Date())
+ const depositStatus = getDepositStatus(b)
 
  const formattedDueDate = new Date(b.dueDate).toLocaleDateString('en-IN', {
 
@@ -512,23 +527,18 @@ export default function MyBorrows() {
 
  </span>
 
- {b.depositPaid ? (
-
- <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded font-medium flex items-center gap-0.5">
-
- <CheckCircle2 className="w-2.5 h-2.5" /> Paid
-
- </span>
-
- ) : (
-
- <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-medium">
-
- Unpaid
-
- </span>
-
+ <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
+ ['held', 'return_pending', 'return_sent', 'returned'].includes(depositStatus)
+  ? 'text-emerald-400 bg-emerald-500/10'
+  : depositStatus === 'payment_pending'
+   ? 'text-cyan-300 bg-cyan-500/10'
+   : 'text-amber-400 bg-amber-500/10'
+ }`}>
+ {['held', 'return_pending', 'return_sent', 'returned'].includes(depositStatus) && (
+  <CheckCircle2 className="w-2.5 h-2.5 inline mr-0.5" />
  )}
+ {depositStatusLabels[depositStatus] || 'Unpaid'}
+ </span>
 
  </div>
 
@@ -580,7 +590,7 @@ export default function MyBorrows() {
 
  <div className="flex items-center gap-2.5 flex-wrap lg:justify-end border-t lg:border-t-0 border-zinc-800/80 pt-3 lg:pt-0">
 
- {b.status === 'active' && (
+ {['active', 'overdue'].includes(b.status) && !b.returnSignaledAt && (
 
  <button
 
@@ -612,9 +622,13 @@ export default function MyBorrows() {
 
  )}
 
+ {['active', 'overdue'].includes(b.status) && b.returnSignaledAt && (
+ <span className="text-xs text-zinc-400">Return signalled — waiting for owner confirmation</span>
+ )}
 
 
- {b.status === 'active' && !b.depositPaid && (
+
+ {['active', 'overdue'].includes(b.status) && depositStatus === 'pending' && Number(b.depositAmount) > 0 && (
 
  <button
 
@@ -644,6 +658,26 @@ export default function MyBorrows() {
 
  </button>
 
+ )}
+
+ {depositStatus === 'payment_pending' && (
+ <span className="text-xs text-cyan-300">Deposit payment reported — waiting for owner confirmation</span>
+ )}
+ {depositStatus === 'return_pending' && (
+ <span className="text-xs text-amber-300">The owner needs to return your deposit</span>
+ )}
+ {depositStatus === 'return_sent' && b.status === 'returned' && (
+ <button
+ type="button"
+ onClick={() => act(b._id, 'acknowledge-deposit-return')}
+ disabled={acting === b._id + 'acknowledge-deposit-return'}
+ className="btn-success text-xs py-2 px-4 flex items-center gap-1.5 font-semibold"
+ >
+ {acting === b._id + 'acknowledge-deposit-return'
+  ? <Loader className="w-3.5 h-3.5 animate-rotate-in" />
+  : <CheckCircle2 className="w-3.5 h-3.5" />}
+ Acknowledge Deposit Received
+ </button>
  )}
 
 

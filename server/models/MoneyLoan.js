@@ -35,6 +35,12 @@ const moneyLoanSchema = new mongoose.Schema(
     returnDate: {
       type: Date,
     },
+    repaymentReportedAt: {
+      type: Date,
+    },
+    repaymentConfirmedAt: {
+      type: Date,
+    },
     status: {
       type: String,
       enum: ['pending', 'active', 'repaid_pending', 'repaid', 'overdue', 'rejected'],

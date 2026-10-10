@@ -1,13 +1,13 @@
-export const calculateFine = (dueDate, finePerDay) => {
-  const now = new Date();
+export const calculateFine = (dueDate, finePerDay, throughDate = new Date()) => {
+  const now = new Date(throughDate);
   const due = new Date(dueDate);
 
   if (now > due) {
-    const diffTime = Math.abs(now - due);
+    const diffTime = now - due;
     const daysOverdue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return {
       daysOverdue,
-      fineAmount: daysOverdue * finePerDay,
+      fineAmount: daysOverdue * Number(finePerDay || 0),
     };
   }
 

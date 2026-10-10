@@ -350,7 +350,7 @@ export default function MyItems() {
                 required 
                 min="0"
                 className="w-full bg-zinc-900/50 border border-white/10 rounded-xl text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none py-2.5 px-3.5 text-sm" 
-                placeholder="e.g. 500 (Refundable upon safe return)"
+                placeholder="e.g. 500 (returned after a safe item return)"
                 value={form.depositAmount} 
                 onChange={e => setForm({...form, depositAmount: e.target.value})} 
               />

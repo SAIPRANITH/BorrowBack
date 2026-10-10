@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Ale
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import api from '../api/api';
-import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -16,6 +15,21 @@ const TABS = {
   MINE: 'MINE',
   REQUESTS: 'REQUESTS',
   LENDING: 'LENDING',
+};
+
+const getDepositStatus = (borrow) => borrow.depositStatus
+  || (Number(borrow.depositAmount ?? borrow.item?.depositAmount) > 0
+    ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+    : 'not_required');
+
+const DEPOSIT_STATUS_LABELS = {
+  not_required: 'Not required',
+  pending: 'Unpaid',
+  payment_pending: 'Awaiting owner confirmation',
+  held: 'Received by owner',
+  return_pending: 'Awaiting owner return',
+  return_sent: 'Awaiting your acknowledgement',
+  returned: 'Returned and acknowledged',
 };
 
 export default function BorrowsScreen() {
@@ -69,6 +83,11 @@ export default function BorrowsScreen() {
       else if (action === 'accept') endpoint = `/borrows/${id}/accept`;
       else if (action === 'reject') endpoint = `/borrows/${id}/reject`;
       else if (action === 'confirm-return') endpoint = `/borrows/${id}/confirm-return`;
+      else if (action === 'confirm-deposit') endpoint = `/borrows/${id}/confirm-deposit`;
+      else if (action === 'reject-deposit') endpoint = `/borrows/${id}/reject-deposit`;
+      else if (action === 'return-deposit') endpoint = `/borrows/${id}/return-deposit`;
+      else if (action === 'acknowledge-deposit-return') endpoint = `/borrows/${id}/acknowledge-deposit-return`;
+      else throw new Error('Unsupported borrow action.');
 
       await api[method](endpoint);
       if (!silent) Alert.alert('Success', 'Action completed successfully.');
@@ -82,7 +101,6 @@ export default function BorrowsScreen() {
   };
 
   const confirmExternalPayment = (action, item) => {
-    const label = action === 'pay-fine' ? 'fine' : 'security deposit';
     const amount = action === 'pay-fine' ? item.fineAmount : item.depositAmount;
     setPayment({
       action,
@@ -93,63 +111,87 @@ export default function BorrowsScreen() {
     });
   };
 
-  const renderMyBorrowsItem = ({ item }) => (
-    <Card style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.cardTitleContainer}>
-          <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
-          <Text style={styles.personName}>From: {item.owner?.name || 'Unknown'}</Text>
+  const renderMyBorrowsItem = ({ item }) => {
+    const depositStatus = getDepositStatus(item);
+    const depositConfirmed = ['held', 'return_pending', 'return_sent', 'returned'].includes(depositStatus);
+    return (
+      <Card style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
+            <Text style={styles.personName}>From: {item.owner?.name || 'Unknown'}</Text>
+          </View>
+          <Badge status={item.status} label={item.status} />
         </View>
-        <Badge
-          status={item.status}
-          label={item.status} 
-        />
-      </View>
-      {(item.depositAmount > 0 || (item.fineAmount > 0 && item.status === 'returned')) && (
-        <View style={styles.paymentStates}>
-          {item.depositAmount > 0 && (
-            <View style={[styles.paymentState, item.depositPaid ? styles.paymentPaid : styles.paymentUnpaid]}>
-              <Ionicons
-                name={item.depositPaid ? 'checkmark-circle' : 'time-outline'}
-                size={14}
-                color={item.depositPaid ? theme.colors.success : theme.colors.accent}
-              />
-              <Text style={[styles.paymentStateText, item.depositPaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
-                Deposit · {item.depositPaid ? 'PAID' : 'UNPAID'}
-              </Text>
-            </View>
+        {(item.depositAmount > 0 || (item.fineAmount > 0 && item.status === 'returned')) && (
+          <View style={styles.paymentStates}>
+            {item.depositAmount > 0 && (
+              <View style={[styles.paymentState, depositConfirmed ? styles.paymentPaid : styles.paymentUnpaid]}>
+                <Ionicons
+                  name={depositConfirmed ? 'checkmark-circle' : 'time-outline'}
+                  size={14}
+                  color={depositConfirmed ? theme.colors.success : theme.colors.accent}
+                />
+                <Text style={[styles.paymentStateText, depositConfirmed ? styles.paymentPaidText : styles.paymentUnpaidText]}>
+                  Deposit · {DEPOSIT_STATUS_LABELS[depositStatus] || 'Unpaid'}
+                </Text>
+              </View>
+            )}
+            {item.fineAmount > 0 && item.status === 'returned' && (
+              <View style={[styles.paymentState, item.finePaid ? styles.paymentPaid : styles.paymentUnpaid]}>
+                <Ionicons
+                  name={item.finePaid ? 'checkmark-circle' : 'time-outline'}
+                  size={14}
+                  color={item.finePaid ? theme.colors.success : theme.colors.accent}
+                />
+                <Text style={[styles.paymentStateText, item.finePaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
+                  Fine · {item.finePaid ? 'PAID' : 'UNPAID'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+        <View style={styles.datesContainer}>
+          <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
+        </View>
+
+        <View style={styles.actionContainer}>
+          {['active', 'overdue'].includes(item.status) && !item.returnSignaledAt && (
+            <Button title="Signal Return" onPress={() => handleAction('signal-return', item._id, item)} style={styles.actionButton} />
           )}
-          {item.fineAmount > 0 && item.status === 'returned' && (
-            <View style={[styles.paymentState, item.finePaid ? styles.paymentPaid : styles.paymentUnpaid]}>
-              <Ionicons
-                name={item.finePaid ? 'checkmark-circle' : 'time-outline'}
-                size={14}
-                color={item.finePaid ? theme.colors.success : theme.colors.accent}
-              />
-              <Text style={[styles.paymentStateText, item.finePaid ? styles.paymentPaidText : styles.paymentUnpaidText]}>
-                Fine · {item.finePaid ? 'PAID' : 'UNPAID'}
-              </Text>
-            </View>
+          {item.returnSignaledAt && item.status !== 'returned' && (
+            <Text style={styles.dateText}>Return signalled · waiting for owner confirmation</Text>
+          )}
+          {['active', 'overdue'].includes(item.status) && depositStatus === 'pending' && item.depositAmount > 0 && (
+            <Button title="Record Deposit Paid" onPress={() => confirmExternalPayment('pay-deposit', item)} style={styles.actionButton} />
+          )}
+          {depositStatus === 'payment_pending' && (
+            <Text style={styles.dateText}>Deposit payment reported · waiting for owner confirmation</Text>
+          )}
+          {depositStatus === 'return_pending' && (
+            <Text style={styles.dateText}>The owner needs to return your deposit</Text>
+          )}
+          {depositStatus === 'return_sent' && item.status === 'returned' && (
+            <Button
+              title="Acknowledge Deposit Received"
+              onPress={() => Alert.alert(
+                'Confirm deposit received?',
+                'Acknowledge only after you have received the deposit from the owner.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'I received it', onPress: () => handleAction('acknowledge-deposit-return', item._id) },
+                ]
+              )}
+              style={styles.actionButton}
+            />
+          )}
+          {item.status === 'returned' && item.fineAmount > 0 && !item.finePaid && (
+            <Button title={`Record Fine Paid (₹${item.fineAmount})`} onPress={() => confirmExternalPayment('pay-fine', item)} style={[styles.actionButton, {backgroundColor: theme.colors.error}]} />
           )}
         </View>
-      )}
-      <View style={styles.datesContainer}>
-        <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
-      </View>
-      
-      <View style={styles.actionContainer}>
-        {item.status === 'active' && (
-          <Button title="Signal Return" onPress={() => handleAction('signal-return', item._id, item)} style={styles.actionButton} />
-        )}
-        {(item.status === 'active' || item.status === 'returned') && !item.depositPaid && item.depositAmount > 0 && (
-          <Button title="Record Deposit Paid" onPress={() => confirmExternalPayment('pay-deposit', item)} style={styles.actionButton} />
-        )}
-        {item.status === 'returned' && item.fineAmount > 0 && !item.finePaid && (
-          <Button title={`Record Fine Paid (₹${item.fineAmount})`} onPress={() => confirmExternalPayment('pay-fine', item)} style={[styles.actionButton, {backgroundColor: theme.colors.error}]} />
-        )}
-      </View>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   const renderRequestsItem = ({ item }) => (
     <Card style={styles.card}>
@@ -171,28 +213,78 @@ export default function BorrowsScreen() {
     </Card>
   );
 
-  const renderLendingItem = ({ item }) => (
-    <Card style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.cardTitleContainer}>
-          <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
-          <Text style={styles.personName}>To: {item.borrower?.name || 'Unknown'}</Text>
+  const renderLendingItem = ({ item }) => {
+    const depositStatus = getDepositStatus(item);
+    const depositAmount = Number(item.depositAmount ?? item.item?.depositAmount ?? 0);
+    return (
+      <Card style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.itemName}>{item.item?.name || 'Unknown Item'}</Text>
+            <Text style={styles.personName}>To: {item.borrower?.name || 'Unknown'}</Text>
+          </View>
+          <Badge status={item.status} label={item.status} />
         </View>
-        <Badge
-          status={item.status}
-          label={item.status} 
-        />
-      </View>
-      <View style={styles.datesContainer}>
-        <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
-      </View>
-      {item.status === 'active' && (
+        <View style={styles.datesContainer}>
+          <Text style={styles.dateText}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
+          {depositAmount > 0 && (
+            <Text style={styles.dateText}>Deposit ₹{depositAmount} · {DEPOSIT_STATUS_LABELS[depositStatus] || 'Unpaid'}</Text>
+          )}
+        </View>
         <View style={styles.actionContainer}>
-          <Button title="Confirm Return" onPress={() => handleAction('confirm-return', item._id, item)} style={styles.actionButton} />
+          {depositStatus === 'payment_pending' && ['active', 'overdue'].includes(item.status) && (
+            <>
+              <Button
+                title="Confirm Deposit Received"
+                onPress={() => Alert.alert(
+                  'Confirm deposit received?',
+                  `Confirm only after you have received ₹${depositAmount} from the borrower.`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Confirm received', onPress: () => handleAction('confirm-deposit', item._id) },
+                  ]
+                )}
+                style={styles.actionButton}
+              />
+              <Button
+                title="Not Received"
+                variant="outline"
+                onPress={() => handleAction('reject-deposit', item._id)}
+                style={styles.actionButton}
+              />
+            </>
+          )}
+          {['active', 'overdue'].includes(item.status) && depositStatus !== 'payment_pending' && (
+            item.returnSignaledAt ? (
+              <Button title="Confirm Return" onPress={() => handleAction('confirm-return', item._id, item)} style={styles.actionButton} />
+            ) : (
+              <Text style={styles.dateText}>Waiting for borrower to signal return</Text>
+            )
+          )}
+          {['active', 'overdue'].includes(item.status) && depositStatus === 'payment_pending' && (
+            <Text style={styles.dateText}>Resolve the reported deposit payment before confirming the return</Text>
+          )}
+          {item.status === 'returned' && depositStatus === 'return_pending' && (
+            <Button
+              title="Mark Deposit Returned"
+              onPress={() => Alert.alert(
+                'Confirm deposit returned?',
+                `Confirm only after you have returned ₹${depositAmount} to the borrower.`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'I returned it', onPress: () => handleAction('return-deposit', item._id) },
+                ]
+              )}
+              style={styles.actionButton}
+            />
+          )}
+          {item.status === 'returned' && depositStatus === 'return_sent' && (
+            <Text style={styles.dateText}>Deposit marked returned · waiting for borrower acknowledgement</Text>
+          )}
         </View>
-      )}
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   if (loading && !refreshing) {
     return <LoadingScreen message="Loading borrows..." />;

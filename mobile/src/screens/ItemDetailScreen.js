@@ -7,15 +7,36 @@ import {
   Alert,
   Image,
   TouchableOpacity,
+  Platform,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
 import { Button, Badge, LoadingScreen, Card } from '../components';
+
+const formatDateOnly = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateOnly = (value) => {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return date.getFullYear() === Number(match[1])
+    && date.getMonth() === Number(match[2]) - 1
+    && date.getDate() === Number(match[3])
+    ? date
+    : null;
+};
 
 const getCategoryColor = (category) => {
   const colors = {
@@ -43,6 +64,7 @@ const ItemDetailScreen = () => {
   const [borrowLoading, setBorrowLoading] = useState(false);
   const [toggleLoading, setToggleLoading] = useState(false);
   const [dueDate, setDueDate] = useState('');
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
   const fetchItem = async () => {
     try {
@@ -63,13 +85,16 @@ const ItemDetailScreen = () => {
   }, [itemId]);
 
   const handleBorrowRequest = async () => {
-    if (!dueDate) {
-      Alert.alert('Validation Error', 'Please specify a due date for your borrow request.');
+    const selectedDueDate = parseDateOnly(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (!selectedDueDate || selectedDueDate < today) {
+      Alert.alert('Validation Error', 'Please choose a valid due date today or later.');
       return;
     }
     try {
       setBorrowLoading(true);
-      await api.post('/borrows', { item: itemId, dueDate });
+      await api.post('/borrows', { item: itemId, itemId, dueDate });
       Alert.alert('Success', 'Borrow request sent to the owner!');
       navigation.goBack();
     } catch (err) {
@@ -77,6 +102,13 @@ const ItemDetailScreen = () => {
       Alert.alert('Error', err.response?.data?.message || 'Failed to submit borrow request.');
     } finally {
       setBorrowLoading(false);
+    }
+  };
+
+  const handleDueDateChange = (event, selectedDate) => {
+    if (Platform.OS !== 'ios') setShowDueDatePicker(false);
+    if (event.type === 'set' && selectedDate) {
+      setDueDate(formatDateOnly(selectedDate));
     }
   };
 
@@ -204,14 +236,48 @@ const ItemDetailScreen = () => {
               <Text style={styles.inputLabel}>Required until (Due Date)</Text>
               <View style={styles.inputContainer}>
                 <Ionicons name="calendar-outline" size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.dateInput}
-                  placeholder="YYYY-MM-DD"
-                  value={dueDate}
-                  onChangeText={setDueDate}
-                  placeholderTextColor={theme.colors.textSecondary}
-                />
+                {Platform.OS === 'web' ? (
+                  <TextInput
+                    style={styles.dateInput}
+                    value={dueDate}
+                    onChangeText={setDueDate}
+                    {...{
+                      type: 'date',
+                      min: formatDateOnly(new Date()),
+                    }}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.datePickerTrigger}
+                    onPress={() => setShowDueDatePicker(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={dueDate ? `Due date ${dueDate}` : 'Choose a due date'}
+                  >
+                    <Text style={dueDate ? styles.dateValue : styles.datePlaceholder}>
+                      {dueDate || 'Choose a due date'}
+                    </Text>
+                    <Ionicons name="chevron-down" size={18} color={theme.colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
               </View>
+              {showDueDatePicker && Platform.OS !== 'web' && (
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={parseDateOnly(dueDate) || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    minimumDate={new Date(new Date().setHours(0, 0, 0, 0))}
+                    onChange={handleDueDateChange}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <Button
+                      title="Done"
+                      variant="outline"
+                      onPress={() => setShowDueDatePicker(false)}
+                    />
+                  )}
+                </View>
+              )}
               <Button 
                 title="Request to Borrow"
                 onPress={handleBorrowRequest}
@@ -458,6 +524,25 @@ const styles = StyleSheet.create({
     height: 48,
     fontSize: theme.typography.sizes.md,
     color: theme.colors.text,
+  },
+  datePickerTrigger: {
+    flex: 1,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateValue: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.md,
+  },
+  datePlaceholder: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.md,
+  },
+  datePickerContainer: {
+    marginBottom: theme.spacing.md,
+    alignItems: 'center',
   },
   borrowButton: {
     width: '100%',

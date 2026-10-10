@@ -20,22 +20,33 @@ import {
  Send
 } from 'lucide-react'
 
+const getDepositStatus = (borrow) => borrow.depositStatus
+ || (Number(borrow.depositAmount ?? borrow.item?.depositAmount) > 0
+  ? (borrow.depositPaid ? (borrow.status === 'returned' ? 'return_pending' : 'held') : 'pending')
+  : 'not_required')
+
 export default function BorrowRequests() {
  const [requests, setRequests] = useState([])
  const [active, setActive] = useState([])
  const [loading, setLoading] = useState(true)
  const [acting, setActing] = useState('')
+ const [loadError, setLoadError] = useState('')
 
  const load = async () => {
+ setLoadError('')
  try {
  const [reqR, lendR] = await Promise.all([
  api.get('/borrows/incoming'), 
  api.get('/borrows/lending')
  ])
  if (reqR.data.success) setRequests(reqR.data.requests.filter(r => r.status === 'pending'))
- if (lendR.data.success) setActive(lendR.data.borrows.filter(b => b.status === 'active'))
+ if (lendR.data.success) setActive(lendR.data.history.filter(b =>
+  ['active', 'overdue'].includes(b.status)
+  || (b.status === 'returned' && ['return_pending', 'return_sent'].includes(getDepositStatus(b)))
+ ))
  } catch (err) {
  console.error('Failed to load borrow requests:', err)
+ setLoadError(err.response?.data?.message || 'Could not load borrow requests. Please retry.')
  }
  setLoading(false)
  }
@@ -48,9 +59,10 @@ export default function BorrowRequests() {
  setActing(id + action)
  try { 
  await api.put(`/borrows/${id}/${action}`)
- load() 
+ await load()
  } catch (err) {
  console.error(`Failed to perform ${action}:`, err)
+ window.alert(err.response?.data?.message || 'Could not update this borrow. Please try again.')
  }
  setActing('')
  }
@@ -76,6 +88,12 @@ export default function BorrowRequests() {
 
  return (
  <div className="space-y-8 animate-scale-in">
+ {loadError && (
+  <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+   <span>{loadError}</span>
+   <button type="button" onClick={() => { setLoading(true); load() }} className="font-semibold text-red-100 underline underline-offset-2">Retry</button>
+  </div>
+ )}
  {/* Hero Section */}
  <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl animate-card-enter">
  {/* Background image with overlays */}
@@ -112,7 +130,7 @@ export default function BorrowRequests() {
  </div>
  <div className="flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 text-zinc-300">
  <span className="w-2 h-2 rounded-full bg-blue-400"></span>
- <span>Active Borrows: <strong className="text-blue-400 font-semibold">{active.length}</strong></span>
+ <span>Borrow & Deposit Follow-ups: <strong className="text-blue-400 font-semibold">{active.length}</strong></span>
  </div>
  </div>
  </div>
@@ -259,16 +277,18 @@ export default function BorrowRequests() {
  <div className="flex items-center gap-2.5">
  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400"></div>
  <h2 className="text-sm font-bold text-zinc-200 uppercase tracking-wider">
- Active Borrows (Confirm Return) ({active.length})
+ Borrow & Deposit Follow-ups ({active.length})
  </h2>
  </div>
- <span className="text-xs text-zinc-500 font-medium">Currently lent to peers</span>
+ <span className="text-xs text-zinc-500 font-medium">Confirm returns and settle deposits</span>
  </div>
 
  <div className="space-y-4">
  {active.map(b => {
  const initials = getInitials(b.borrower?.name)
  const isActingReturn = acting === b._id + 'confirm-return'
+ const depositStatus = getDepositStatus(b)
+ const depositAmount = Number(b.depositAmount ?? b.item?.depositAmount ?? 0)
  const isOverdue = new Date(b.dueDate) < new Date()
 
  return (
@@ -289,8 +309,8 @@ export default function BorrowRequests() {
  <h3 className="text-zinc-100 font-bold text-base sm:text-lg">
  {b.item?.name || 'Item'}
  </h3>
- <span className={isOverdue ? 'badge-overdue animate-pulse-glow' : 'badge-active animate-pulse-glow'}>
- {isOverdue ? 'Overdue' : 'Active Borrow'}
+ <span className={b.status === 'returned' ? 'badge-returned' : isOverdue ? 'badge-overdue animate-pulse-glow' : 'badge-active animate-pulse-glow'}>
+ {b.status === 'returned' ? 'Returned' : isOverdue ? 'Overdue' : 'Active Borrow'}
  </span>
  </div>
 
@@ -316,10 +336,14 @@ export default function BorrowRequests() {
  </strong>
  </span>
 
- {b.item?.depositAmount !== undefined && (
- <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 font-medium">
+ {depositAmount > 0 && (
+ <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border font-medium ${
+  ['held', 'return_pending', 'return_sent', 'returned'].includes(depositStatus)
+   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+   : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+ }`}>
  <IndianRupee className="w-3.5 h-3.5" />
- {b.item.depositAmount} Deposit Held
+ ₹{depositAmount} Deposit · {depositStatus.replace(/_/g, ' ')}
  </span>
  )}
 
@@ -334,6 +358,38 @@ export default function BorrowRequests() {
 
  {/* Right Side: Action Button */}
  <div className="self-end md:self-center shrink-0 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-white/5">
+ {b.status === 'returned' && depositStatus === 'return_pending' ? (
+ <button
+  onClick={() => act(b._id, 'return-deposit')}
+  disabled={acting === b._id + 'return-deposit'}
+  className="btn-primary w-full md:w-auto text-xs py-2.5 px-6 flex items-center justify-center gap-2"
+  title="Confirm you returned the deposit to the borrower"
+ >
+  {acting === b._id + 'return-deposit' ? <Loader className="w-4 h-4 animate-rotate-in" /> : <IndianRupee className="w-4 h-4" />}
+  Mark Deposit Returned
+ </button>
+ ) : b.status === 'returned' && depositStatus === 'return_sent' ? (
+ <span className="text-xs text-cyan-300">Deposit marked returned — waiting for borrower acknowledgement</span>
+ ) : b.status === 'returned' ? (
+ <span className="text-xs text-zinc-400">Return complete</span>
+ ) : depositStatus === 'payment_pending' ? (
+ <div className="flex flex-wrap gap-2">
+  <button
+   onClick={() => act(b._id, 'confirm-deposit')}
+   disabled={acting === b._id + 'confirm-deposit' || acting === b._id + 'reject-deposit'}
+   className="btn-success text-xs py-2.5 px-4"
+  >
+   Confirm Deposit Received
+  </button>
+  <button
+   onClick={() => act(b._id, 'reject-deposit')}
+   disabled={acting === b._id + 'confirm-deposit' || acting === b._id + 'reject-deposit'}
+   className="btn-danger text-xs py-2.5 px-4"
+  >
+   Not Received
+  </button>
+ </div>
+ ) : b.returnSignaledAt ? (
  <button 
  onClick={() => act(b._id, 'confirm-return')} 
  disabled={isActingReturn} 
@@ -349,6 +405,9 @@ export default function BorrowRequests() {
  </>
  )}
  </button>
+ ) : (
+ <span className="text-xs text-zinc-400">Waiting for borrower to signal return</span>
+ )}
  </div>
  </div>
  )

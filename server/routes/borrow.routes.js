@@ -9,6 +9,10 @@ import {
   signalReturn,
   confirmReturn,
   payDeposit,
+  confirmDepositReceived,
+  rejectDepositPayment,
+  confirmDepositReturnSent,
+  acknowledgeDepositReturn,
   payFine,
   rateBorrower,
   rateOwnerAndItem,
@@ -30,6 +34,10 @@ router.put('/:id/signal-return', protect, signalReturn);
 router.put('/:id/confirm-return', protect, confirmReturn);
 
 router.put('/:id/pay-deposit', protect, payDeposit);
+router.put('/:id/confirm-deposit', protect, confirmDepositReceived);
+router.put('/:id/reject-deposit', protect, rejectDepositPayment);
+router.put('/:id/return-deposit', protect, confirmDepositReturnSent);
+router.put('/:id/acknowledge-deposit-return', protect, acknowledgeDepositReturn);
 router.put('/:id/pay-fine', protect, payFine);
 
 router.put('/:id/rate-borrower', protect, rateBorrower);

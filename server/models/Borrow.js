@@ -28,6 +28,9 @@ const borrowSchema = new mongoose.Schema(
     returnDate: {
       type: Date,
     },
+    returnSignaledAt: {
+      type: Date,
+    },
     status: {
       type: String,
       enum: ['pending', 'active', 'returned', 'overdue', 'rejected'],
@@ -40,6 +43,22 @@ const borrowSchema = new mongoose.Schema(
     depositPaid: {
       type: Boolean,
       default: false,
+    },
+    depositStatus: {
+      type: String,
+      enum: ['not_required', 'pending', 'payment_pending', 'held', 'return_pending', 'return_sent', 'returned'],
+    },
+    depositPaymentReportedAt: {
+      type: Date,
+    },
+    depositReceivedAt: {
+      type: Date,
+    },
+    depositReturnSentAt: {
+      type: Date,
+    },
+    depositReturnAcknowledgedAt: {
+      type: Date,
     },
     fineAmount: {
       type: Number,

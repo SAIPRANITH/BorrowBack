@@ -42,19 +42,24 @@ export default function ItemDetail() {
 
  const handleBorrow = async (e) => {
  e.preventDefault()
- setSubmitting(true)
- setMsg({ type: '', text: '' })
- try {
- await api.post('/borrows', { itemId: item._id, dueDate })
- setMsg({ type: 'success', text: 'Borrow request sent successfully! Waiting for owner approval.' })
- } catch (err) {
- setMsg({
- type: 'error',
- text: err.response?.data?.message || 'Failed to send borrow request'
- })
- }
- setSubmitting(false)
- }
+ if (!item?._id || !dueDate) {
+ setMsg({ type: 'error', text: 'Choose a return due date and try again.' })
+ return
+ }
+ setSubmitting(true)
+ setMsg({ type: '', text: '' })
+ try {
+ await api.post('/borrows', { item: item._id, itemId: item._id, dueDate })
+ setMsg({ type: 'success', text: 'Borrow request sent successfully! Waiting for owner approval.' })
+ } catch (err) {
+ setMsg({
+ type: 'error',
+ text: err.response?.data?.message || err.message || 'Failed to send borrow request'
+ })
+ } finally {
+ setSubmitting(false)
+ }
+ }
 
  const handleDelete = async () => {
  if (!confirm('Are you sure you want to delete this item?')) return
@@ -174,7 +179,7 @@ export default function ItemDetail() {
  <IndianRupee className="w-4 h-4 text-blue-400" />
  </div>
  <p className="text-[11px] font-semibold text-zinc-200">Held Deposit</p>
- <p className="text-[10px] text-zinc-500">Auto return refund</p>
+ <p className="text-[10px] text-zinc-500">Returned by the owner</p>
  </div>
  <div className="glass-card p-3 rounded-2xl text-center border border-white/5 animate-scale-in" style={{animationDelay: '0.3s'}}>
  <div className=" mx-auto mb-1">
@@ -206,7 +211,7 @@ export default function ItemDetail() {
  {/* Deposit */}
  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 animate-border-glow">
  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 block mb-1">
- Refundable Deposit
+ Security Deposit
  </span>
  <div className="text-xl font-extrabold text-emerald-300 flex items-center">
  <IndianRupee className="w-4 h-4 mr-1" />
@@ -339,7 +344,7 @@ export default function ItemDetail() {
  <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-400 animate-pulse-glow" />
  <p className="leading-relaxed">
  You will need to pay the ₹{item.depositAmount} deposit upon item handover,
- which will be fully refunded once the item is returned on time.
+ which the owner returns after you bring the item back.
  </p>
  </div>
 

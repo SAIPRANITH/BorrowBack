@@ -11,12 +11,14 @@ import EmptyState from '../components/EmptyState';
 import LoadingScreen from '../components/LoadingScreen';
 import ExternalPaymentModal from '../components/ExternalPaymentModal';
 
-const TABS = ['My Loans', 'Requests', 'Lending', 'Summary'];
+const TABS = ['My Loans', 'Overdue', 'Requests', 'Lending', 'Summary'];
 const formatStatus = (status) => {
   if (status === 'repaid_pending') return 'AWAITING CONFIRMATION';
   if (status === 'repaid') return 'PAID';
   return (status || 'unknown').replace(/_/g, ' ').toUpperCase();
 };
+const isLoanOverdue = (loan) => loan.status === 'overdue'
+  || (loan.status === 'active' && new Date(loan.dueDate).getTime() < Date.now());
 
 const MoneyLoansScreen = () => {
   const [activeTab, setActiveTab] = useState('My Loans');
@@ -38,6 +40,21 @@ const MoneyLoansScreen = () => {
           response = await api.get('/money-loans/mine');
           setLoans(response.data.loans || []);
           break;
+        case 'Overdue': {
+          const [borrowedResponse, lendingResponse] = await Promise.all([
+            api.get('/money-loans/mine'),
+            api.get('/money-loans/lending'),
+          ]);
+          setLoans([
+            ...(borrowedResponse.data.loans || [])
+              .filter(isLoanOverdue)
+              .map((loan) => ({ ...loan, loanSide: 'borrower' })),
+            ...(lendingResponse.data.loans || [])
+              .filter(isLoanOverdue)
+              .map((loan) => ({ ...loan, loanSide: 'lender' })),
+          ]);
+          break;
+        }
         case 'Requests':
           response = await api.get('/money-loans/incoming');
           setLoans(response.data.requests || []);
@@ -168,12 +185,13 @@ const MoneyLoansScreen = () => {
 
   const renderMyLoansItem = ({ item }) => {
     const totalRepayable = item.totalRepayable ?? item.amount + (item.amount * (item.interestRate / 100));
+    const displayStatus = isLoanOverdue(item) ? 'overdue' : item.status;
     
     return (
       <Card style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.userName}>{item.lender?.name || 'Lender'}</Text>
-          <Badge status={item.status} label={formatStatus(item.status)} />
+          <Badge status={displayStatus} label={formatStatus(displayStatus)} />
         </View>
         <View style={styles.loanDetails}>
           <View style={styles.detailRow}>
@@ -194,10 +212,16 @@ const MoneyLoansScreen = () => {
             <Text style={styles.detailLabel}>Due Date:</Text>
             <Text style={styles.detailValue}>{new Date(item.dueDate).toLocaleDateString()}</Text>
           </View>
+          {item.borrower?.phone ? (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Borrower phone:</Text>
+              <Text style={styles.detailValue}>{item.borrower.phone}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.actionContainer}>
-          {item.status === 'active' && (
+          {['active', 'overdue'].includes(item.status) && (
             <>
               <Text style={styles.paymentHint}>
                 Pay the lender using your agreed method, then record it here.
@@ -244,6 +268,12 @@ const MoneyLoansScreen = () => {
           <Text style={styles.detailLabel}>Due Date:</Text>
           <Text style={styles.detailValue}>{new Date(item.dueDate).toLocaleDateString()}</Text>
         </View>
+        {item.borrower?.phone ? (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Borrower phone:</Text>
+            <Text style={styles.detailValue}>{item.borrower.phone}</Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.buttonRow}>
@@ -270,7 +300,7 @@ const MoneyLoansScreen = () => {
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.userName}>{item.borrower?.name || 'Borrower'}</Text>
-        <Badge status={item.status} label={formatStatus(item.status)} />
+        <Badge status={isLoanOverdue(item) ? 'overdue' : item.status} label={formatStatus(isLoanOverdue(item) ? 'overdue' : item.status)} />
       </View>
       <View style={styles.loanDetails}>
         <View style={styles.detailRow}>
@@ -288,6 +318,9 @@ const MoneyLoansScreen = () => {
       </View>
 
       <View style={styles.actionContainer}>
+        {isLoanOverdue(item) && (
+          <Text style={styles.waitingText}>Repayment is overdue — waiting for the borrower to record payment.</Text>
+        )}
         {item.status === 'repaid_pending' && (
           <Button 
             title={acting === `${item._id}:confirm-repay` ? 'Saving...' : 'Confirm Repayment Received'}
@@ -390,11 +423,16 @@ const MoneyLoansScreen = () => {
         <FlatList
           data={loans}
           keyExtractor={(item) => item._id || item.id}
-          renderItem={
-            activeTab === 'My Loans' ? renderMyLoansItem :
-            activeTab === 'Requests' ? renderRequestsItem :
-            renderLendingItem
-          }
+          renderItem={({ item }) => {
+            if (activeTab === 'Overdue') {
+              return item.loanSide === 'borrower'
+                ? renderMyLoansItem({ item })
+                : renderLendingItem({ item });
+            }
+            return activeTab === 'My Loans' ? renderMyLoansItem({ item }) :
+              activeTab === 'Requests' ? renderRequestsItem({ item }) :
+              renderLendingItem({ item });
+          }}
           contentContainerStyle={styles.listContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ListEmptyComponent={
@@ -402,8 +440,10 @@ const MoneyLoansScreen = () => {
               icon="wallet-outline" 
               title="No Loans Found" 
               message={
-                activeTab === 'My Loans'
-                  ? 'Request a peer loan to see its status and repayment details here.'
+                activeTab === 'Overdue'
+                  ? 'Loans past their due date will appear here.'
+                  : activeTab === 'My Loans'
+                    ? 'Request a peer loan to see its status and repayment details here.'
                   : `You have no ${activeTab.toLowerCase()} at the moment.`
               }
             />
