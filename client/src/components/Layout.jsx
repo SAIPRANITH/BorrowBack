@@ -10,6 +10,32 @@ export default function Layout() {
  window.scrollTo({ top: 0, behavior: 'instant' })
  }, [location.pathname])
 
+ useEffect(() => {
+ const revealTargets = document.querySelectorAll('[data-reveal]')
+ if (!revealTargets.length) return
+
+ const showTargets = () => revealTargets.forEach(target => target.classList.add('is-visible'))
+ if (
+ typeof IntersectionObserver === 'undefined' ||
+ window.matchMedia('(prefers-reduced-motion: reduce)').matches
+ ) {
+ showTargets()
+ return
+ }
+
+ const observer = new IntersectionObserver((entries, activeObserver) => {
+ entries.forEach(entry => {
+ if (entry.isIntersecting) {
+ entry.target.classList.add('is-visible')
+ activeObserver.unobserve(entry.target)
+ }
+ })
+ }, { threshold: 0.12, rootMargin: '0px 0px -32px 0px' })
+
+ revealTargets.forEach(target => observer.observe(target))
+ return () => observer.disconnect()
+ }, [location.pathname])
+
  return (
  <div className="classy-app min-h-screen relative flex flex-col md:flex-row">
 
@@ -19,7 +45,7 @@ export default function Layout() {
  {/* Main Content Area */}
  <main 
  key={location.pathname} 
- className="flex-1 w-full md:ml-64 relative z-10 pt-20 md:pt-6 p-4 sm:p-6 lg:p-8 pb-24 md:pb-0 flex flex-col min-h-screen"
+ className="page-enter flex-1 w-full md:ml-64 relative z-10 pt-20 md:pt-6 p-4 sm:p-6 lg:p-8 pb-24 md:pb-0 flex flex-col min-h-screen"
  >
  <div className="max-w-6xl mx-auto w-full flex-1">
  <Outlet />

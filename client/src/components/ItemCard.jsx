@@ -38,7 +38,7 @@ export default function ItemCard({ item }) {
  src={imgSrc} 
  alt={item.name} 
  onError={handleImageError}
- className="w-full h-full object-cover transition-transform duration-700 ease-out " 
+ className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
  loading="lazy"
  />
 

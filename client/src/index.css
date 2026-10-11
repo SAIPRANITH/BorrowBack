@@ -91,6 +91,16 @@ body::before {
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+@media (hover: hover) {
+  .btn-primary:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  .classy-app a.glass-card:hover {
+    transform: translateY(-2px);
+  }
+}
+
 .btn-danger {
   background: linear-gradient(135deg, #dc2626, #e11d48);
   color: white; font-weight: 600;
@@ -186,6 +196,15 @@ select.input-dark option { background: #18181b; color: #fafafa; }
 .stagger-5 { animation-delay: 400ms; }
 
 .page-enter { animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.reveal-on-scroll.is-visible {
+  animation: fadeInUp 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 
 .text-gradient {
   background: linear-gradient(135deg, #fff 10%, #ff6258 100%);
