@@ -585,6 +585,25 @@ textarea:focus-visible,
     auth-mark-glow 12s ease-in-out infinite alternate;
 }
 
+.site-background-mark {
+  position: fixed;
+  top: 50%;
+  right: max(3vw, calc((100vw - 1480px) / 2));
+  width: clamp(260px, 36vw, 520px);
+  aspect-ratio: 1;
+  background-color: var(--brand-red);
+  -webkit-mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
+  mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
+  opacity: 0.045;
+  filter: drop-shadow(0 0 48px rgba(255, 73, 62, 0.12));
+  transform: translateY(-50%) rotate(-8deg);
+  animation:
+    auth-mark-rotate 36s linear infinite,
+    auth-mark-glow 12s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .login-hero-highlight {
   display: inline-block;
   color: var(--brand-red-bright);
@@ -745,10 +764,17 @@ textarea:focus-visible,
     width: 72vw;
     opacity: 0.06;
   }
+
+  .site-background-mark {
+    right: -18%;
+    width: 72vw;
+    opacity: 0.035;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-background-mark {
+  .auth-background-mark,
+  .site-background-mark {
     animation: none;
   }
 

@@ -65,7 +65,8 @@ export default function RegisterPage() {
 
  return (
  <div className="auth-page auth-page--register min-h-screen flex text-zinc-100 selection:bg-blue-500/30 selection:text-white">
- {/* Left: Campus background image + community perks */}
+ <div aria-hidden="true" className="site-background-mark" />
+ {/* Left: Campus background image + community perks */}
  <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
  {/* Background Photo */}
  <div
