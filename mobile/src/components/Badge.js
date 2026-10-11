@@ -8,10 +8,10 @@ const getBadgeStyles = (status) => {
     case 'pending':
     case 'repaid_pending':
     case 'lent': // for money loans
-      return { bg: '#3d3221', text: theme.colors.accent };
+      return { bg: '#351a19', text: theme.colors.accent };
     case 'active':
     case 'approved':
-      return { bg: '#172f3d', text: theme.colors.primary };
+      return { bg: '#351a19', text: theme.colors.primary };
     case 'available':
     case 'returned':
     case 'repaid':

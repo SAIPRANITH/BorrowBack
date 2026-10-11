@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   heroTitle: {
-    color: theme.colors.surface,
+    color: theme.colors.text,
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.bold,
   },
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   heroAmount: {
-    color: theme.colors.surface,
+    color: theme.colors.text,
     fontSize: 32,
     fontWeight: theme.typography.weights.bold,
     marginTop: 2,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   heroCountValue: {
-    color: theme.colors.surface,
+    color: theme.colors.text,
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.bold,
   },

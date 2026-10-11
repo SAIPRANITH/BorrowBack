@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
@@ -107,7 +108,7 @@ const DashboardScreen = () => {
 
   const renderRecentItem = ({ item }) => {
     const categoryColors = {
-      electronics: '#557c91',
+      electronics: theme.colors.secondary,
       books: theme.colors.success,
       sports: theme.colors.accent,
       kitchen: theme.colors.error,
@@ -139,16 +140,37 @@ const DashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
+      <ImageBackground
+        source={require('../../assets/bg-dashboard.jpg')}
+        imageStyle={styles.ambientImage}
+        style={styles.ambientBackground}
       >
+        <LinearGradient
+          colors={['rgba(5,5,5,0.42)', 'rgba(8,8,8,0.74)', 'rgba(8,8,8,0.91)']}
+          locations={[0, 0.48, 1]}
+          style={styles.ambientOverlay}
+        />
+        <View pointerEvents="none" style={styles.ambientGrid}>
+          <View style={styles.ambientGridLine} />
+          <View style={styles.ambientGridLine} />
+          <View style={styles.ambientGridLine} />
+        </View>
+        <ScrollView
+          style={styles.container}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
+        >
         <ImageBackground
           source={require('../../assets/bg-dashboard.jpg')}
           imageStyle={styles.headerImage}
           style={styles.header}
         >
-          <View style={styles.headerOverlay} />
+          <LinearGradient
+            colors={['rgba(5,5,5,0.78)', 'rgba(22,8,8,0.58)', 'rgba(5,5,5,0.78)']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.headerOverlay}
+          />
+          <View style={styles.headerAccentLine} />
           <View style={styles.headerTop}>
             <View style={styles.headerCopy}>
               <Text style={styles.headerEyebrow}>BORROWBACK</Text>
@@ -170,7 +192,7 @@ const DashboardScreen = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.headerFooter}>
-            <Ionicons name="heart" size={13} color="#f1d69a" />
+            <Ionicons name="heart" size={13} color={theme.colors.secondary} />
             <Text style={styles.headerFooterText}>Borrow what you need. Lend what you can.</Text>
           </View>
         </ImageBackground>
@@ -178,7 +200,7 @@ const DashboardScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your activity</Text>
           <View style={styles.statsGrid}>
-            {renderStatCard('Items Listed', stats.itemsListed, 'list-circle-outline', '#557c91')}
+            {renderStatCard('Items Listed', stats.itemsListed, 'list-circle-outline', theme.colors.secondary)}
             {renderStatCard('Active Borrows', stats.activeBorrows, 'swap-horizontal-outline', theme.colors.success)}
             {renderStatCard('Pending', stats.pendingRequests, 'time-outline', theme.colors.accent)}
             {renderStatCard('Alerts', stats.unreadAlerts, 'alert-circle-outline', theme.colors.error)}
@@ -220,7 +242,8 @@ const DashboardScreen = () => {
           )}
         </View>
         <View style={{ height: 40 }} />
-      </ScrollView>
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -228,27 +251,57 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: 'transparent',
+  },
+  ambientBackground: {
+    flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  ambientImage: {
+    opacity: 0.55,
+  },
+  ambientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  ambientGrid: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  ambientGridLine: {
+    height: '100%',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: 'rgba(255,255,255,0.08)',
   },
   container: {
     flex: 1,
   },
   header: {
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    minHeight: 174,
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 22,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,73,62,0.28)',
     ...theme.shadows.card,
   },
   headerImage: {
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(20, 21, 18, 0.72)',
+  },
+  headerAccentLine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: theme.colors.secondary,
   },
   headerTop: {
     flexDirection: 'row',
@@ -280,7 +333,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(25, 26, 22, 0.78)',
+    backgroundColor: 'rgba(5, 5, 5, 0.8)',
     borderRadius: theme.borderRadius.full,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 6,
@@ -298,14 +351,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(25, 26, 22, 0.78)',
+    backgroundColor: 'rgba(5, 5, 5, 0.8)',
     position: 'relative',
   },
   badge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#e11d48',
+    backgroundColor: theme.colors.error,
     borderRadius: 10,
     minWidth: 18,
     height: 18,
@@ -349,12 +402,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(17,17,17,0.88)',
     borderRadius: theme.borderRadius.lg,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: '#303030',
     ...theme.shadows.card,
   },
   statIconContainer: {
@@ -388,7 +441,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 20,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(17,17,17,0.88)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -404,7 +457,7 @@ const styles = StyleSheet.create({
   },
   recentItemCard: {
     width: 160,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(17,17,17,0.88)',
     borderRadius: theme.borderRadius.lg,
     marginRight: 16,
     overflow: 'hidden',
@@ -421,7 +474,7 @@ const styles = StyleSheet.create({
   recentItemName: {
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.primary,
+    color: theme.colors.text,
     marginBottom: 4,
   },
   recentItemCategory: {

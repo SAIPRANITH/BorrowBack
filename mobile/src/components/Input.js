@@ -10,6 +10,7 @@ const Input = ({
   error,
   icon,
   secureTextEntry,
+  variant = 'default',
   style,
   containerStyle,
   ...props
@@ -22,8 +23,8 @@ const Input = ({
       {label && <Text style={styles.label}>{label}</Text>}
       
       <View style={[
-        styles.inputContainer,
-        isFocused && styles.inputFocused,
+        variant === 'underline' ? styles.underlineInputContainer : styles.inputContainer,
+        variant === 'underline' && isFocused ? styles.underlineInputFocused : isFocused && styles.inputFocused,
         error && styles.inputError
       ]}>
         {icon && (React.isValidElement(icon)
@@ -97,6 +98,19 @@ const styles = StyleSheet.create({
   inputFocused: {
     borderColor: theme.colors.primary,
     backgroundColor: theme.colors.surfaceRaised,
+  },
+  underlineInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: 'transparent',
+    height: 58,
+    paddingHorizontal: 0,
+  },
+  underlineInputFocused: {
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.primary,
   },
   inputError: {
     borderColor: theme.colors.error,

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
-import { Package } from 'lucide-react'
 
 export default function Layout() {
  const location = useLocation()
@@ -27,9 +26,9 @@ export default function Layout() {
  </div>
 
  {/* Global Footer */}
- <footer className="mt-16 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-zinc-500 text-sm pb-8 md:pb-6 max-w-6xl mx-auto w-full">
+ <footer className="site-footer mt-16 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-zinc-500 text-sm pb-8 md:pb-6 max-w-6xl mx-auto w-full">
  <div className="flex items-center gap-2 font-semibold justify-center md:justify-start">
- <Package className="w-4 h-4 text-cyan-400/70" />
+ <img src="/icons/borrowback-mark.svg" alt="" className="w-5 h-5" />
  <span>BorrowBack &copy; 2026</span>
  </div>
  <p className="text-xs">

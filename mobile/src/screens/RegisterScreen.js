@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  ImageBackground,
   View, 
   StyleSheet, 
   KeyboardAvoidingView, 
@@ -8,9 +9,11 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import BorrowBackMark from '../components/BorrowBackMark';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
 
@@ -64,12 +67,27 @@ const RegisterScreen = ({ navigation }) => {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        bounces={false}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <ImageBackground
+        source={require('../../assets/bg-dashboard.jpg')}
+        imageStyle={styles.backgroundImage}
+        style={styles.background}
       >
+        <LinearGradient
+          colors={['rgba(5,5,5,0.55)', 'rgba(8,8,8,0.76)', 'rgba(8,8,8,0.9)']}
+          locations={[0, 0.48, 1]}
+          style={styles.backgroundOverlay}
+        />
+        <View pointerEvents="none" style={styles.backgroundGrid}>
+          <View style={styles.backgroundGridLine} />
+          <View style={styles.backgroundGridLine} />
+          <View style={styles.backgroundGridLine} />
+        </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         {/* Header Section */}
         <View style={styles.header}>
           <TouchableOpacity 
@@ -79,7 +97,7 @@ const RegisterScreen = ({ navigation }) => {
             <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.logoContainer}>
-            <Ionicons name="person-add-outline" size={40} color={theme.colors.primary} />
+            <BorrowBackMark size={42} />
           </View>
           <Text style={styles.appName}>Join BorrowBack</Text>
           <Text style={styles.tagline}>Create your account to get started</Text>
@@ -102,6 +120,7 @@ const RegisterScreen = ({ navigation }) => {
               }}
               autoCapitalize="words"
               icon={<Ionicons name="person-outline" size={20} color="#64748b" />}
+              variant="underline"
             />
             
             <View style={styles.spacer} />
@@ -120,6 +139,7 @@ const RegisterScreen = ({ navigation }) => {
               autoComplete="email"
               textContentType="emailAddress"
               icon={<Ionicons name="mail-outline" size={20} color="#64748b" />}
+              variant="underline"
             />
             
             <View style={styles.spacer} />
@@ -134,6 +154,7 @@ const RegisterScreen = ({ navigation }) => {
               }}
               keyboardType="phone-pad"
               icon={<Ionicons name="call-outline" size={20} color="#64748b" />}
+              variant="underline"
             />
             
             <View style={styles.spacer} />
@@ -148,6 +169,7 @@ const RegisterScreen = ({ navigation }) => {
               }}
               secureTextEntry
               icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
+              variant="underline"
             />
             
             <View style={styles.spacer} />
@@ -162,6 +184,7 @@ const RegisterScreen = ({ navigation }) => {
               }}
               secureTextEntry
               icon={<Ionicons name="lock-closed-outline" size={20} color="#64748b" />}
+              variant="underline"
             />
 
             {(error || validationError) ? (
@@ -189,7 +212,8 @@ const RegisterScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </ImageBackground>
     </KeyboardAvoidingView>
   );
 };
@@ -199,13 +223,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  background: {
+    flex: 1,
+  },
+  backgroundImage: {
+    opacity: 0.55,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  backgroundGrid: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  backgroundGridLine: {
+    height: '100%',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: 'rgba(255,255,255,0.09)',
+  },
   scrollContent: {
     flexGrow: 1,
   },
   header: {
     minHeight: 250,
     paddingVertical: 32,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'rgba(17,17,17,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -238,26 +281,22 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: theme.colors.surface,
+    color: theme.colors.text,
     marginBottom: 8,
     letterSpacing: 0.5,
   },
   tagline: {
     fontSize: 15,
-    color: theme.colors.surface,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   bottomSheet: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    backgroundColor: 'transparent',
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 24,
     minHeight: 480,
-    borderTopWidth: 3,
-    borderColor: theme.colors.paperShade,
   },
   sheetHeader: {
     marginBottom: 24,

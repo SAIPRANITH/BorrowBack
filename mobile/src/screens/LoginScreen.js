@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import BorrowBackMark from '../components/BorrowBackMark';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
 
@@ -50,17 +52,31 @@ const LoginScreen = ({ navigation }) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.background}>
+        <LinearGradient
+          colors={['rgba(255,73,62,0.035)', 'rgba(8,8,8,0.04)', '#080808']}
+          locations={[0, 0.42, 1]}
+          style={styles.backgroundOverlay}
+        />
+        <View pointerEvents="none" style={styles.backgroundGrid}>
+          <View style={styles.backgroundGridLine} />
+          <View style={styles.backgroundGridLine} />
+          <View style={styles.backgroundGridLine} />
+        </View>
+        <View pointerEvents="none" style={styles.backgroundAtmosphere}>
+          <View style={styles.coralGlow} />
+          <View style={styles.coralGlowLower} />
+          <BorrowBackMark size={210} style={styles.backgroundMark} />
+        </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.hero}>
-          <View style={styles.orbTop} />
-          <View style={styles.orbBottom} />
           <View style={styles.brandRow}>
             <View style={styles.logoContainer}>
-              <Ionicons name="repeat" size={27} color="#ffffff" />
+              <BorrowBackMark size={43} />
             </View>
             <Text style={styles.appName}>BorrowBack</Text>
           </View>
@@ -74,7 +90,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.formCard}>
+        <View style={styles.form}>
           <View style={styles.sheetHeader}>
             <Text style={styles.welcomeText}>Welcome back</Text>
             <Text style={styles.subtitleText}>Sign in to pick up where you left off.</Text>
@@ -98,6 +114,7 @@ const LoginScreen = ({ navigation }) => {
             returnKeyType="next"
             accessibilityLabel="Email address"
             icon="mail-outline"
+            variant="underline"
           />
 
           <Input
@@ -119,6 +136,7 @@ const LoginScreen = ({ navigation }) => {
             onSubmitEditing={handleLogin}
             accessibilityLabel="Password"
             icon="lock-closed-outline"
+            variant="underline"
           />
 
           {(validationError || error) ? (
@@ -154,7 +172,8 @@ const LoginScreen = ({ navigation }) => {
           <Ionicons name="people-outline" size={16} color={theme.colors.textSecondary} />
           <Text style={styles.footerText}>Made for sharing, built for campus.</Text>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -164,78 +183,91 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  background: {
+    flex: 1,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  backgroundGrid: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  backgroundAtmosphere: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  coralGlow: {
+    position: 'absolute',
+    top: -160,
+    right: -145,
+    width: 370,
+    height: 370,
+    borderRadius: 185,
+    backgroundColor: 'rgba(255,73,62,0.055)',
+  },
+  coralGlowLower: {
+    position: 'absolute',
+    bottom: 80,
+    left: -180,
+    width: 340,
+    height: 340,
+    borderRadius: 170,
+    backgroundColor: 'rgba(255,73,62,0.035)',
+  },
+  backgroundMark: {
+    position: 'absolute',
+    right: -48,
+    bottom: 112,
+    opacity: 0.075,
+  },
+  backgroundGridLine: {
+    height: '100%',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: 'rgba(255,255,255,0.045)',
+  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 36 : 24,
-    paddingBottom: 24,
+    paddingHorizontal: 28,
+    paddingTop: Platform.OS === 'android' ? 28 : 24,
+    paddingBottom: 30,
   },
   hero: {
-    minHeight: 270,
     justifyContent: 'center',
-    overflow: 'hidden',
-    borderRadius: 28,
-    paddingHorizontal: 25,
-    paddingVertical: 26,
-    marginBottom: 18,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 1,
-    borderColor: `${theme.colors.text}24`,
-  },
-  orbTop: {
-    position: 'absolute',
-    top: -90,
-    right: -50,
-    width: 230,
-    height: 230,
-    borderRadius: 115,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 250, 240, 0.12)',
-  },
-  orbBottom: {
-    position: 'absolute',
-    bottom: -135,
-    left: -85,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingVertical: 12,
+    marginBottom: 30,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 34,
   },
   logoContainer: {
-    width: 43,
-    height: 43,
-    borderRadius: 15,
-    backgroundColor: theme.colors.noticeRed,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 11,
+    marginRight: 14,
   },
   appName: {
     fontSize: 19,
     fontWeight: '800',
     letterSpacing: 0.2,
-    color: theme.colors.surface,
+    color: theme.colors.text,
   },
   heroTitle: {
     fontSize: 32,
     lineHeight: 38,
     fontWeight: '800',
     letterSpacing: -0.7,
-    color: theme.colors.surface,
+    color: theme.colors.text,
     marginBottom: 10,
   },
   tagline: {
     maxWidth: 295,
     fontSize: 14,
     lineHeight: 21,
-    color: theme.colors.surface,
+    color: theme.colors.textSecondary,
   },
   trustRow: {
     flexDirection: 'row',
@@ -244,21 +276,14 @@ const styles = StyleSheet.create({
   },
   trustText: {
     fontSize: 12,
-    color: theme.colors.surface,
+    color: theme.colors.textSecondary,
     fontWeight: '600',
     marginLeft: 7,
   },
-  formCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderBottomWidth: 3,
-    borderBottomColor: theme.colors.paperShade,
-    paddingHorizontal: 21,
-    paddingTop: 23,
-    paddingBottom: 20,
-    ...theme.shadows.card,
+  form: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   sheetHeader: {
     marginBottom: 19,

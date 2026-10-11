@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.surfaceRaised,
     marginBottom: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
@@ -282,12 +282,12 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: theme.typography.sizes.xxl,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.surface,
+    color: theme.colors.text,
     marginBottom: 4,
   },
   emailText: {
     fontSize: theme.typography.sizes.md,
-    color: theme.colors.text,
+    color: theme.colors.textSecondary,
     marginBottom: theme.spacing.sm,
   },
   ratingContainer: {

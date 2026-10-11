@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,6 +27,27 @@ import AdminScreen from '../screens/AdminScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const navigationTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: theme.colors.primary,
+    background: theme.colors.background,
+    card: theme.colors.surface,
+    text: theme.colors.text,
+    border: theme.colors.border,
+    notification: theme.colors.secondary,
+  },
+};
+const stackScreenOptions = {
+  headerStyle: { backgroundColor: theme.colors.surface },
+  headerTintColor: theme.colors.text,
+  headerTitleStyle: {
+    color: theme.colors.text,
+    fontWeight: theme.typography.weights.semibold,
+  },
+  headerShadowVisible: false,
+};
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -42,7 +63,7 @@ const AdminStack = () => (
 );
 
 const HomeStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
+  <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen name="Dashboard" component={DashboardScreen} />
     <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
@@ -51,14 +72,14 @@ const HomeStack = () => (
 );
 
 const BrowseStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
+  <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen name="BrowseItems" component={BrowseScreen} options={{ title: 'Browse' }} />
     <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
   </Stack.Navigator>
 );
 
 const BorrowsStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
+  <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen
       name="Borrows"
       component={BorrowsScreen}
@@ -69,14 +90,14 @@ const BorrowsStack = () => (
 );
 
 const LoansStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
+  <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} options={{ title: 'Loans' }} />
     <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestScreen} options={{ title: 'Request a Loan' }} />
   </Stack.Navigator>
 );
 
 const ProfileStack = () => (
-  <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
+  <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: 'Account' }} />
     <Stack.Screen name="MyItemsList" component={MyItemsScreen} options={{ title: 'My Items' }} />
     <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add Item' }} />
@@ -121,7 +142,7 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       {token ? (
         user?.role === 'admin' ? <AdminStack /> : <MainTabs />
       ) : (
@@ -135,11 +156,11 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: '#292929',
     elevation: 8,
-    shadowColor: '#0f172a',
+    shadowColor: theme.colors.secondary,
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     height: 68,
     paddingBottom: 10,

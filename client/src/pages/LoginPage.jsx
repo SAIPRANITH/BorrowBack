@@ -80,7 +80,7 @@ export default function LoginPage() {
  {/* Logo & Header */}
  <div className="text-center mb-8 relative">
  <div className="auth-logo-mark inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 relative group">
- <img src="/icons/arrow-repeat.svg" alt="" className="w-8 h-8 brightness-0 invert relative z-10" />
+ <img src="/icons/borrowback-mark.svg" alt="" className="w-9 h-9 relative z-10" />
  <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
  </div>
  

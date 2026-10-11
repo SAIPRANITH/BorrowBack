@@ -86,7 +86,7 @@ export default function RegisterPage() {
  {/* Brand Header */}
  <div className="flex items-center gap-3 animate-scale-in">
  <div className="auth-logo-mark w-12 h-12 rounded-2xl flex items-center justify-center border border-white/20 ">
- <Package className="w-6 h-6 text-white animate-bounce-soft" />
+ <img src="/icons/borrowback-mark.svg" alt="" className="w-8 h-8" />
  </div>
  <div>
  <span className="text-2xl font-black tracking-tight text-gradient text-glow-cyan">BorrowBack</span>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
  <div className="lg:hidden text-center mb-8">
  <div className="inline-flex items-center gap-3 mb-2">
  <div className="auth-logo-mark w-11 h-11 rounded-2xl flex items-center justify-center">
- <Package className="w-6 h-6 text-white animate-bounce-soft" />
+ <img src="/icons/borrowback-mark.svg" alt="" className="w-8 h-8" />
  </div>
  <span className="text-2xl font-black text-gradient text-glow-cyan">BorrowBack</span>
  </div>

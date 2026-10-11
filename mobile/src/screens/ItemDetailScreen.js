@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   },
   ownerBannerText: {
     marginLeft: theme.spacing.sm,
-    color: theme.colors.primary,
+    color: theme.colors.textSecondary,
     fontWeight: theme.typography.weights.medium,
   },
   toggleButton: {

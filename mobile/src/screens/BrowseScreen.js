@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import EmptyState from '../components/EmptyState';
 import { theme } from '../theme';
@@ -32,7 +33,7 @@ const CATEGORIES = [
 ];
 
 const categoryColors = {
-  electronics: '#557c91',
+  electronics: theme.colors.secondary,
   books: theme.colors.success,
   sports: theme.colors.accent,
   kitchen: theme.colors.error,
@@ -183,13 +184,34 @@ const BrowseScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ImageBackground
+        source={require('../../assets/bg-browse.jpg')}
+        imageStyle={styles.ambientImage}
+        style={styles.ambientBackground}
+      >
+        <LinearGradient
+          colors={['rgba(5,5,5,0.42)', 'rgba(8,8,8,0.76)', 'rgba(8,8,8,0.92)']}
+          locations={[0, 0.48, 1]}
+          style={styles.ambientOverlay}
+        />
+        <View pointerEvents="none" style={styles.ambientGrid}>
+          <View style={styles.ambientGridLine} />
+          <View style={styles.ambientGridLine} />
+          <View style={styles.ambientGridLine} />
+        </View>
       <View style={styles.container}>
         <ImageBackground
           source={require('../../assets/bg-browse.jpg')}
           imageStyle={styles.headerImage}
           style={styles.header}
         >
-          <View style={styles.headerOverlay} />
+          <LinearGradient
+            colors={['rgba(5,5,5,0.8)', 'rgba(22,8,8,0.6)', 'rgba(5,5,5,0.78)']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.headerOverlay}
+          />
+          <View style={styles.headerAccentLine} />
           <View style={styles.headerIntro}>
             <View>
               <Text style={styles.headerEyebrow}>THE CAMPUS EXCHANGE</Text>
@@ -261,6 +283,7 @@ const BrowseScreen = () => {
           />
         )}
       </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -268,24 +291,54 @@ const BrowseScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
+  },
+  ambientBackground: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  ambientImage: {
+    opacity: 0.55,
+  },
+  ambientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  ambientGrid: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  ambientGridLine: {
+    height: '100%',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: 'rgba(255,255,255,0.08)',
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   header: {
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.lg,
     paddingBottom: 12,
+    minHeight: 174,
     overflow: 'hidden',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,73,62,0.38)',
   },
   headerImage: {
     opacity: 0.9,
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(20, 21, 18, 0.72)',
+  },
+  headerAccentLine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: theme.colors.secondary,
   },
   headerIntro: {
     flexDirection: 'row',
@@ -308,7 +361,7 @@ const styles = StyleSheet.create({
   resultPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(25, 26, 22, 0.75)',
+    backgroundColor: 'rgba(5, 5, 5, 0.82)',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 7,
     borderRadius: theme.borderRadius.full,
@@ -336,12 +389,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     fontSize: theme.typography.sizes.md,
-    color: theme.colors.primary,
+    color: theme.colors.text,
   },
   categoriesWrapper: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(17,17,17,0.88)',
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: '#292929',
     paddingBottom: 12,
   },
   categoriesContent: {
@@ -383,7 +436,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(17,17,17,0.88)',
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
     borderWidth: 1,
@@ -483,7 +536,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: theme.typography.sizes.lg,
     fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.primary,
+    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
   },
   emptySubtitle: {
