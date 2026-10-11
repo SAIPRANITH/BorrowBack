@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import api from '../api/api'
@@ -27,30 +27,61 @@ export default function ItemDetail() {
  const [item, setItem] = useState(null)
  const [pendingRequest, setPendingRequest] = useState(null)
  const [loading, setLoading] = useState(true)
+ const [loadError, setLoadError] = useState('')
+ const [reloadKey, setReloadKey] = useState(0)
  const [dueDate, setDueDate] = useState('')
  const [msg, setMsg] = useState({ type: '', text: '' })
  const [submitting, setSubmitting] = useState(false)
  const [paymentModal, setPaymentModal] = useState(false)
 
  useEffect(() => {
+ let active = true
+ setItem(null)
  setPendingRequest(null)
+ setDueDate('')
+ setLoading(true)
+ setLoadError('')
+ setMsg({ type: '', text: '' })
  api
  .get(`/items/${id}`)
  .then((r) => {
+ if (!active) return
  if (r.data.success) setItem(r.data.item)
+ else setLoadError('This item may have been removed or is no longer listed.')
  })
- .catch(() => {})
- .finally(() => setLoading(false))
+ .catch((err) => {
+ if (!active) return
+ console.error('Failed to load item details:', err)
+ setLoadError(
+ err.response?.status === 404
+ ? 'This item may have been removed or is no longer listed.'
+ : err.response?.data?.message || 'Could not load item details. Please try again.'
+ )
+ })
+ .finally(() => {
+ if (active) setLoading(false)
+ })
  api.get('/borrows/mine')
  .then((r) => {
+ if (!active) return
  const existing = (r.data.borrows || []).find(
  (borrow) => borrow.item?._id === id && borrow.status === 'pending'
  )
  setPendingRequest(existing || null)
  if (existing?.dueDate) setDueDate(new Date(existing.dueDate).toISOString().slice(0, 10))
  })
- .catch(() => {})
- }, [id])
+ .catch((err) => {
+ if (!active) return
+ console.error('Failed to load the current borrow request:', err)
+ setMsg({
+ type: 'error',
+ text: err.response?.data?.message || 'Could not load your current borrow request.'
+ })
+ })
+ return () => {
+ active = false
+ }
+ }, [id, reloadKey])
 
  const handleBorrow = async (e) => {
  e.preventDefault()
@@ -90,7 +121,13 @@ export default function ItemDetail() {
  try {
  await api.delete(`/items/${id}`)
  navigate('/my-items')
- } catch {}
+ } catch (err) {
+ console.error('Failed to delete item:', err)
+ setMsg({
+ type: 'error',
+ text: err.response?.data?.message || 'Failed to delete item. Please try again.'
+ })
+ }
  }
 
  if (loading) {
@@ -107,10 +144,22 @@ export default function ItemDetail() {
  <div className=" mb-4">
  <Package className="w-16 h-16 text-zinc-600 mx-auto " />
  </div>
- <h2 className="text-xl font-bold text-zinc-100 text-glow-blue">Item Not Found</h2>
- <p className="text-xs text-zinc-400 mt-2 mb-6">
- This item may have been removed or is no longer listed.
- </p>
+ <h2 className="text-xl font-bold text-zinc-100 text-glow-blue">
+ {loadError && !loadError.startsWith('This item may have been removed')
+ ? 'Unable to Load Item'
+ : 'Item Not Found'}
+ </h2>
+ <p className="text-xs text-zinc-400 mt-2 mb-6">
+ {loadError || 'This item may have been removed or is no longer listed.'}
+ </p>
+ {loadError && !loadError.startsWith('This item may have been removed') && (
+ <button
+ onClick={() => setReloadKey((current) => current + 1)}
+ className="btn-outline text-xs py-2.5 px-5 rounded-xl mr-2"
+ >
+ Try Again
+ </button>
+ )}
  <button
  onClick={() => navigate('/browse')}
  className="btn-primary text-xs py-2.5 px-5 rounded-xl animate-border-glow"

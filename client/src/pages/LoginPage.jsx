@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { Mail, Lock, ArrowRight, Loader2, Fingerprint, ShieldCheck, Download } from 'lucide-react'
@@ -196,7 +196,7 @@ export default function LoginPage() {
 
  {/* Footer */}
  <div className="mt-8 text-center text-sm font-medium text-zinc-400 relative">
- Don't have an account?{' '}
+ Don&apos;t have an account?{' '}
  <Link to="/register" className="text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline">
  Join the network
  </Link>

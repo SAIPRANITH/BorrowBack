@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api/api'
 import { 
@@ -368,7 +368,7 @@ export default function MyItems() {
           </div>
           <p className="text-zinc-200 text-lg font-bold text-glow-blue">No items listed yet</p>
           <p className="text-zinc-500 text-sm mt-1 max-w-sm mx-auto">
-            Share items you don't use every day and help fellow students while keeping track of deposits.
+            Share items you don&apos;t use every day and help fellow students while keeping track of deposits.
           </p>
           <button 
             onClick={() => setShowForm(true)}

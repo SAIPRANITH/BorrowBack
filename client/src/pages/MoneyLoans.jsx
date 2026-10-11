@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Link } from 'react-router-dom'
 
@@ -388,7 +388,7 @@ export default function MoneyLoans() {
 
  <FileText className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0 mt-0.5" />
 
- <span>"{loan.note}"</span>
+ <span>&quot;{loan.note}&quot;</span>
 
  </div>
 
@@ -895,7 +895,7 @@ export default function MoneyLoans() {
 
  <p className="text-zinc-500 text-sm max-w-sm mx-auto">
 
- You haven't funded any loans yet. Peer loans you accept will be tracked here.
+ You haven&apos;t funded any loans yet. Peer loans you accept will be tracked here.
 
  </p>
 

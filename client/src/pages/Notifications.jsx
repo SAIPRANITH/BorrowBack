@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import api from '../api/api'
 
@@ -39,10 +39,13 @@ export default function Notifications() {
  const [loading, setLoading] = useState(true)
 
  const [filter, setFilter] = useState('all')
+ const [error, setError] = useState('')
 
 
 
  const load = async () => {
+
+ setError('')
 
  try {
 
@@ -50,10 +53,17 @@ export default function Notifications() {
 
  if (r.data.success) setNotifs(r.data.notifications)
 
- } catch {}
+ } catch (err) {
+
+ console.error('Failed to load notifications:', err)
+
+ setError(err.response?.data?.message || 'Could not load notifications. Please try again.')
+
+ } finally {
 
  setLoading(false)
 
+ }
  }
 
 
@@ -74,7 +84,13 @@ export default function Notifications() {
 
  load()
 
- } catch {}
+ } catch (err) {
+
+ console.error('Failed to mark notification as read:', err)
+
+ setError(err.response?.data?.message || 'Could not mark notification as read. Please try again.')
+
+ }
 
  }
 
@@ -88,7 +104,13 @@ export default function Notifications() {
 
  load()
 
- } catch {}
+ } catch (err) {
+
+ console.error('Failed to mark notifications as read:', err)
+
+ setError(err.response?.data?.message || 'Could not mark notifications as read. Please try again.')
+
+ }
 
  }
 
@@ -444,6 +466,16 @@ export default function Notifications() {
  </div>
 
 
+
+ {error && (
+
+ <div role="alert" aria-live="polite" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+
+ {error}
+
+ </div>
+
+ )}
 
  {/* Notifications List */}
 

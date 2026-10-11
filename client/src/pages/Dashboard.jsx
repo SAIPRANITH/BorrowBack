@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
@@ -113,7 +113,7 @@ export default function Dashboard() {
               Welcome back, <span className="text-cyan-300">{user?.name?.split(' ')[0] || 'User'}</span>
             </h1>
             <p className="text-zinc-400 text-sm max-w-lg leading-relaxed">
-              Manage your items, track borrows, and see what's new in the campus community.
+              Manage your items, track borrows, and see what&apos;s new in the campus community.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
