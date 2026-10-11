@@ -25,21 +25,21 @@ export default function Navbar() {
    { name: 'Home', path: '/', icon: LayoutDashboard },
    { name: 'Browse', path: '/browse', icon: Compass },
    { name: 'Borrows', path: '/my-borrows', icon: ArrowRightLeft },
-   { name: 'Loans', path: '/money-loans', icon: Landmark },
    { name: 'My Items', path: '/my-items', icon: Layers },
+   { name: 'Loans', path: '/money-loans', icon: Landmark },
    { name: 'Finances', path: '/fines', icon: Wallet },
  ]
  const mobileLinks = user?.role === 'admin'
   ? links.slice(0, 5)
   : [
-    ...links.slice(0, 4),
+    ...links.slice(0, 5),
     { name: 'Account', path: '/profile', icon: User },
    ]
 
  return (
  <>
  {/* ================= DESKTOP SIDEBAR ================= */}
- <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 bg-[#1b1c18]/95 backdrop-blur-xl border-r border-white/[0.06] z-50 p-5 overflow-y-auto custom-scrollbar">
+ <aside className="site-sidebar hidden md:flex flex-col fixed inset-y-0 left-0 w-64 bg-[#1b1c18]/95 backdrop-blur-xl border-r border-white/[0.06] z-50 p-5 overflow-y-auto custom-scrollbar">
 
  {/* Logo */}
  <Link to="/" className="relative z-10 flex items-center gap-3 mb-10 group shrink-0">
@@ -64,9 +64,9 @@ export default function Navbar() {
  <Link
  key={l.path}
  to={l.path}
- className={`group flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden ${
+ className={`sidebar-link group flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden ${
  active 
- ? 'text-[#ff8a80] bg-[#ff493e]/[0.08] border border-[#ff6258]/20 shadow-sm'
+ ? 'sidebar-link--active text-[#ff8a80] bg-[#ff493e]/[0.08] border border-[#ff6258]/20 shadow-sm'
  : 'text-zinc-400 hover:text-zinc-100 border border-transparent hover:bg-white/[0.04]'
  }`}
  >
@@ -131,7 +131,7 @@ export default function Navbar() {
  </aside>
 
  {/* ================= MOBILE TOP HEADER ================= */}
- <header className="md:hidden fixed top-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
+ <header className="site-mobile-nav md:hidden fixed top-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
  <Link to="/" className="flex items-center gap-2 relative z-10">
  <div className="brand-mark brand-mark--small flex items-center justify-center">
  <img src="/icons/borrowback-mark.svg" alt="" className="w-5 h-5" />
@@ -149,7 +149,7 @@ export default function Navbar() {
  </header>
 
  {/* ================= MOBILE BOTTOM NAV ================= */}
- <div className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 flex items-center justify-around px-1 pb-safe">
+ <div className="site-mobile-nav site-mobile-bottom-nav md:hidden fixed bottom-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 flex items-center justify-around px-1 pb-safe">
  {mobileLinks.map(l => {
  const active = l.path === '/'
   ? loc.pathname === '/'
@@ -160,7 +160,9 @@ export default function Navbar() {
  <Link
  key={l.path}
  to={l.path}
- className={`flex flex-col items-center justify-center w-14 h-full gap-1 transition-colors ${
+ className={`mobile-nav-link flex flex-col items-center justify-center w-14 h-full gap-1 transition-colors ${
+ active ? 'mobile-nav-link--active' : ''
+ } ${
  active ? 'text-[#ff8a80]' : 'text-zinc-500 hover:text-zinc-300'
  }`}
  >

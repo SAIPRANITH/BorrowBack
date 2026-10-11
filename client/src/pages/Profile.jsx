@@ -141,11 +141,7 @@ export default function Profile() {
       {/* Profile Hero Card */}
       <div className="glass-card overflow-hidden rounded-3xl border border-white/5 bg-zinc-900/60 relative">
         {/* Banner */}
-        <div 
-          className="h-52 relative overflow-hidden flex items-start justify-end p-4 bg-cover bg-center"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1400&auto=format&fit=crop")' }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#18181b]/95" />
+        <div className="profile-banner-abstract h-52 relative overflow-hidden flex items-start justify-end p-4">
           
           <div className="relative z-10 flex items-center gap-2 bg-zinc-950/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-xl mt-2 mr-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />

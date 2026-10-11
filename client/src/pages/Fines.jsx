@@ -551,26 +551,7 @@ export default function Fines() {
 
  {/* Hero with background */}
 
- <div className="relative rounded-2xl overflow-hidden animate-card-enter border border-zinc-800/80 shadow-2xl">
-
- <div
-
- className="absolute inset-0 bg-cover bg-center"
-
- style={{
-
- backgroundImage:
-
- 'url(https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&auto=format&fit=crop)'
-
- }}
-
- ></div>
-
- <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/90 to-[#09090b]/70"></div>
-
-
-
+ <div className="bb-feature-hero relative rounded-2xl overflow-hidden animate-card-enter border border-zinc-800/80 shadow-2xl">
  <div className="relative z-10 p-6 sm:p-8 md:p-10">
 
  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-3">

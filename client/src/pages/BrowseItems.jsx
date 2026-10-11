@@ -33,10 +33,7 @@ export default function BrowseItems() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div
-        className="page-hero"
-        style={{ backgroundImage: 'url("/images/item-book.jpg")' }}
-      >
+      <div className="page-hero">
         <div className="page-hero-overlay" />
         <div className="page-hero-content">
           <p className="text-xs font-semibold uppercase tracking-wider text-cyan-200 mb-2">Campus exchange</p>

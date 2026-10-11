@@ -113,14 +113,7 @@ export default function BorrowRequests() {
   </div>
  )}
  {/* Hero Section */}
- <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl animate-card-enter">
- {/* Background image with overlays */}
- <div 
- className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105 "
- style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&auto=format&fit=crop")' }}
- />
- <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/80 via-[#09090b]/40 to-transparent" />
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+ <div className="bb-feature-hero relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl animate-card-enter">
 
  {/* Hero Content */}
  <div className="relative z-10 p-8 md:p-12 lg:p-14">

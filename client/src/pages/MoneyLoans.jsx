@@ -450,23 +450,7 @@ export default function MoneyLoans() {
 
  {/* Hero Section */}
 
- <div className="relative rounded-2xl overflow-hidden animate-card-enter border border-zinc-800/80 shadow-2xl">
-
- <div
-
- className="absolute inset-0 bg-cover bg-center"
-
- style={{
-
- backgroundImage:
-
- 'url(https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1400&auto=format&fit=crop)'
-
- }}
-
- ></div>
-
- <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/80 via-[#09090b]/40 to-transparent"></div>
+ <div className="bb-feature-hero relative rounded-2xl overflow-hidden animate-card-enter border border-zinc-800/80 shadow-2xl">
 
 
 

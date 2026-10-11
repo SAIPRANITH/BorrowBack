@@ -328,34 +328,7 @@ export default function Notifications() {
 
  {/* Hero Section with Campus Background & Dark Overlay */}
 
- <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-
- {/* Background photo */}
-
- <div
-
- className="absolute inset-0 bg-cover bg-center"
-
- style={{
-
- backgroundImage:
-
- "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&auto=format&fit=crop')"
-
- }}
-
- />
-
-
-
- {/* Dark overlays */}
-
- <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/80" />
-
- <div className="absolute inset-0 bg-indigo-950/30 backdrop-blur-sm" />
-
-
-
+ <div className="bb-feature-hero relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
  {/* Hero Content */}
 
  <div className="relative z-10 p-6 sm:p-8">

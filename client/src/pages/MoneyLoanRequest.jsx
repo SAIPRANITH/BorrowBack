@@ -119,15 +119,7 @@ export default function MoneyLoanRequest() {
  </button>
 
  {/* Hero with background */}
- <div className="relative rounded-2xl overflow-hidden animate-fade-in-up border border-zinc-800/80 shadow-2xl">
- <div
- className="absolute inset-0 bg-cover bg-center"
- style={{
- backgroundImage:
- 'url(https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1400&auto=format&fit=crop)'
- }}
- ></div>
- <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/90 to-[#09090b]/75"></div>
+ <div className="bb-feature-hero relative rounded-2xl overflow-hidden animate-fade-in-up border border-zinc-800/80 shadow-2xl">
 
  <div className="relative z-10 p-6 sm:p-8">
  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-3">
