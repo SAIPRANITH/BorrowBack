@@ -455,10 +455,10 @@ textarea:focus-visible,
 
 .auth-register-panel {
   background:
-    radial-gradient(ellipse at 82% 18%, rgba(255, 73, 62, 0.09), transparent 36%),
-    radial-gradient(ellipse at 18% 82%, rgba(255, 73, 62, 0.045), transparent 40%),
+    radial-gradient(ellipse at 82% 18%, rgba(255, 73, 62, 0.12), transparent 36%),
+    radial-gradient(ellipse at 18% 82%, rgba(255, 73, 62, 0.055), transparent 40%),
     repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.018) 280px),
-    linear-gradient(145deg, rgba(17, 18, 17, 0.78), rgba(9, 9, 9, 0.82) 72%);
+    linear-gradient(145deg, #111211, #090909 72%);
   border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -588,39 +588,11 @@ textarea:focus-visible,
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: url("/images/ambient-line-art.svg") no-repeat 72% 50% / min(78vw, 920px) auto;
-  opacity: 0.11;
-  animation: ambient-art-drift 64s ease-in-out infinite alternate;
-}
-
-.ambient-photo-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.ambient-photo {
-  position: absolute;
-  inset: -3%;
-  background-position: center;
-  background-size: cover;
-  opacity: 0.045;
-  filter: grayscale(0.7) sepia(0.42) brightness(0.55) blur(2px);
-  transform: scale(1.035);
-}
-
-.ambient-photo--book {
-  background-image: url("/images/item-book.jpg");
-}
-
-.ambient-photo--camera {
-  background-image: url("/images/item-camera.jpg");
-}
-
-.ambient-photo--electronics {
-  background-image: url("/images/item-arduino.jpg");
+  background:
+    radial-gradient(circle, rgba(255, 112, 101, 0.12) 0 1px, transparent 1.5px) 72% 50% / 64px 64px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.5px) 20% 75% / 92px 92px;
+  opacity: 0.18;
+  animation: ambient-points-drift 64s ease-in-out infinite alternate;
 }
 
 @keyframes ambient-light-drift {
@@ -628,9 +600,9 @@ textarea:focus-visible,
   to { background-position: 0 0, 100% 65%, 0% 0%, 0 0; }
 }
 
-@keyframes ambient-art-drift {
-  from { background-position: 72% 50%; }
-  to { background-position: 68% 48%; }
+@keyframes ambient-points-drift {
+  from { background-position: 72% 50%, 20% 75%; }
+  to { background-position: 68% 48%, 24% 72%; }
 }
 
 .auth-background-art,
@@ -717,10 +689,6 @@ textarea:focus-visible,
     inset 3px 0 0 var(--brand-red),
     0 16px 36px rgba(0, 0, 0, 0.3),
     0 0 42px rgba(255, 73, 62, 0.075);
-  background-image:
-    radial-gradient(ellipse at 78% 48%, rgba(255, 73, 62, 0.2), transparent 42%),
-    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.016) 280px),
-    linear-gradient(110deg, #090909 0%, #100909 58%, #090909 100%) !important;
 }
 
 .classy-app .page-hero::after {
@@ -853,10 +821,6 @@ textarea:focus-visible,
     width: 72vw;
   }
 
-  .ambient-photo {
-    opacity: 0.035;
-    filter: grayscale(0.75) sepia(0.42) brightness(0.5) blur(3px);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

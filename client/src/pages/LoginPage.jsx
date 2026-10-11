@@ -58,13 +58,8 @@ export default function LoginPage() {
  }
  }
 
- return (
+ return (
  <div className="auth-page auth-page--login min-h-screen relative flex items-center justify-center overflow-hidden text-zinc-100">
- <div aria-hidden="true" className="ambient-photo-layer">
- <span className="ambient-photo ambient-photo--book" />
- <span className="ambient-photo ambient-photo--camera" />
- <span className="ambient-photo ambient-photo--electronics" />
- </div>
  <div aria-hidden="true" className="auth-background-art absolute pointer-events-none">
  <div className="auth-background-mark" />
  </div>

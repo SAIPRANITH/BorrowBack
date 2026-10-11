@@ -12,11 +12,6 @@ export default function Layout() {
 
  return (
  <div className="classy-app min-h-screen relative flex flex-col md:flex-row">
- <div aria-hidden="true" className="ambient-photo-layer">
- <span className="ambient-photo ambient-photo--book" />
- <span className="ambient-photo ambient-photo--camera" />
- <span className="ambient-photo ambient-photo--electronics" />
- </div>
  <div aria-hidden="true" className="site-background-art">
  <div className="site-background-mark" />
  </div>

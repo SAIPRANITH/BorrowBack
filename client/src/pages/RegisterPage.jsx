@@ -63,13 +63,8 @@ export default function RegisterPage() {
  }
  ]
 
- return (
+ return (
  <div className="auth-page auth-page--register min-h-screen flex text-zinc-100 selection:bg-blue-500/30 selection:text-white">
- <div aria-hidden="true" className="ambient-photo-layer">
- <span className="ambient-photo ambient-photo--book" />
- <span className="ambient-photo ambient-photo--camera" />
- <span className="ambient-photo ambient-photo--electronics" />
- </div>
  <div aria-hidden="true" className="site-background-art">
  <div className="site-background-mark" />
  </div>
