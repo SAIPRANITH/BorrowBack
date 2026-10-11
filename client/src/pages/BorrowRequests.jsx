@@ -154,6 +154,15 @@ export default function BorrowRequests() {
  </div>
  </div>
 
+ <nav aria-label="Borrowing sections" className="mb-6 flex flex-wrap gap-2">
+ <Link to="/my-borrows" className="rounded-xl border border-white/10 bg-zinc-900/60 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-white">
+ My Borrows
+ </Link>
+ <Link to="/requests" aria-current="page" className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+ Requests to Approve
+ </Link>
+ </nav>
+
  {/* Main Content */}
  {requests.length === 0 && active.length === 0 ? (
  <div className="glass-card hover:animate-border-glow text-center py-20 px-6 animate-scale-in border border-white/5 rounded-2xl">

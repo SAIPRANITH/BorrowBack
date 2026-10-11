@@ -149,7 +149,29 @@ export default function ProfileScreen() {
 
         {/* Actions Section */}
         <View style={styles.actionsContainer}>
-          <Text style={styles.actionsHeader}>Account</Text>
+          <Text style={styles.actionsHeader}>Shortcuts</Text>
+
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => navigation.navigate('MyItemsList')}
+          >
+            <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.secondary}15` }]}>
+              <Ionicons name="cube-outline" size={22} color={theme.colors.secondary} />
+            </View>
+            <Text style={styles.actionItemText}>My Items</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => navigation.navigate('Borrows')}
+          >
+            <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.accent}15` }]}>
+              <Ionicons name="hand-left-outline" size={22} color={theme.colors.accent} />
+            </View>
+            <Text style={styles.actionItemText}>Borrow Activity</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.actionItem} 
@@ -158,13 +180,13 @@ export default function ProfileScreen() {
             <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.primary}15` }]}>
               <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
             </View>
-            <Text style={styles.actionItemText}>My Finances</Text>
+            <Text style={styles.actionItemText}>Finances</Text>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.actionItem} 
-            onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
+            onPress={() => navigation.navigate('Loans', { screen: 'MoneyLoans' })}
           >
             <View style={[styles.actionIconBg, { backgroundColor: `${theme.colors.success}15` }]}>
               <Ionicons name="cash-outline" size={22} color={theme.colors.success} />

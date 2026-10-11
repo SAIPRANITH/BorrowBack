@@ -244,6 +244,11 @@ const MoneyLoansScreen = () => {
         </View>
 
         <View style={styles.actionContainer}>
+          {item.status === 'pending' && (
+            <Text style={styles.waitingText}>
+              Request sent — no payment is due yet. Payment actions appear here after approval and fund confirmation.
+            </Text>
+          )}
           {['active', 'overdue'].includes(item.status) && (
             <>
               <Text style={styles.paymentHint}>

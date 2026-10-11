@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import api from '../api/api'
 import {
  IndianRupee,
@@ -20,6 +20,7 @@ import {
 export default function MoneyLoanRequest() {
  const navigate = useNavigate()
  const [lenders, setLenders] = useState([])
+ const [pendingLoans, setPendingLoans] = useState([])
  const [form, setForm] = useState({
  lenderId: '',
  amount: '',
@@ -33,14 +34,21 @@ export default function MoneyLoanRequest() {
  const [error, setError] = useState('')
 
  useEffect(() => {
- api
- .get('/money-loans/lenders')
- .then(r => {
- if (r.data.success) setLenders(r.data.lenders)
- })
- .catch(() => {})
- .finally(() => setLoading(false))
- }, [])
+ Promise.all([
+ api.get('/money-loans/lenders'),
+ api.get('/money-loans/mine')
+ ])
+ .then(([lendersResponse, loansResponse]) => {
+ if (lendersResponse.data.success) setLenders(lendersResponse.data.lenders || [])
+ if (loansResponse.data.success) {
+ setPendingLoans((loansResponse.data.loans || []).filter(loan => loan.status === 'pending'))
+ }
+ })
+ .catch((loadError) => {
+ setError(loadError.response?.data?.message || 'Could not load lenders or your pending loan requests.')
+ })
+ .finally(() => setLoading(false))
+ }, [])
 
  const principal = Number(form.amount || 0)
  const interestRate = Number(form.interestRate || 0)
@@ -48,13 +56,33 @@ export default function MoneyLoanRequest() {
  const total = principal + interestAmount
 
  const selectedLender = lenders.find(l => l._id === form.lenderId)
+ const pendingLoan = pendingLoans.find(loan => loan.lender?._id === form.lenderId)
+
+ const selectLender = (lenderId) => {
+ const existing = pendingLoans.find(loan => loan.lender?._id === lenderId)
+ setForm(existing ? {
+ lenderId,
+ amount: String(existing.amount),
+ interestRate: String(existing.interestRate ?? 0),
+ dueDate: existing.dueDate?.slice(0, 10) || '',
+ purpose: existing.purpose || '',
+ note: existing.note || ''
+ } : {
+ lenderId,
+ amount: '',
+ interestRate: '0',
+ dueDate: '',
+ purpose: '',
+ note: ''
+ })
+ }
 
  const handleSubmit = async (e) => {
  e.preventDefault()
  setError('')
  setSubmitting(true)
  try {
- await api.post('/money-loans', {
+ const response = await api.post('/money-loans', {
  lenderId: form.lenderId,
  amount: Number(form.amount),
  interestRate: Number(form.interestRate),
@@ -62,7 +90,8 @@ export default function MoneyLoanRequest() {
  purpose: form.purpose,
  note: form.note
  })
- navigate('/money-loans')
+ window.alert(response.data.message || 'Loan request submitted and is waiting for lender approval.')
+ navigate('/money-loans')
  } catch (err) {
  setError(err.response?.data?.message || 'Failed to create request')
  }
@@ -109,7 +138,7 @@ export default function MoneyLoanRequest() {
  Request a <span className="text-gradient">Peer Loan</span>
  </h1>
  <p className="text-zinc-400 text-sm mt-2 max-w-lg leading-relaxed">
- Borrow directly from verified community lenders with agreed interest rates, transparent payback schedules, and zero hidden costs.
+ Ask a campus member for a loan. Agree on the amount, interest rate, and repayment date together.
  </p>
  </div>
  </div>
@@ -133,7 +162,7 @@ export default function MoneyLoanRequest() {
  required
  className="w-full bg-zinc-900/50 border border-white/10 rounded-xl text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none p-3"
  value={form.lenderId}
- onChange={e => setForm({ ...form, lenderId: e.target.value })}
+ onChange={e => selectLender(e.target.value)}
  >
  <option value="">Choose a lender...</option>
  {lenders.map(l => (
@@ -154,6 +183,11 @@ export default function MoneyLoanRequest() {
  </span>
  </div>
  )}
+ {pendingLoan && (
+ <div className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+ You already have a pending request with this lender. Update the terms below and resubmit to update that request.
+ </div>
+ )}
  </div>
 
  {/* Amount & Interest Rate */}
@@ -273,7 +307,13 @@ export default function MoneyLoanRequest() {
  )}
 
  {/* Submit Button */}
- <button
+ <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-500/15 bg-cyan-500/[0.05] px-4 py-3 text-xs text-zinc-300">
+ <span>No payment is due with a request. Once the loan is active, record repayment from your loan card.</span>
+ <Link to="/money-loans" className="shrink-0 font-semibold text-cyan-300 hover:text-cyan-200">
+ Track loan payments
+ </Link>
+ </div>
+ <button
  type="submit"
  disabled={submitting}
  className="btn-primary w-full flex justify-center items-center gap-2 py-3 text-sm font-bold shadow-lg shadow-indigo-600/30"
@@ -282,7 +322,7 @@ export default function MoneyLoanRequest() {
  <Loader className="w-5 h-5 animate-spin" />
  ) : (
  <>
- <Send className="w-4 h-4" /> Send Loan Request
+ <Send className="w-4 h-4" /> {pendingLoan ? 'Update Loan Request' : 'Send Loan Request'}
  </>
  )}
  </button>

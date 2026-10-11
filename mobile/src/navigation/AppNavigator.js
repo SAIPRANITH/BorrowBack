@@ -57,24 +57,30 @@ const BrowseStack = () => (
   </Stack.Navigator>
 );
 
-const ItemsStack = () => (
+const BorrowsStack = () => (
   <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
-    <Stack.Screen name="MyItemsList" component={MyItemsScreen} options={{ title: 'My Items' }} />
-    <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add Item' }} />
+    <Stack.Screen
+      name="Borrows"
+      component={BorrowsScreen}
+      initialParams={{ initialTab: 'REQUESTS' }}
+      options={{ title: 'Borrows' }}
+    />
   </Stack.Navigator>
 );
 
-const ActivityStack = () => (
+const LoansStack = () => (
   <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
-    <Stack.Screen name="Borrows" component={BorrowsScreen} options={{ title: 'Activity' }} />
-    <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} options={{ title: 'Peer Loans' }} />
+    <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} options={{ title: 'Loans' }} />
     <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestScreen} options={{ title: 'Request a Loan' }} />
   </Stack.Navigator>
 );
 
 const ProfileStack = () => (
   <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: theme.colors.surface }, headerTintColor: theme.colors.text }}>
-    <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: 'Profile' }} />
+    <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: 'Account' }} />
+    <Stack.Screen name="MyItemsList" component={MyItemsScreen} options={{ title: 'My Items' }} />
+    <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add Item' }} />
+    <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notifications' }} />
   </Stack.Navigator>
 );
 
@@ -87,8 +93,8 @@ const MainTabs = () => (
 
         if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
         else if (route.name === 'Browse') iconName = focused ? 'search' : 'search-outline';
-        else if (route.name === 'MyItems') iconName = focused ? 'cube' : 'cube-outline';
-        else if (route.name === 'Activity') iconName = focused ? 'repeat' : 'repeat-outline';
+        else if (route.name === 'Borrows') iconName = focused ? 'hand-left' : 'hand-left-outline';
+        else if (route.name === 'Loans') iconName = focused ? 'cash' : 'cash-outline';
         else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
 
         return <Ionicons name={iconName} size={size} color={color} />;
@@ -101,9 +107,9 @@ const MainTabs = () => (
   >
     <Tab.Screen name="Home" component={HomeStack} />
     <Tab.Screen name="Browse" component={BrowseStack} />
-    <Tab.Screen name="MyItems" component={ItemsStack} options={{ title: 'Items' }} />
-    <Tab.Screen name="Activity" component={ActivityStack} />
-    <Tab.Screen name="Profile" component={ProfileStack} />
+    <Tab.Screen name="Borrows" component={BorrowsStack} />
+    <Tab.Screen name="Loans" component={LoansStack} />
+    <Tab.Screen name="Profile" component={ProfileStack} options={{ title: 'Account' }} />
   </Tab.Navigator>
 );
 

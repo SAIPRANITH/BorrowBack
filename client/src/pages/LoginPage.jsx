@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
-import { Mail, Lock, ArrowRight, Loader2, Package, Fingerprint, ShieldCheck, Sparkles, Download } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Loader2, Package, Fingerprint, ShieldCheck, Download } from 'lucide-react'
 
 export default function LoginPage() {
  const { login, user } = useContext(AuthContext)
@@ -10,8 +10,6 @@ export default function LoginPage() {
  
  const [email, setEmail] = useState('')
  const [password, setPassword] = useState('')
- const [emailEditable, setEmailEditable] = useState(false)
- const [passwordEditable, setPasswordEditable] = useState(false)
  const [error, setError] = useState(
  location.state?.reason === 'inactivity'
  ? 'You were signed out after 5 minutes of inactivity. Please sign in again.'
@@ -84,34 +82,23 @@ export default function LoginPage() {
  {/* Left Side: Info */}
  <div className="flex-1 text-center lg:text-left space-y-6 animate-fade-in-up">
  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-semibold backdrop-blur-md">
- <Sparkles className="w-4 h-4" /> Next-Gen Campus Network
+ Borrowing and lending on campus
  </div>
  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
- Borrow smarter, <br />
+ Borrow what you need. <br />
  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
- live better.
+ Lend what you can.
  </span>
  </h1>
  <p className="text-zinc-400 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
- BorrowBack is the ultimate smart campus borrowing, return, and lost-and-found management system. Securely share items, request short-term funds, and track everything seamlessly.
+ Find items listed by other members, request to borrow, and keep track of returns, deposits, and loan repayments.
  </p>
  
- <div className="pt-6 hidden lg:flex items-center gap-8">
- <div className="space-y-1">
- <div className="text-3xl font-bold text-white">10k+</div>
- <div className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Active Users</div>
- </div>
- <div className="w-px h-12 bg-white/10"></div>
- <div className="space-y-1">
- <div className="text-3xl font-bold text-white">15k+</div>
- <div className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Items Shared</div>
- </div>
- <div className="w-px h-12 bg-white/10"></div>
- <div className="space-y-1">
- <div className="text-3xl font-bold text-white">Zero</div>
- <div className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Lost Items</div>
- </div>
- </div>
+ <div className="pt-6 hidden lg:grid grid-cols-3 gap-5 border-t border-white/10">
+ <p className="text-sm text-zinc-300">Browse items<br /><span className="text-xs text-zinc-500">See what others have listed.</span></p>
+ <p className="text-sm text-zinc-300">Track returns<br /><span className="text-xs text-zinc-500">Keep due dates and status together.</span></p>
+ <p className="text-sm text-zinc-300">Record payments<br /><span className="text-xs text-zinc-500">Confirm them with the other person.</span></p>
+ </div>
  </div>
 
  {/* Right Side: Login Card */}
@@ -148,7 +135,7 @@ export default function LoginPage() {
  )}
 
  {/* Form */}
- <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5 relative">
+ <form onSubmit={handleSubmit} autoComplete="on" className="space-y-5 relative">
  <div className="space-y-1.5">
  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">
  Campus Email
@@ -159,10 +146,10 @@ export default function LoginPage() {
  </div>
  <input
  type="email"
- name="borrowback-login-email"
- autoComplete="new-password"
- readOnly={!emailEditable}
- onFocus={() => setEmailEditable(true)}
+ name="email"
+ autoComplete="username"
+ autoCapitalize="none"
+ spellCheck="false"
  required
  className="w-full pl-12 pr-4 py-3.5 bg-[#0a0a0e]/50 border border-white/5 group- rounded-xl text-white text-[15px] focus:border-cyan-500/50 focus:bg-[#0a0a0e]/80 focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none shadow-inner"
  placeholder="name@university.edu"
@@ -177,8 +164,8 @@ export default function LoginPage() {
  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500">
  Password
  </label>
- <span className="text-[11px] text-cyan-500 hover:text-cyan-400 cursor-pointer font-medium transition-colors">
- Forgot?
+ <span className="text-[11px] text-zinc-500 font-medium">
+ Need help? Contact your campus administrator.
  </span>
  </div>
  <div className="relative group">
@@ -187,10 +174,8 @@ export default function LoginPage() {
  </div>
  <input
  type="password"
- name="borrowback-login-password"
- autoComplete="new-password"
- readOnly={!passwordEditable}
- onFocus={() => setPasswordEditable(true)}
+ name="password"
+ autoComplete="current-password"
  required
  className="w-full pl-12 pr-4 py-3.5 bg-[#0a0a0e]/50 border border-white/5 group- rounded-xl text-white text-[15px] focus:border-cyan-500/50 focus:bg-[#0a0a0e]/80 focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none shadow-inner"
  placeholder="••••••••"

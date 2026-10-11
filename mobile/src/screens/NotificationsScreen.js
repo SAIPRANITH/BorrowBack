@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../api/api';
 import { theme } from '../theme';
 import EmptyState from '../components/EmptyState';
@@ -41,21 +42,24 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await api.get('/notifications');
       setNotifications(response.data.notifications || []);
     } catch (error) {
       console.error('Failed to fetch notifications', error);
+      Alert.alert('Error', error.response?.data?.message || 'Could not load notifications. Pull down to try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications();
+    }, [fetchNotifications])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -70,6 +74,7 @@ export default function NotificationsScreen() {
       );
     } catch (error) {
       console.error('Failed to mark notification as read', error);
+      Alert.alert('Error', error.response?.data?.message || 'Could not mark notification as read');
     }
   };
 

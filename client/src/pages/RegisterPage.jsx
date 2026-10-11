@@ -12,7 +12,6 @@ import {
  ArrowRight,
  ShieldCheck,
  CheckCircle2,
- Sparkles,
  Zap,
  Repeat
 } from 'lucide-react'
@@ -49,18 +48,18 @@ export default function RegisterPage() {
  const perks = [
  {
  icon: Zap,
- title: 'Instant Borrowing',
- desc: 'Browse hundreds of available items listed by students on your campus.'
+ title: 'Browse listed items',
+ desc: 'See what other members have available and send a borrow request.'
  },
  {
  icon: ShieldCheck,
- title: 'Protected Deposits',
- desc: 'Automated escrow, secure return verification, and penalty management.'
+ title: 'Track deposits and returns',
+ desc: 'Record deposit payments and confirm them with the item owner.'
  },
  {
  icon: Repeat,
- title: 'Peer Financing',
- desc: 'Transparent money lending with agreed interest rates and return schedules.'
+ title: 'Request or lend money',
+ desc: 'Agree on the amount, interest rate, and repayment date with the other person.'
  }
  ]
 
@@ -99,18 +98,17 @@ export default function RegisterPage() {
  {/* Middle Pitch */}
  <div className="my-auto py-10 max-w-xl animate-scale-in">
  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 animate-pulse-glow">
- <Sparkles className="w-3.5 h-3.5 animate-rotate-in" />
- <span>Join 500+ Campus Members</span>
+ <Package className="w-3.5 h-3.5" />
+ <span>Borrow and lend on campus</span>
  </div>
 
  <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-zinc-100 leading-[1.15] mb-5 text-glow-blue">
- Be Part of the <br />
- <span className="text-gradient">Sharing Economy</span>
+ Borrow what you need. <br />
+ <span className="text-gradient">Lend what you can.</span>
  </h1>
 
  <p className="text-zinc-400 text-base leading-relaxed mb-8">
- Why buy when you can borrow? Set up your verified student account in under two minutes
- to unlock campus gear sharing and secure peer lending.
+ Create an account to browse listings, request items, and manage returns and loan repayments.
  </p>
 
  <div className="space-y-3.5">

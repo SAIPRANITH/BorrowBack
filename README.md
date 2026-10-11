@@ -172,13 +172,18 @@ which any late fine is calculated per overdue day. The owner records sending
 the deposit back, and the borrower acknowledges receipt to complete the return.
 If the owner declines a request after confirming its deposit, the same
 two-party deposit-return steps still apply.
+If the borrower submits another request for the same item while it is still
+pending, BorrowBack updates that request's return date instead of creating a
+duplicate and notifies the owner when the date changes.
 
 For a peer loan, the lender accepts the request, reports sending the funds, and
 the borrower confirms receipt before the loan becomes active. At repayment,
 the borrower reports paying and the lender confirms receipt before the loan is
 marked repaid. Fine payments also require the borrower to report payment and
 the owner to confirm receipt. These confirmation steps are enforced by the API
-and are available in both the website and mobile app.
+and are available in both the website and mobile app. Resubmitting a pending
+loan request to the same lender updates its terms rather than creating a
+duplicate request.
 
 ## Local utility scripts
 

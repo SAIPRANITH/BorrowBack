@@ -226,7 +226,7 @@ export default function FinesScreen() {
 
         <Button
           title="Manage peer loans and repayments"
-          onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
+          onPress={() => navigation.navigate('Loans', { screen: 'MoneyLoans' })}
           style={styles.loanButton}
         />
 
@@ -325,7 +325,7 @@ export default function FinesScreen() {
           <Text style={styles.sectionTitle}>Peer loan ledger</Text>
           <TouchableOpacity
             style={styles.loanTextButton}
-            onPress={() => navigation.navigate('Activity', { screen: 'MoneyLoans' })}
+            onPress={() => navigation.navigate('Loans', { screen: 'MoneyLoans' })}
             accessibilityRole="button"
           >
             <Text style={styles.loanTextButtonLabel}>Manage loans</Text>

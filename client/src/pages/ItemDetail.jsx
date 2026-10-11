@@ -19,26 +19,39 @@ import {
  Info,
  ChevronRight
 } from 'lucide-react'
+import PaymentModal from '../components/PaymentModal'
 
 export default function ItemDetail() {
  const { id } = useParams()
  const { user } = useContext(AuthContext)
  const navigate = useNavigate()
  const [item, setItem] = useState(null)
+ const [pendingRequest, setPendingRequest] = useState(null)
  const [loading, setLoading] = useState(true)
  const [dueDate, setDueDate] = useState('')
  const [msg, setMsg] = useState({ type: '', text: '' })
  const [submitting, setSubmitting] = useState(false)
+ const [paymentModal, setPaymentModal] = useState(false)
 
  useEffect(() => {
- api
- .get(`/items/${id}`)
- .then((r) => {
- if (r.data.success) setItem(r.data.item)
- })
- .catch(() => {})
- .finally(() => setLoading(false))
- }, [id])
+ setPendingRequest(null)
+ api
+ .get(`/items/${id}`)
+ .then((r) => {
+ if (r.data.success) setItem(r.data.item)
+ })
+ .catch(() => {})
+ .finally(() => setLoading(false))
+ api.get('/borrows/mine')
+ .then((r) => {
+ const existing = (r.data.borrows || []).find(
+ (borrow) => borrow.item?._id === id && borrow.status === 'pending'
+ )
+ setPendingRequest(existing || null)
+ if (existing?.dueDate) setDueDate(new Date(existing.dueDate).toISOString().slice(0, 10))
+ })
+ .catch(() => {})
+ }, [id])
 
  const handleBorrow = async (e) => {
  e.preventDefault()
@@ -49,8 +62,12 @@ export default function ItemDetail() {
  setSubmitting(true)
  setMsg({ type: '', text: '' })
  try {
- await api.post('/borrows', { item: item._id, itemId: item._id, dueDate })
- setMsg({ type: 'success', text: 'Borrow request sent successfully! Waiting for owner approval.' })
+ const response = await api.post('/borrows', { item: item._id, itemId: item._id, dueDate })
+ setPendingRequest(response.data.borrow)
+ setMsg({
+ type: 'success',
+ text: response.data.message || 'Borrow request sent successfully! Waiting for owner approval.'
+ })
  } catch (err) {
  setMsg({
  type: 'error',
@@ -59,6 +76,14 @@ export default function ItemDetail() {
  } finally {
  setSubmitting(false)
  }
+ }
+
+ const handleDepositPayment = async () => {
+ if (!pendingRequest?._id) return false
+ const response = await api.put(`/borrows/${pendingRequest._id}/pay-deposit`)
+ if (response.data.borrow) setPendingRequest(response.data.borrow)
+ setMsg({ type: 'success', text: response.data.message || 'Deposit payment reported. Waiting for owner confirmation.' })
+ return true
  }
 
  const handleDelete = async () => {
@@ -99,9 +124,12 @@ export default function ItemDetail() {
 
  const isOwner = user?._id === item.owner?._id
  const todayStr = new Date().toISOString().split('T')[0]
+ const pendingDepositAmount = Number(pendingRequest?.depositAmount ?? item.depositAmount ?? 0)
+ const pendingDepositStatus = pendingRequest?.depositStatus || (pendingRequest?.depositPaid ? 'held' : 'pending')
 
  return (
- <div className="max-w-5xl mx-auto animate-card-enter pb-12">
+ <>
+ <div className="max-w-5xl mx-auto animate-card-enter pb-12">
  {/* Navigation Breadcrumb & Back Button */}
  <div className="flex items-center justify-between gap-4 mb-6">
  <button
@@ -310,7 +338,36 @@ export default function ItemDetail() {
  {/* Action Form for Borrowers */}
  {!isOwner && item.status === 'available' && (
  <div className="pt-4 border-t border-zinc-800">
- <div className="mb-4">
+ {pendingRequest && (
+ <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-200">
+ Already requested — waiting for owner approval. Change the return date and submit to update your request.
+ </div>
+ )}
+ {pendingRequest && pendingDepositAmount > 0 && (
+ <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+ <div className="text-sm text-emerald-100">
+ <p className="font-semibold">Security deposit · ₹{pendingDepositAmount.toLocaleString('en-IN')}</p>
+ <p className="mt-1 text-xs text-emerald-200/80">
+ {pendingDepositStatus === 'payment_pending'
+  ? 'Payment reported — waiting for the owner to confirm receipt.'
+  : pendingDepositStatus === 'held'
+   ? 'Deposit confirmed by the owner. Your request can proceed.'
+   : 'Pay outside BorrowBack, then report it here. The owner must confirm receipt before approving.'}
+ </p>
+ </div>
+ {pendingDepositStatus === 'pending' && (
+ <button
+ type="button"
+ onClick={() => setPaymentModal(true)}
+ className="btn-success inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
+ >
+ <IndianRupee className="h-4 w-4" />
+ Pay Deposit
+ </button>
+ )}
+ </div>
+ )}
+ <div className="mb-4">
  <h3 className="text-base font-bold text-white flex items-center gap-2 text-glow-cyan">
  <Calendar className="w-4 h-4 text-blue-400 animate-rotate-in" />
  Request to Borrow
@@ -360,7 +417,7 @@ export default function ItemDetail() {
  </>
  ) : (
  <>
- <span>Request to Borrow</span>
+ <span>{pendingRequest ? 'Update Request' : 'Request to Borrow'}</span>
  <CheckCircle2 className="w-4 h-4 ml-1" />
  </>
  )}
@@ -408,5 +465,14 @@ export default function ItemDetail() {
  </div>
  </div>
  </div>
- )
-}
+ <PaymentModal
+ isOpen={paymentModal}
+ onClose={() => setPaymentModal(false)}
+ amount={pendingDepositAmount}
+ title="Record Security Deposit"
+ invoiceId={`B${pendingRequest?._id?.substring(0, 7).toUpperCase() || ''}`}
+ onSuccess={handleDepositPayment}
+ />
+ </>
+ )
+}

@@ -262,6 +262,11 @@ export default function MoneyLoans() {
 
  </div>
 
+ {loan.status === 'pending' && (
+ <p className="rounded-lg border border-cyan-500/15 bg-cyan-500/[0.05] px-3 py-2 text-xs text-zinc-300">
+ Request sent — no payment is due yet. Payment actions will appear here after approval and fund confirmation.
+ </p>
+ )}
  {loan.status === 'repaid_pending' && (
  <p className="text-xs font-medium text-amber-300">
  {loan.borrower
@@ -471,7 +476,7 @@ export default function MoneyLoans() {
 
  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-3">
 
- <ShieldCheck className="w-3.5 h-3.5" /> Verified Campus Lending
+ <ShieldCheck className="w-3.5 h-3.5" /> Loans between members
 
  </div>
 
@@ -483,7 +488,7 @@ export default function MoneyLoans() {
 
  <p className="text-zinc-400 text-sm sm:text-base mt-2 leading-relaxed">
 
- Borrow and lend money securely within the verified campus community with transparent terms and automated tracking.
+ View your loan requests, agreed terms, and payment confirmations in one place.
 
  </p>
 

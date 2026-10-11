@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   Alert
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -33,7 +33,7 @@ const DashboardScreen = () => {
   });
   const [recentItems, setRecentItems] = useState([]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [
         itemsRes,
@@ -63,11 +63,13 @@ const DashboardScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -143,9 +145,9 @@ const DashboardScreen = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerCopy}>
-              <Text style={styles.headerEyebrow}>YOUR CAMPUS COMMUNITY</Text>
-              <Text style={styles.greeting}>Hello, {user?.name || 'User'}!</Text>
-              <Text style={styles.subGreeting}>Good things are better shared.</Text>
+              <Text style={styles.headerEyebrow}>BORROWBACK</Text>
+              <Text style={styles.greeting}>Hi, {user?.name || 'there'}.</Text>
+              <Text style={styles.subGreeting}>See what's available and keep up with your borrows.</Text>
             </View>
             <TouchableOpacity
               style={styles.notificationBtn}
@@ -153,7 +155,7 @@ const DashboardScreen = () => {
               accessibilityRole="button"
               accessibilityLabel={stats.unreadAlerts ? `Notifications, ${stats.unreadAlerts} unread` : 'Notifications'}
             >
-              <Ionicons name="notifications-outline" size={23} color={theme.colors.surface} />
+              <Ionicons name="notifications-outline" size={23} color={theme.colors.text} />
               {stats.unreadAlerts > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{stats.unreadAlerts > 9 ? '9+' : stats.unreadAlerts}</Text>
@@ -181,9 +183,10 @@ const DashboardScreen = () => {
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.actionsScroll}>
             {renderActionBtn('Browse', 'search-outline', 'Browse')}
-            {renderActionBtn('Add Item', 'add-circle-outline', 'MyItems')}
-            {renderActionBtn('Money Loans', 'cash-outline', 'Activity', { screen: 'MoneyLoans' })}
-            {renderActionBtn('Financials', 'wallet-outline', 'Fines')}
+            {renderActionBtn('Borrows', 'hand-left-outline', 'Borrows')}
+            {renderActionBtn('Add Item', 'add-circle-outline', 'Profile', { screen: 'AddItem' })}
+            {renderActionBtn('Loans', 'cash-outline', 'Loans', { screen: 'MoneyLoans' })}
+            {renderActionBtn('Finances', 'wallet-outline', 'Home', { screen: 'Fines' })}
             <View style={{ width: 16 }} />
           </ScrollView>
         </View>
@@ -225,14 +228,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 22,
-    borderBottomWidth: 4,
-    borderBottomColor: theme.colors.accent,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
     ...theme.shadows.card,
   },
   headerTop: {
@@ -254,25 +257,25 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: theme.typography.sizes.xxl,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.surface,
+    color: theme.colors.text,
     marginBottom: 4,
   },
   subGreeting: {
     fontSize: theme.typography.sizes.sm,
-    color: theme.colors.text,
+    color: theme.colors.textSecondary,
   },
   headerFooter: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff20',
+    backgroundColor: theme.colors.surfaceRaised,
     borderRadius: theme.borderRadius.full,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 6,
     marginTop: theme.spacing.lg,
   },
   headerFooterText: {
-    color: theme.colors.surface,
+    color: theme.colors.textSecondary,
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.medium,
     marginLeft: 6,
@@ -283,7 +286,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff24',
+    backgroundColor: theme.colors.surfaceRaised,
     position: 'relative',
   },
   badge: {

@@ -32,13 +32,14 @@ const DEPOSIT_STATUS_LABELS = {
   returned: 'Returned and acknowledged',
 };
 
-export default function BorrowsScreen() {
+export default function BorrowsScreen({ route }) {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState(TABS.MINE);
+  const [activeTab, setActiveTab] = useState(route?.params?.initialTab || TABS.MINE);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [payment, setPayment] = useState(null);
+  const [acting, setActing] = useState('');
 
   const fetchBorrows = async () => {
     try {
@@ -74,6 +75,8 @@ export default function BorrowsScreen() {
   }, [activeTab]);
 
   const handleAction = async (action, id, { silent = false } = {}) => {
+    if (acting) return false;
+    setActing(`${id}:${action}`);
     try {
       let endpoint = '';
       let method = 'put';
@@ -99,6 +102,8 @@ export default function BorrowsScreen() {
       if (silent) throw error;
       Alert.alert('Error', error.response?.data?.message || 'Action failed.');
       return false;
+    } finally {
+      setActing('');
     }
   };
 
@@ -214,6 +219,8 @@ export default function BorrowsScreen() {
     const depositStatus = getDepositStatus(item);
     const depositAmount = Number(item.depositAmount ?? item.item?.depositAmount ?? 0);
     const depositReady = depositAmount <= 0 || depositStatus === 'held';
+    const accepting = acting === `${item._id}:accept`;
+    const rejecting = acting === `${item._id}:reject`;
     return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
@@ -255,8 +262,8 @@ export default function BorrowsScreen() {
         </Text>
       )}
       <View style={styles.rowActions}>
-        <Button title="Reject" onPress={() => handleAction('reject', item._id, item)} disabled={depositStatus === 'payment_pending'} style={[styles.flexBtn, {backgroundColor: theme.colors.error, marginRight: 8}]} />
-        <Button title="Accept" onPress={() => handleAction('accept', item._id, item)} disabled={!depositReady} style={[styles.flexBtn, {backgroundColor: theme.colors.success}]} />
+        <Button title={rejecting ? 'Rejecting...' : 'Reject'} loading={rejecting} onPress={() => handleAction('reject', item._id)} disabled={Boolean(acting) || depositStatus === 'payment_pending'} style={[styles.flexBtn, {backgroundColor: theme.colors.error, marginRight: 8}]} />
+        <Button title={accepting ? 'Accepting...' : 'Accept'} loading={accepting} onPress={() => handleAction('accept', item._id)} disabled={Boolean(acting) || !depositReady} style={[styles.flexBtn, {backgroundColor: theme.colors.success}]} />
       </View>
     </Card>
     );
@@ -361,7 +368,7 @@ export default function BorrowsScreen() {
       <View style={styles.shortcutRow}>
         <TouchableOpacity
           style={styles.shortcutButton}
-          onPress={() => navigation.navigate('MoneyLoans')}
+          onPress={() => navigation.navigate('Loans', { screen: 'MoneyLoans' })}
           accessibilityRole="button"
         >
           <Ionicons name="cash-outline" size={18} color={theme.colors.secondary} />

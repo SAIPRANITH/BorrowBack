@@ -45,6 +45,45 @@ export const createLoanRequest = async (req, res, next) => {
     }
 
     const totalRepayable = Math.round((parsedAmount + (parsedAmount * parsedInterestRate / 100)) * 100) / 100;
+    const existingRequest = await MoneyLoan.findOne({
+      borrower: req.user._id,
+      lender: lenderId,
+      status: 'pending',
+    });
+    if (existingRequest) {
+      const requestChanged = existingRequest.amount !== parsedAmount
+        || existingRequest.interestRate !== parsedInterestRate
+        || existingRequest.totalRepayable !== totalRepayable
+        || existingRequest.dueDate?.getTime() !== parsedDueDate.getTime()
+        || existingRequest.purpose !== purpose.trim()
+        || existingRequest.note !== (typeof note === 'string' ? note.trim() : '');
+
+      existingRequest.amount = parsedAmount;
+      existingRequest.interestRate = parsedInterestRate;
+      existingRequest.totalRepayable = totalRepayable;
+      existingRequest.dueDate = parsedDueDate;
+      existingRequest.purpose = purpose.trim();
+      existingRequest.note = typeof note === 'string' ? note.trim() : '';
+      await existingRequest.save();
+
+      if (requestChanged) {
+        await Notification.create({
+          user: lenderId,
+          type: 'request',
+          message: `${req.user.name} updated their pending loan request to ₹${parsedAmount}.`,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        alreadyRequested: true,
+        updated: true,
+        message: requestChanged
+          ? 'Your pending loan request was updated and is waiting for lender approval.'
+          : 'Your loan request is already waiting for lender approval.',
+        loan: existingRequest,
+      });
+    }
 
     const loan = await MoneyLoan.create({
       borrower: req.user._id,

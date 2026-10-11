@@ -64,13 +64,13 @@ const LoginScreen = ({ navigation }) => {
             </View>
             <Text style={styles.appName}>BorrowBack</Text>
           </View>
-          <Text style={styles.heroTitle}>Good things{'\n'}are better shared.</Text>
+          <Text style={styles.heroTitle}>Borrow what you need.{'\n'}Lend what you can.</Text>
           <Text style={styles.tagline}>
-            Borrow what you need. Lend what you can. All on campus.
+            Find items listed by members on your campus and keep track of your borrows.
           </Text>
           <View style={styles.trustRow}>
             <Ionicons name="shield-checkmark" size={15} color="#99f6e4" />
-            <Text style={styles.trustText}>Your campus community, connected</Text>
+            <Text style={styles.trustText}>Borrowing and lending in one place</Text>
           </View>
         </View>
 

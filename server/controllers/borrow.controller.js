@@ -27,10 +27,16 @@ export const createBorrowRequest = async (req, res, next) => {
   try {
     const { dueDate } = req.body;
     const itemId = req.body.item?._id || req.body.item || req.body.itemId || req.body.id;
+    const requestedDueDate = new Date(dueDate);
 
     if (!mongoose.isValidObjectId(itemId)) {
       res.status(400);
       throw new Error('A valid item must be selected');
+    }
+
+    if (Number.isNaN(requestedDueDate.getTime())) {
+      res.status(400);
+      throw new Error('A valid return due date is required');
     }
 
     const item = await Item.findById(itemId);
@@ -38,6 +44,51 @@ export const createBorrowRequest = async (req, res, next) => {
     if (!item) {
       res.status(404);
       throw new Error('Item not found');
+    }
+
+    if (item.owner.toString() === req.user._id.toString()) {
+      res.status(400);
+      throw new Error('Cannot borrow your own item');
+    }
+
+    const existingActiveBorrow = await Borrow.findOne({
+      item: itemId,
+      borrower: req.user._id,
+      status: { $in: ['active', 'overdue'] },
+    });
+    if (existingActiveBorrow) {
+      res.status(400);
+      throw new Error('You are already borrowing this item');
+    }
+
+    const existingRequest = await Borrow.findOne({
+      item: itemId,
+      borrower: req.user._id,
+      status: 'pending',
+    });
+    if (existingRequest) {
+      const dueDateChanged = existingRequest.dueDate?.getTime() !== requestedDueDate.getTime();
+      existingRequest.dueDate = requestedDueDate;
+      await existingRequest.save();
+
+      if (dueDateChanged) {
+        await Notification.create({
+          user: item.owner,
+          borrow: existingRequest._id,
+          message: `${req.user.name} updated the requested return date for ${item.name}.`,
+          type: 'request',
+        });
+      }
+
+      return res.json({
+        success: true,
+        alreadyRequested: true,
+        updated: true,
+        message: dueDateChanged
+          ? 'Your request was updated with the new return date and is waiting for owner approval.'
+          : 'You already requested this item. It is waiting for owner approval.',
+        borrow: existingRequest,
+      });
     }
 
     const activeBorrow = await Borrow.findOne({
@@ -60,27 +111,11 @@ export const createBorrowRequest = async (req, res, next) => {
       throw new Error('Item is not available');
     }
 
-    if (item.owner.toString() === req.user._id.toString()) {
-      res.status(400);
-      throw new Error('Cannot borrow your own item');
-    }
-
-    const existingBorrow = await Borrow.findOne({
-      item: itemId,
-      borrower: req.user._id,
-      status: { $in: ['pending', 'active', 'overdue'] },
-    });
-
-    if (existingBorrow) {
-      res.status(400);
-      throw new Error('You already have a pending or active request for this item');
-    }
-
     const borrow = await Borrow.create({
       item: itemId,
       borrower: req.user._id,
       owner: item.owner,
-      dueDate,
+      dueDate: requestedDueDate,
       depositAmount: item.depositAmount,
       depositStatus: Number(item.depositAmount) > 0 ? 'pending' : 'not_required',
     });

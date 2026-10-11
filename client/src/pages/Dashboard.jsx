@@ -103,28 +103,25 @@ export default function Dashboard() {
     <div className="pb-10 max-w-7xl mx-auto space-y-6">
       
       {/* Welcome Hero Section */}
-      <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-fade-in-up stagger-1">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1400&auto=format&fit=crop")' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/90 via-[#09090b]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 via-transparent to-transparent" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 md:p-12">
+      <div className="rounded-2xl border border-white/[0.08] bg-[#161b1f]/90 shadow-lg animate-fade-in-up stagger-1">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 p-6 sm:p-8">
           <div>
-            <p className="text-zinc-300 text-xs font-bold mb-2 opacity-80 uppercase tracking-widest">{today}</p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3 drop-shadow-md">
-              Welcome back, <span className="text-cyan-400">{user?.name?.split(' ')[0] || 'User'}</span>! 🚀
+            <p className="text-zinc-500 text-xs font-semibold mb-2 uppercase tracking-wider">{today}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
+              Welcome back, <span className="text-cyan-300">{user?.name?.split(' ')[0] || 'User'}</span>
             </h1>
-            <p className="text-zinc-200 text-sm max-w-lg drop-shadow leading-relaxed">
+            <p className="text-zinc-400 text-sm max-w-lg leading-relaxed">
               Manage your items, track borrows, and see what's new in the campus community.
             </p>
           </div>
-          <div className="flex-shrink-0">
-            <Link to="/browse" className="btn-primary inline-flex items-center gap-2 shadow-lg shadow-cyan-500/25 px-5 py-2.5 rounded-xl text-sm font-semibold">
+          <div className="flex flex-wrap gap-2">
+            <Link to="/browse" className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold">
               <Search className="w-5 h-5" />
-              Browse Catalog
+              Browse
+            </Link>
+            <Link to="/money-loans/request" className="btn-outline inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold">
+              <Banknote className="w-4 h-4" />
+              Request a Loan
             </Link>
           </div>
         </div>

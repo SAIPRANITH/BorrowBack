@@ -11,6 +11,7 @@ import LoadingScreen from '../components/LoadingScreen';
 
 const MoneyLoanRequestScreen = () => {
   const [lenders, setLenders] = useState([]);
+  const [pendingLoans, setPendingLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,8 +30,12 @@ const MoneyLoanRequestScreen = () => {
   const fetchLenders = useCallback(async () => {
     setLendersError('');
     try {
-      const response = await api.get('/money-loans/lenders');
-      setLenders(response.data.lenders || []);
+      const [lendersResponse, loansResponse] = await Promise.all([
+        api.get('/money-loans/lenders'),
+        api.get('/money-loans/mine'),
+      ]);
+      setLenders(lendersResponse.data.lenders || []);
+      setPendingLoans((loansResponse.data.loans || []).filter((loan) => loan.status === 'pending'));
     } catch (error) {
       console.error('Error fetching lenders:', error);
       setLendersError(error.response?.data?.message || 'Could not load lenders. Check your connection and try again.');
@@ -47,6 +52,16 @@ const MoneyLoanRequestScreen = () => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchLenders();
+  };
+
+  const selectLender = (lenderId) => {
+    const existing = pendingLoans.find((loan) => loan.lender?._id === lenderId);
+    setSelectedLenderId(lenderId);
+    setAmount(existing ? String(existing.amount) : '');
+    setInterestRate(existing ? String(existing.interestRate ?? 0) : '0');
+    setDueDate(existing?.dueDate?.slice(0, 10) || '');
+    setPurpose(existing?.purpose || '');
+    setNote(existing?.note || '');
   };
 
   const calculateTotal = () => {
@@ -97,7 +112,7 @@ const MoneyLoanRequestScreen = () => {
 
     setSubmitting(true);
     try {
-      await api.post('/money-loans', {
+      const response = await api.post('/money-loans', {
         lenderId: selectedLenderId,
         amount: numAmount,
         interestRate: numInterestRate,
@@ -105,7 +120,7 @@ const MoneyLoanRequestScreen = () => {
         purpose,
         note
       });
-      Alert.alert('Success', 'Loan request submitted successfully!', [
+      Alert.alert('Loan request', response.data.message || 'Loan request submitted and waiting for lender approval.', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
     } catch (error) {
@@ -119,6 +134,8 @@ const MoneyLoanRequestScreen = () => {
   if (loading) {
     return <LoadingScreen message="Loading form..." />;
   }
+
+  const pendingLoan = pendingLoans.find((loan) => loan.lender?._id === selectedLenderId);
 
   return (
     <ScrollView
@@ -158,7 +175,7 @@ const MoneyLoanRequestScreen = () => {
                 styles.lenderCard,
                 selectedLenderId === lender._id && styles.selectedLenderCard
               ]}
-              onPress={() => setSelectedLenderId(lender._id)}
+              onPress={() => selectLender(lender._id)}
               accessibilityRole="button"
               accessibilityState={{ selected: selectedLenderId === lender._id }}
             >
@@ -179,6 +196,11 @@ const MoneyLoanRequestScreen = () => {
 
       <Card style={styles.formCard}>
         <Text style={styles.cardTitle}>Loan Details</Text>
+        {pendingLoan ? (
+          <Text style={styles.pendingRequestNotice}>
+            You already have a pending request with this lender. Update the terms below and resubmit to update that request.
+          </Text>
+        ) : null}
         {errorMessage ? (
           <View style={styles.errorBox}>
             <Ionicons name="alert-circle-outline" size={18} color={theme.colors.error} />
@@ -232,8 +254,23 @@ const MoneyLoanRequestScreen = () => {
           onChangeText={setNote}
         />
 
+        <View style={styles.paymentFlowNotice}>
+          <Ionicons name="information-circle-outline" size={18} color={theme.colors.secondary} />
+          <View style={styles.paymentFlowCopy}>
+            <Text style={styles.paymentFlowText}>
+              No payment is due with a request. Once the loan is active, record repayment from your loan card.
+            </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Loans', { screen: 'MoneyLoans' })}
+              accessibilityRole="button"
+            >
+              <Text style={styles.paymentFlowLink}>Track loan payments</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <Button
-          title={submitting ? "Submitting..." : "Submit Request"}
+          title={submitting ? "Submitting..." : pendingLoan ? "Update Loan Request" : "Submit Request"}
           onPress={handleSubmit}
           disabled={submitting}
           style={styles.submitButton}
@@ -358,6 +395,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: `${theme.colors.error}40`,
     backgroundColor: `${theme.colors.error}12`,
+  },
+  pendingRequestNotice: {
+    color: theme.colors.accent,
+    backgroundColor: `${theme.colors.accent}18`,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    fontSize: theme.typography.sizes.sm,
+    lineHeight: 20,
+  },
+  paymentFlowNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.sm,
+    backgroundColor: `${theme.colors.secondary}10`,
+    borderColor: `${theme.colors.secondary}25`,
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+  paymentFlowCopy: {
+    flex: 1,
+    gap: theme.spacing.xs,
+  },
+  paymentFlowText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    lineHeight: 18,
+  },
+  paymentFlowLink: {
+    color: theme.colors.secondary,
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
   },
   errorText: {
     flex: 1,
