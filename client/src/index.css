@@ -595,6 +595,22 @@ textarea:focus-visible,
   animation: ambient-points-drift 64s ease-in-out infinite alternate;
 }
 
+.classy-app::after {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 139, 125, 0.48) 0 1px, transparent 2px),
+    radial-gradient(circle at 39% 39%, rgba(255, 139, 125, 0.34) 0 1px, transparent 2px),
+    radial-gradient(circle at 51% 22%, rgba(255, 139, 125, 0.38) 0 1px, transparent 2px),
+    radial-gradient(circle at 42% 73%, rgba(255, 139, 125, 0.32) 0 1px, transparent 2px),
+    radial-gradient(circle at 69% 67%, rgba(255, 139, 125, 0.36) 0 1px, transparent 2px),
+    radial-gradient(circle at 86% 32%, rgba(255, 139, 125, 0.3) 0 1px, transparent 2px),
+    radial-gradient(circle at 34% 39%, transparent 0 126px, rgba(255, 105, 91, 0.065) 127px, transparent 129px),
+    radial-gradient(circle at 34% 39%, transparent 0 168px, rgba(255, 255, 255, 0.025) 169px, transparent 171px),
+    radial-gradient(circle at 63% 82%, transparent 0 176px, rgba(255, 105, 91, 0.045) 177px, transparent 179px),
+    repeating-linear-gradient(0deg, transparent 0 219px, rgba(255, 255, 255, 0.012) 220px);
+  opacity: 0.38;
+  animation: none;
+}
+
 @keyframes ambient-light-drift {
   from { background-position: 0 0, 0% 35%, 100% 100%, 0 0; }
   to { background-position: 0 0, 100% 65%, 0% 0%, 0 0; }
