@@ -12,7 +12,9 @@ export default function Layout() {
 
  return (
  <div className="classy-app min-h-screen relative flex flex-col md:flex-row">
- <div aria-hidden="true" className="site-background-mark" />
+ <div aria-hidden="true" className="site-background-art">
+ <div className="site-background-mark" />
+ </div>
 
  {/* The Sidebar */}
  <Navbar />

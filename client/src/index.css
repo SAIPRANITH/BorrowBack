@@ -577,40 +577,58 @@ textarea:focus-visible,
     var(--surface-black);
 }
 
-.auth-background-mark {
-  position: absolute;
-  top: 50%;
-  right: max(3vw, calc((100vw - 1480px) / 2));
-  width: clamp(260px, 36vw, 520px);
-  aspect-ratio: 1;
-  background-color: var(--brand-red);
-  -webkit-mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
-  mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
-  opacity: 0.085;
-  filter: drop-shadow(0 0 48px rgba(255, 73, 62, 0.16));
-  transform: translateY(-50%) rotate(-8deg);
-  animation:
-    auth-mark-rotate 36s linear infinite,
-    auth-mark-glow 12s ease-in-out infinite alternate;
-}
-
-.site-background-mark {
+.auth-background-art,
+.site-background-art {
   position: fixed;
   top: 50%;
   right: max(3vw, calc((100vw - 1480px) / 2));
   width: clamp(260px, 36vw, 520px);
   aspect-ratio: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-background-art {
+  position: absolute;
+}
+
+.site-background-art::before,
+.auth-background-art::before {
+  content: "";
+  position: absolute;
+  inset: -5%;
+  border: 1px solid transparent;
+  border-left-color: rgba(255, 105, 91, 0.28);
+  border-top-color: rgba(255, 105, 91, 0.16);
+  border-radius: 50%;
+  transform: rotate(-28deg);
+}
+
+.site-background-art::after,
+.auth-background-art::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(circle at 7% 31%, rgba(255, 139, 125, 0.62) 0 1px, transparent 2px),
+    radial-gradient(circle at 14% 45%, rgba(255, 139, 125, 0.4) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 5% 59%, rgba(255, 139, 125, 0.48) 0 1px, transparent 2px),
+    radial-gradient(circle at 18% 70%, rgba(255, 139, 125, 0.36) 0 1px, transparent 2px);
+  filter: blur(0.2px);
+}
+
+.auth-background-mark,
+.site-background-mark {
+  position: absolute;
+  inset: 0;
   background-color: var(--brand-red);
   -webkit-mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
   mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
-  opacity: 0.045;
-  filter: drop-shadow(0 0 48px rgba(255, 73, 62, 0.12));
-  transform: translateY(-50%) rotate(-8deg);
+  filter: drop-shadow(0 0 48px rgba(255, 73, 62, 0.16));
   animation:
     auth-mark-rotate 36s linear infinite,
     auth-mark-glow 12s ease-in-out infinite alternate;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .login-hero-highlight {
@@ -631,8 +649,8 @@ textarea:focus-visible,
 }
 
 @keyframes auth-mark-rotate {
-  from { transform: translateY(-50%) rotate(-8deg); }
-  to { transform: translateY(-50%) rotate(352deg); }
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(352deg); }
 }
 
 .classy-app .page-hero {
@@ -767,17 +785,16 @@ textarea:focus-visible,
     padding: 1.25rem;
   }
 
-  .auth-background-mark {
+  .auth-background-art {
     top: 18%;
     right: -18%;
     width: 72vw;
-    opacity: 0.06;
+    transform: translateY(-50%);
   }
 
-  .site-background-mark {
+  .site-background-art {
     right: -18%;
     width: 72vw;
-    opacity: 0.035;
   }
 }
 
@@ -1104,15 +1121,6 @@ a:hover .brand-mark {
     #070707;
 }
 
-.auth-background-mark {
-  top: 50%;
-  right: max(1vw, calc((100vw - 1500px) / 2));
-  width: clamp(340px, 43vw, 640px);
-  opacity: 0.15;
-  filter: drop-shadow(0 0 70px rgba(255, 73, 62, 0.44));
-  transform: translateY(-50%) rotate(-5deg);
-}
-
 .auth-page--register .auth-card {
   background: transparent;
   border: 0;
@@ -1290,11 +1298,10 @@ a:hover .brand-mark {
     border-right: 0;
   }
 
-  .auth-background-mark {
+  .auth-background-art {
     top: 18%;
     right: -20%;
     width: 78vw;
-    opacity: 0.055;
   }
 
   .auth-page--login > .relative.z-10 {
