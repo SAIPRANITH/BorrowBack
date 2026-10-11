@@ -580,7 +580,9 @@ textarea:focus-visible,
   opacity: 0.085;
   filter: drop-shadow(0 0 48px rgba(255, 73, 62, 0.16));
   transform: translateY(-50%) rotate(-8deg);
-  animation: auth-mark-glow 12s ease-in-out infinite alternate;
+  animation:
+    auth-mark-rotate 36s linear infinite,
+    auth-mark-glow 12s ease-in-out infinite alternate;
 }
 
 .login-hero-highlight {
@@ -598,6 +600,11 @@ textarea:focus-visible,
 @keyframes auth-mark-glow {
   from { opacity: 0.055; }
   to { opacity: 0.11; }
+}
+
+@keyframes auth-mark-rotate {
+  from { transform: translateY(-50%) rotate(-8deg); }
+  to { transform: translateY(-50%) rotate(352deg); }
 }
 
 .classy-app .page-hero {
