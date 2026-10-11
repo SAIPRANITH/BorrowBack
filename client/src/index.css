@@ -453,6 +453,15 @@ textarea:focus-visible,
   background-color: var(--surface-black);
 }
 
+.auth-register-panel {
+  background:
+    radial-gradient(ellipse at 82% 18%, rgba(255, 73, 62, 0.12), transparent 36%),
+    radial-gradient(ellipse at 18% 82%, rgba(255, 73, 62, 0.055), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.018) 280px),
+    linear-gradient(145deg, #111211, #090909 72%);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 .auth-page--login > .relative.z-10 {
   gap: 2rem;
 }
@@ -1110,11 +1119,7 @@ a:hover .brand-mark {
   box-shadow: none;
 }
 
-.auth-page--register > div:first-child > .absolute.inset-0.bg-cover {
-  display: none;
-}
-
-.auth-page--register > div:first-child > .relative.z-10 > div.my-auto > div.flex.items-start {
+.auth-page--register .auth-register-panel > .relative.z-10 > div.my-auto > div.flex.items-start {
   background: transparent;
   border: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.18);
@@ -1122,7 +1127,7 @@ a:hover .brand-mark {
   padding: 0.4rem 0 0.4rem 0.8rem;
 }
 
-.auth-page--register > div:first-child > .relative.z-10 > div.my-auto > div.flex.items-start > div:first-child {
+.auth-page--register .auth-register-panel > .relative.z-10 > div.my-auto > div.flex.items-start > div:first-child {
   background: transparent;
   border-color: transparent;
 }

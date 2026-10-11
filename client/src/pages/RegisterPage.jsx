@@ -67,20 +67,7 @@ export default function RegisterPage() {
  <div className="auth-page auth-page--register min-h-screen flex text-zinc-100 selection:bg-blue-500/30 selection:text-white">
  <div aria-hidden="true" className="site-background-mark" />
  {/* Left: Campus background image + community perks */}
- <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
- {/* Background Photo */}
- <div
- className="absolute inset-0 bg-cover bg-center"
- style={{
- backgroundImage:
- 'url("/images/item-camping.jpg")',
- }}
- />
-
- {/* Dark layered overlays that keep the photo visible */}
- <div className="absolute inset-0 bg-gradient-to-r from-stone-950/72 via-stone-950/55 to-stone-950/82" />
-
- <div className="absolute inset-0 bg-gradient-to-t from-stone-950/75 via-transparent to-stone-950/35" />
+ <div className="auth-register-panel hidden lg:flex lg:w-1/2 relative overflow-hidden">
 
  {/* Content */}
  <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
