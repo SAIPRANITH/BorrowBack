@@ -15,6 +15,12 @@ export default function Layout() {
  <div aria-hidden="true" className="site-background-art">
  <div className="site-background-mark" />
  </div>
+ <div aria-hidden="true" className="site-background-emblems">
+ <span className="site-background-emblems__mark site-background-emblems__mark--one" />
+ <span className="site-background-emblems__mark site-background-emblems__mark--two" />
+ <span className="site-background-emblems__mark site-background-emblems__mark--three" />
+ <span className="site-background-emblems__mark site-background-emblems__mark--four" />
+ </div>
 
  {/* The Sidebar */}
  <Navbar />

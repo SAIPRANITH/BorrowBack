@@ -672,6 +672,63 @@ textarea:focus-visible,
   filter: blur(0.2px);
 }
 
+.site-background-emblems {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.site-background-emblems__mark {
+  position: absolute;
+  width: clamp(34px, 4vw, 58px);
+  aspect-ratio: 1;
+  background-color: var(--brand-red-bright);
+  -webkit-mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
+  mask: url("/icons/borrowback-mark.svg") center / contain no-repeat;
+  filter: drop-shadow(0 0 16px rgba(255, 73, 62, 0.3));
+  opacity: 0.14;
+  animation: background-mark-drift 42s ease-in-out infinite alternate;
+}
+
+.site-background-emblems__mark--one {
+  top: 19%;
+  left: 29%;
+}
+
+.site-background-emblems__mark--two {
+  top: 62%;
+  left: 51%;
+  width: clamp(30px, 3.2vw, 46px);
+  opacity: 0.11;
+  animation-duration: 54s;
+  animation-delay: -18s;
+}
+
+.site-background-emblems__mark--three {
+  top: 31%;
+  right: 9%;
+  width: clamp(28px, 2.8vw, 42px);
+  opacity: 0.1;
+  animation-duration: 48s;
+  animation-delay: -30s;
+}
+
+.site-background-emblems__mark--four {
+  bottom: 13%;
+  left: 34%;
+  width: clamp(26px, 2.4vw, 36px);
+  opacity: 0.09;
+  animation-duration: 60s;
+  animation-delay: -12s;
+}
+
+@keyframes background-mark-drift {
+  from { transform: rotate(-14deg) translateY(-4px); }
+  to { transform: rotate(346deg) translateY(5px); }
+}
+
 .auth-background-mark,
 .site-background-mark {
   position: absolute;
@@ -847,6 +904,25 @@ textarea:focus-visible,
     width: 72vw;
   }
 
+  .site-background-emblems__mark--one {
+    top: 13%;
+    left: 23%;
+  }
+
+  .site-background-emblems__mark--two {
+    top: 69%;
+    left: 73%;
+  }
+
+  .site-background-emblems__mark--three {
+    top: 42%;
+    right: 7%;
+  }
+
+  .site-background-emblems__mark--four {
+    display: none;
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -859,6 +935,10 @@ textarea:focus-visible,
 
   .auth-background-mark,
   .site-background-mark {
+    animation: none;
+  }
+
+  .site-background-emblems__mark {
     animation: none;
   }
 
