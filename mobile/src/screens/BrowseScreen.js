@@ -8,14 +8,14 @@ import {
   ScrollView,
   RefreshControl,
   SafeAreaView,
-  ActivityIndicator,
-  ImageBackground
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { theme } from '../theme';
+import ImmersiveBackground from '../components/ImmersiveBackground';
 import Text from '../components/ThemedText';
 import TextInput from '../components/ThemedTextInput';
 
@@ -183,31 +183,13 @@ const BrowseScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ImageBackground
-        source={require('../../assets/bg-browse.jpg')}
-        imageStyle={styles.ambientImage}
-        style={styles.ambientBackground}
-      >
-        <LinearGradient
-          colors={['rgba(5,5,5,0.62)', 'rgba(8,8,8,0.84)', 'rgba(8,8,8,0.96)']}
-          locations={[0, 0.48, 1]}
-          style={styles.ambientOverlay}
-        />
-        <View pointerEvents="none" style={styles.ambientGrid}>
-          <View style={styles.ambientGridLine} />
-          <View style={styles.ambientGridLine} />
-          <View style={styles.ambientGridLine} />
-        </View>
-      <View style={styles.container}>
-        <ImageBackground
-          source={require('../../assets/bg-browse.jpg')}
-          imageStyle={styles.headerImage}
-          style={styles.header}
-        >
+      <ImmersiveBackground>
+        <View style={styles.container}>
+        <View style={styles.header}>
           <LinearGradient
-            colors={['rgba(5,5,5,0.88)', 'rgba(22,8,8,0.78)', 'rgba(5,5,5,0.88)']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
+            colors={['rgba(255,73,62,0.065)', 'rgba(255,73,62,0.012)', 'transparent']}
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 1 }}
             style={styles.headerOverlay}
           />
           <View style={styles.headerAccentLine} />
@@ -244,7 +226,7 @@ const BrowseScreen = () => {
               </TouchableOpacity>
             ) : null}
           </View>
-        </ImageBackground>
+        </View>
 
         <View style={styles.categoriesWrapper}>
           <ScrollView
@@ -282,7 +264,7 @@ const BrowseScreen = () => {
           />
         )}
       </View>
-      </ImageBackground>
+      </ImmersiveBackground>
     </SafeAreaView>
   );
 };
@@ -290,27 +272,7 @@ const BrowseScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
-  },
-  ambientBackground: {
-    flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  ambientImage: {
-    opacity: 0.14,
-  },
-  ambientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  ambientGrid: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  ambientGridLine: {
-    height: '100%',
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.08)',
   },
   container: {
     flex: 1,
@@ -322,11 +284,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     minHeight: 174,
     overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,73,62,0.38)',
-  },
-  headerImage: {
-    opacity: 0.58,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -391,9 +350,9 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   categoriesWrapper: {
-    backgroundColor: 'rgba(17,17,17,0.88)',
-    borderBottomWidth: 1,
-    borderBottomColor: '#292929',
+    backgroundColor: 'rgba(8,8,8,0.32)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
     paddingBottom: 12,
   },
   categoriesContent: {
@@ -435,12 +394,11 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    backgroundColor: 'rgba(17,17,17,0.88)',
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: 'rgba(15,15,15,0.92)',
+    borderRadius: 14,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.card,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.14)',
   },
   itemImage: {
     height: 140,

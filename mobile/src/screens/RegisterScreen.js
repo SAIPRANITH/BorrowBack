@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  ImageBackground,
   View, 
   StyleSheet, 
   KeyboardAvoidingView, 
@@ -9,11 +8,11 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import BorrowBackMark from '../components/BorrowBackMark';
+import ImmersiveBackground from '../components/ImmersiveBackground';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
 
@@ -67,21 +66,7 @@ const RegisterScreen = ({ navigation }) => {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ImageBackground
-        source={require('../../assets/bg-dashboard.jpg')}
-        imageStyle={styles.backgroundImage}
-        style={styles.background}
-      >
-        <LinearGradient
-          colors={['rgba(5,5,5,0.55)', 'rgba(8,8,8,0.76)', 'rgba(8,8,8,0.9)']}
-          locations={[0, 0.48, 1]}
-          style={styles.backgroundOverlay}
-        />
-        <View pointerEvents="none" style={styles.backgroundGrid}>
-          <View style={styles.backgroundGridLine} />
-          <View style={styles.backgroundGridLine} />
-          <View style={styles.backgroundGridLine} />
-        </View>
+      <ImmersiveBackground>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           bounces={false}
@@ -213,7 +198,7 @@ const RegisterScreen = ({ navigation }) => {
           </View>
         </View>
         </ScrollView>
-      </ImageBackground>
+      </ImmersiveBackground>
     </KeyboardAvoidingView>
   );
 };
@@ -222,25 +207,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  background: {
-    flex: 1,
-  },
-  backgroundImage: {
-    opacity: 0.55,
-  },
-  backgroundOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  backgroundGrid: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  backgroundGridLine: {
-    height: '100%',
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.09)',
   },
   scrollContent: {
     flexGrow: 1,

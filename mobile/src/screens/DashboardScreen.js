@@ -7,7 +7,6 @@ import {
   FlatList,
   RefreshControl,
   Image,
-  ImageBackground,
   SafeAreaView,
   Alert
 } from 'react-native';
@@ -16,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import ImmersiveBackground from '../components/ImmersiveBackground';
 import LoadingScreen from '../components/LoadingScreen';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
@@ -138,32 +138,14 @@ const DashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ImageBackground
-        source={require('../../assets/bg-dashboard.jpg')}
-        imageStyle={styles.ambientImage}
-        style={styles.ambientBackground}
-      >
-        <LinearGradient
-          colors={['rgba(5,5,5,0.42)', 'rgba(8,8,8,0.74)', 'rgba(8,8,8,0.91)']}
-          locations={[0, 0.48, 1]}
-          style={styles.ambientOverlay}
-        />
-        <View pointerEvents="none" style={styles.ambientGrid}>
-          <View style={styles.ambientGridLine} />
-          <View style={styles.ambientGridLine} />
-          <View style={styles.ambientGridLine} />
-        </View>
+      <ImmersiveBackground>
         <ScrollView
           style={styles.container}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
         >
-        <ImageBackground
-          source={require('../../assets/bg-dashboard.jpg')}
-          imageStyle={styles.headerImage}
-          style={styles.header}
-        >
+        <View style={styles.header}>
           <LinearGradient
-            colors={['rgba(5,5,5,0.78)', 'rgba(22,8,8,0.58)', 'rgba(5,5,5,0.78)']}
+            colors={['rgba(255,73,62,0.075)', 'rgba(255,73,62,0.02)', 'transparent']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.headerOverlay}
@@ -193,7 +175,7 @@ const DashboardScreen = () => {
             <Ionicons name="heart" size={13} color={theme.colors.secondary} />
             <Text style={styles.headerFooterText}>Borrow what you need. Lend what you can.</Text>
           </View>
-        </ImageBackground>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your activity</Text>
@@ -244,7 +226,7 @@ const DashboardScreen = () => {
         </Text>
         <View style={{ height: 40 }} />
         </ScrollView>
-      </ImageBackground>
+      </ImmersiveBackground>
     </SafeAreaView>
   );
 };
@@ -252,46 +234,19 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
-  },
-  ambientBackground: {
-    flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  ambientImage: {
-    opacity: 0.16,
-  },
-  ambientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  ambientGrid: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  ambientGridLine: {
-    height: '100%',
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.08)',
   },
   container: {
     flex: 1,
   },
   header: {
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
     minHeight: 174,
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 22,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,73,62,0.28)',
-    ...theme.shadows.card,
-  },
-  headerImage: {
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -334,7 +289,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(5, 5, 5, 0.8)',
+    backgroundColor: 'rgba(8,8,8,0.55)',
     borderRadius: theme.borderRadius.full,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 6,
@@ -352,7 +307,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(5, 5, 5, 0.8)',
+    backgroundColor: 'rgba(255,255,255,0.045)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
     position: 'relative',
   },
   badge: {
@@ -403,13 +360,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
-    backgroundColor: 'rgba(17,17,17,0.88)',
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    borderRadius: 14,
     padding: 16,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#303030',
-    ...theme.shadows.card,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.12)',
   },
   statIconContainer: {
     width: 40,
@@ -442,13 +398,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 20,
-    backgroundColor: 'rgba(17,17,17,0.88)',
+    backgroundColor: 'rgba(255,255,255,0.045)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.card,
+    borderColor: 'rgba(255,255,255,0.07)',
   },
   actionText: {
     fontSize: 12,
@@ -458,11 +413,12 @@ const styles = StyleSheet.create({
   },
   recentItemCard: {
     width: 160,
-    backgroundColor: 'rgba(17,17,17,0.88)',
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    borderRadius: 14,
     marginRight: 16,
     overflow: 'hidden',
-    ...theme.shadows.card,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.12)',
   },
   recentItemImage: {
     height: 120,
