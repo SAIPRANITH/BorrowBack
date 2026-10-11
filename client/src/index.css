@@ -455,10 +455,10 @@ textarea:focus-visible,
 
 .auth-register-panel {
   background:
-    radial-gradient(ellipse at 82% 18%, rgba(255, 73, 62, 0.12), transparent 36%),
-    radial-gradient(ellipse at 18% 82%, rgba(255, 73, 62, 0.055), transparent 40%),
+    radial-gradient(ellipse at 82% 18%, rgba(255, 73, 62, 0.09), transparent 36%),
+    radial-gradient(ellipse at 18% 82%, rgba(255, 73, 62, 0.045), transparent 40%),
     repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.018) 280px),
-    linear-gradient(145deg, #111211, #090909 72%);
+    linear-gradient(145deg, rgba(17, 18, 17, 0.78), rgba(9, 9, 9, 0.82) 72%);
   border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -591,6 +591,36 @@ textarea:focus-visible,
   background: url("/images/ambient-line-art.svg") no-repeat 72% 50% / min(78vw, 920px) auto;
   opacity: 0.11;
   animation: ambient-art-drift 64s ease-in-out infinite alternate;
+}
+
+.ambient-photo-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambient-photo {
+  position: absolute;
+  inset: -3%;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.045;
+  filter: grayscale(0.7) sepia(0.42) brightness(0.55) blur(2px);
+  transform: scale(1.035);
+}
+
+.ambient-photo--book {
+  background-image: url("/images/item-book.jpg");
+}
+
+.ambient-photo--camera {
+  background-image: url("/images/item-camera.jpg");
+}
+
+.ambient-photo--electronics {
+  background-image: url("/images/item-arduino.jpg");
 }
 
 @keyframes ambient-light-drift {
@@ -821,6 +851,11 @@ textarea:focus-visible,
   .site-background-art {
     right: -18%;
     width: 72vw;
+  }
+
+  .ambient-photo {
+    opacity: 0.035;
+    filter: grayscale(0.75) sepia(0.42) brightness(0.5) blur(3px);
   }
 }
 
