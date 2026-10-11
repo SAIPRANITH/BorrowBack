@@ -12,7 +12,7 @@ export default function Layout() {
  }, [location.pathname])
 
  return (
- <div className="classy-app min-h-screen relative flex flex-col md:flex-row bg-[#171916]">
+ <div className="classy-app min-h-screen relative flex flex-col md:flex-row">
 
  {/* The Sidebar */}
  <Navbar />

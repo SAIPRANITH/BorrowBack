@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
-import { Mail, Lock, ArrowRight, Loader2, Package, Fingerprint, ShieldCheck, Download } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Loader2, Fingerprint, ShieldCheck, Download } from 'lucide-react'
 
 export default function LoginPage() {
  const { login, user } = useContext(AuthContext)
@@ -42,6 +42,7 @@ export default function LoginPage() {
 
  return (
  <div className="auth-page auth-page--login min-h-screen relative flex items-center justify-center overflow-hidden text-zinc-100">
+ <div aria-hidden="true" className="auth-background-mark absolute pointer-events-none" />
 
  {/* ================= CONTENT CONTAINER ================= */}
  <div className="relative z-10 w-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
@@ -79,7 +80,7 @@ export default function LoginPage() {
  {/* Logo & Header */}
  <div className="text-center mb-8 relative">
  <div className="auth-logo-mark inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 relative group">
- <Package className="w-8 h-8 text-white relative z-10" />
+ <img src="/icons/arrow-repeat.svg" alt="" className="w-8 h-8 brightness-0 invert relative z-10" />
  <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
  </div>
  

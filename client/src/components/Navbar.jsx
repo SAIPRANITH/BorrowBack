@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import api from '../api/api'
-import { Package, Bell, User, LogOut, ChevronRight, LayoutDashboard, Compass, Layers, ArrowRightLeft, Landmark, Wallet, LineChart, Activity } from 'lucide-react'
+import { Bell, User, LogOut, ChevronRight, LayoutDashboard, Compass, Layers, ArrowRightLeft, Landmark, Wallet, LineChart, Activity } from 'lucide-react'
 
 export default function Navbar() {
  const { user, logout } = useContext(AuthContext)
@@ -42,7 +42,7 @@ export default function Navbar() {
  {/* Logo */}
  <Link to="/" className="relative z-10 flex items-center gap-3 mb-10 group shrink-0">
  <div className="w-10 h-10 rounded-xl bg-cyan-900/40 border border-cyan-500/20 flex items-center justify-center transition-colors group-hover:bg-cyan-900/60 relative overflow-hidden">
- <Package className="w-5 h-5 text-white relative z-10" />
+ <img src="/icons/arrow-repeat.svg" alt="" className="w-5 h-5 brightness-0 invert relative z-10" />
  </div>
  <span className="text-2xl font-bold tracking-tight text-white group-hover:text-cyan-50 transition-colors">
  Borrow<span className="text-cyan-300">Back</span>
@@ -128,7 +128,7 @@ export default function Navbar() {
  <header className="md:hidden fixed top-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
  <Link to="/" className="flex items-center gap-2 relative z-10">
  <div className="w-8 h-8 rounded-lg bg-cyan-900/40 border border-cyan-500/20 flex items-center justify-center">
- <Package className="w-4 h-4 text-white" />
+ <img src="/icons/arrow-repeat.svg" alt="" className="w-4 h-4 brightness-0 invert" />
  </div>
  <span className="text-lg font-bold tracking-tight text-white">
  Borrow<span className="text-cyan-300">Back</span>
