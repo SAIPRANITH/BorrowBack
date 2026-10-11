@@ -10,7 +10,6 @@ import {
   Loader, 
   X, 
   IndianRupee, 
-  Sparkles, 
   Image as ImageIcon, 
   Tag, 
   FileText, 
@@ -142,75 +141,27 @@ export default function MyItems() {
 
   return (
     <div className="space-y-8 animate-card-enter">
-      {/* Hero Section */}
-      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl animate-scale-in animate-border-glow">
-        {/* Background image with overlays */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105 "
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1400&auto=format&fit=crop")' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/80 via-[#09090b]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {/* Hero Content */}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 md:p-12">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <Package className="w-3.5 h-3.5" /> Personal Inventory Manager
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight leading-tight mb-3">
-              My <span className="text-cyan-400">Listed Items</span>
-            </h1>
-
-            <p className="text-zinc-300 text-sm sm:text-base opacity-90 leading-relaxed mb-6">
-              Manage items you have shared with the campus community, adjust availability, monitor borrow status, or list new gear.
-            </p>
-
-            {/* Quick Metrics */}
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <div className="flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 text-zinc-300 animate-border-glow">
-                <Package className="w-3.5 h-3.5 text-blue-400" />
-                <span>Total: <strong className="text-zinc-100 font-semibold">{items.length}</strong></span>
-              </div>
-              <div className="flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 text-zinc-300 animate-border-glow">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-glow"></span>
-                <span>Available: <strong className="text-emerald-400 font-semibold">{availableCount}</strong></span>
-              </div>
-              <div className="flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-white/10 text-zinc-300 animate-border-glow">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse-glow"></span>
-                <span>Lent Out: <strong className="text-amber-400 font-semibold">{lentCount}</strong></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="shrink-0 self-start md:self-center">
-            <button 
-              onClick={() => setShowForm(!showForm)} 
-              className={`flex items-center gap-2 text-sm font-semibold py-3 px-6 rounded-xl transition-all shadow-lg animate-bounce-soft animate-border-glow ${
-                showForm 
-                  ? 'bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700 hover:text-white' 
-                  : 'btn-primary shadow-blue-500/25'
-              }`}
-            >
-              {showForm ? (
-                <>
-                  <X className="w-4 h-4 animate-rotate-in" />
-                  <span>Cancel Listing</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 animate-rotate-in" />
-                  <span>Add New Item</span>
-                </>
-              )}
-            </button>
+      <section className="inventory-hero">
+        <div className="inventory-hero__copy">
+          <p className="inventory-hero__eyebrow">Your inventory</p>
+          <h1 className="inventory-hero__title">My listed items</h1>
+          <p className="inventory-hero__description">
+            Update your listings and availability, or add something for others to borrow.
+          </p>
+          <div className="inventory-hero__stats" aria-label="Inventory summary">
+            <span><Package className="h-4 w-4" /> Total <strong>{items.length}</strong></span>
+            <span><i className="inventory-hero__dot inventory-hero__dot--available" /> Available <strong>{availableCount}</strong></span>
+            <span><i className="inventory-hero__dot inventory-hero__dot--lent" /> Lent out <strong>{lentCount}</strong></span>
           </div>
         </div>
-      </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className={`inventory-hero__action ${showForm ? 'inventory-hero__action--quiet' : ''}`}
+        >
+          {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {showForm ? 'Cancel' : 'Add an item'}
+        </button>
+      </section>
 
       {/* Add Item Form */}
       {showForm && (

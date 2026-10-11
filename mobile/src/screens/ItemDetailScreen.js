@@ -7,11 +7,10 @@ import {
   Image,
   TouchableOpacity,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
@@ -55,7 +54,6 @@ const getCategoryColor = (category) => {
 
 const ItemDetailScreen = () => {
   const { params } = useRoute();
-  const navigation = useNavigation();
   const { user } = useAuth();
   const { itemId } = params;
 

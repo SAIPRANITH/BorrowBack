@@ -7,7 +7,6 @@ import {
  Star,
  IndianRupee,
  Calendar,
- User,
  AlertCircle,
  Loader,
  Trash2,

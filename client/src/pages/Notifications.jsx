@@ -8,7 +8,6 @@ import {
 
  CheckCheck,
 
- Package,
 
  PackagePlus,
 
@@ -26,7 +25,6 @@ import {
 
  IndianRupee,
 
- Sparkles,
 
  Inbox
 
@@ -366,21 +364,13 @@ export default function Notifications() {
 
  <div className="space-y-1.5">
 
- <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-
- <Sparkles className="w-3.5 h-3.5" />
-
- <span>Activity Center</span>
-
- </div>
-
  <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
 
  Notifications
 
  {unreadCount > 0 && (
 
- <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+ <span className="rounded-full border border-[#ff6258]/25 bg-[#ff493e]/15 px-2.5 py-0.5 text-xs font-bold text-[#ff8a80]">
 
  {unreadCount} new
 
@@ -669,4 +659,3 @@ export default function Notifications() {
  )
 
 }
-

@@ -22,7 +22,9 @@ export const AuthProvider = ({ children }) => {
 
  // Helper to extract clean user object from flat API response
  const extractUser = (data) => {
- const { success, token: _t, ...userData } = data;
+ const userData = { ...data };
+ delete userData.success;
+ delete userData.token;
  return userData;
  };
 

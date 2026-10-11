@@ -16,8 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
-import Card from '../components/Card';
-import Badge from '../components/Badge';
 import LoadingScreen from '../components/LoadingScreen';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
@@ -241,6 +239,9 @@ const DashboardScreen = () => {
             </View>
           )}
         </View>
+        <Text style={styles.developerCredit}>
+          Developed by <Text style={styles.developerName}>Sai Pranith Reddy Vaka</Text>
+        </Text>
         <View style={{ height: 40 }} />
         </ScrollView>
       </ImageBackground>
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   ambientImage: {
-    opacity: 0.55,
+    opacity: 0.16,
   },
   ambientOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -494,7 +495,20 @@ const styles = StyleSheet.create({
   emptyRecentText: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.sizes.sm,
-  }
+  },
+  developerCredit: {
+    marginTop: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    textAlign: 'center',
+  },
+  developerName: {
+    color: theme.colors.text,
+    fontWeight: theme.typography.weights.semibold,
+  },
 });
 
 export default DashboardScreen;

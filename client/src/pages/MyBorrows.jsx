@@ -28,7 +28,6 @@ import {
 
  Layers,
 
- Sparkles
 
 } from 'lucide-react'
 
@@ -413,7 +412,7 @@ export default function MyBorrows() {
 
  <Link to="/browse" className="btn-primary hover:animate-border-glow inline-flex items-center gap-2 text-sm">
 
- <Sparkles className="w-4 h-4" /> Browse Items
+ <Package className="w-4 h-4" /> Browse Items
 
  </Link>
 

@@ -19,11 +19,23 @@ export default function Profile() {
   });
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    phone: user?.phone || '',
-    profilePhoto: user?.profilePhoto || ''
+    phone: user?.phone || ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState('');
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreview('');
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(photoFile);
+    setPhotoPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [photoFile]);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -56,8 +68,7 @@ export default function Profile() {
     if (user) {
       setFormData({ 
         name: user.name, 
-        phone: user.phone || '',
-        profilePhoto: user.profilePhoto || '' 
+        phone: user.phone || ''
       });
       fetchProfileData();
     } else {
@@ -66,7 +77,24 @@ export default function Profile() {
   }, [user]);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((current) => ({ ...current, [e.target.name]: e.target.value }));
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Choose an image file.' });
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Choose an image smaller than 5 MB.' });
+      e.target.value = '';
+      return;
+    }
+    setPhotoFile(file);
+    setMessage(null);
   };
 
   const handleUpdateProfile = async (e) => {
@@ -74,14 +102,24 @@ export default function Profile() {
     setUpdating(true);
     setMessage(null);
     try {
-      const result = await updateUser(formData);
+      const profileData = photoFile ? new FormData() : {
+        name: formData.name,
+        phone: formData.phone,
+      };
+      if (photoFile) {
+        profileData.append('name', formData.name);
+        profileData.append('phone', formData.phone);
+        profileData.append('image', photoFile);
+      }
+      const result = await updateUser(profileData);
       if (result && result.success) {
+        setPhotoFile(null);
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
         setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage({ type: 'error', text: result?.message || 'Failed to update profile' });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'An unexpected error occurred' });
     }
     setUpdating(false);
@@ -119,8 +157,8 @@ export default function Profile() {
         <div className="px-6 sm:px-10 pb-8 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-14 relative z-10 mb-6">
             <div className="relative group">
-              {user?.profilePhoto ? (
-                <img src={user.profilePhoto} alt={user.name} className="w-28 h-28 rounded-2xl object-cover border-4 border-zinc-900 shadow-2xl" />
+              {photoPreview || user?.profilePhoto ? (
+                <img src={photoPreview || user.profilePhoto} alt={user.name} className="w-28 h-28 rounded-2xl object-cover border-4 border-zinc-900 shadow-2xl" />
               ) : (
                 <div className="w-28 h-28 rounded-2xl border-4 border-zinc-900 shadow-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white">
                   {initial}
@@ -318,17 +356,22 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-zinc-400 ml-1">Profile Photo URL</label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-3.5 w-5 h-5 text-zinc-400" />
-                    <input 
-                      type="url" 
-                      name="profilePhoto"
-                      value={formData.profilePhoto}
-                      onChange={handleInputChange}
-                      placeholder="https://example.com/photo.jpg"
-                      className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all text-sm placeholder:text-zinc-600"
+                  <label htmlFor="profile-photo" className="text-sm font-medium text-zinc-400 ml-1">Profile photo</label>
+                  <div className="mt-2 flex flex-wrap items-center gap-4">
+                    <label htmlFor="profile-photo" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:border-red-400/50 hover:bg-white/[0.04]">
+                      <User className="h-4 w-4 text-red-400" />
+                      Choose photo
+                    </label>
+                    <input
+                      id="profile-photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="sr-only"
                     />
+                    <span className="text-xs text-zinc-400">
+                      {photoFile ? `${photoFile.name} selected` : 'JPG, PNG or WebP · up to 5 MB'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -348,6 +391,7 @@ export default function Profile() {
               </div>
             </form>
           </div>
+
         </div>
 
         {/* Right Column: Account Actions */}
@@ -399,6 +443,25 @@ export default function Profile() {
               </Link>
             </div>
           </div>
+          <section className="glass-card rounded-3xl border border-white/5 bg-zinc-900/60 p-6 animate-scale-in">
+            <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-white">
+              <Mail className="h-5 w-5 text-red-400" />
+              Help &amp; support
+            </h2>
+            <p className="mb-5 text-sm leading-relaxed text-zinc-400">
+              Need help with your account, a return, or a payment? Get in touch.
+            </p>
+            <div className="space-y-3">
+              <a href="tel:8498970129" className="flex items-center gap-3 text-sm font-medium text-zinc-200 transition hover:text-white">
+                <Phone className="h-4 w-4 shrink-0 text-red-400" />
+                8498970129
+              </a>
+              <a href="mailto:saipranithreddyvaka@gmail.com" className="flex min-w-0 items-start gap-3 text-sm font-medium text-zinc-200 transition hover:text-white">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                <span className="break-all">saipranithreddyvaka@gmail.com</span>
+              </a>
+            </div>
+          </section>
         </div>
       </div>
     </div>

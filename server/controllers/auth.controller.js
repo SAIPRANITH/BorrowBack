@@ -103,9 +103,15 @@ export const updateProfile = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-      user.name = req.body.name || user.name;
-      user.phone = req.body.phone || user.phone;
-      user.profilePhoto = req.body.profilePhoto || user.profilePhoto;
+      if (typeof req.body.name === 'string' && req.body.name.trim()) {
+        user.name = req.body.name.trim();
+      }
+      if (typeof req.body.phone === 'string') {
+        user.phone = req.body.phone.trim();
+      }
+      if (req.file?.s3Url) {
+        user.profilePhoto = req.file.s3Url;
+      }
 
       const updatedUser = await user.save();
 

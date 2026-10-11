@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/api';
-import { Users, Package, ArrowRightLeft, Clock, AlertTriangle, Banknote, IndianRupee, Receipt, TrendingUp, TrendingDown, RefreshCw, Shield, Wifi, WifiOff, Database, Cloud, HardDrive, Mail, BarChart3, Bell as BellIcon, Server, Activity } from 'lucide-react';
+import { Users, Package, ArrowRightLeft, Clock, AlertTriangle, Banknote, IndianRupee, Receipt, TrendingUp, RefreshCw, Shield, Wifi, Database, Cloud, HardDrive, Mail, BarChart3, Bell as BellIcon, Activity } from 'lucide-react';
 
 const COLORS = ['#3b82f6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
 

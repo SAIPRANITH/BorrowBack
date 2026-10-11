@@ -15,7 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
-import EmptyState from '../components/EmptyState';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
 import TextInput from '../components/ThemedTextInput';
@@ -190,7 +189,7 @@ const BrowseScreen = () => {
         style={styles.ambientBackground}
       >
         <LinearGradient
-          colors={['rgba(5,5,5,0.42)', 'rgba(8,8,8,0.76)', 'rgba(8,8,8,0.92)']}
+          colors={['rgba(5,5,5,0.62)', 'rgba(8,8,8,0.84)', 'rgba(8,8,8,0.96)']}
           locations={[0, 0.48, 1]}
           style={styles.ambientOverlay}
         />
@@ -206,7 +205,7 @@ const BrowseScreen = () => {
           style={styles.header}
         >
           <LinearGradient
-            colors={['rgba(5,5,5,0.8)', 'rgba(22,8,8,0.6)', 'rgba(5,5,5,0.78)']}
+            colors={['rgba(5,5,5,0.88)', 'rgba(22,8,8,0.78)', 'rgba(5,5,5,0.88)']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.headerOverlay}
@@ -298,7 +297,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   ambientImage: {
-    opacity: 0.55,
+    opacity: 0.14,
   },
   ambientOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -327,7 +326,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,73,62,0.38)',
   },
   headerImage: {
-    opacity: 0.9,
+    opacity: 0.58,
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,

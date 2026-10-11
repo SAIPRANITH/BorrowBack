@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Text from './ThemedText';
 import { theme } from '../theme';
 
@@ -55,13 +55,14 @@ const Button = ({
           borderColor: getBorderColor(),
           borderWidth: variant === 'outline' ? 1 : 0,
         },
-        style
+        style,
+        (disabled || loading) && styles.disabledButton
       ]}
     >
       {loading ? (
         <ActivityIndicator color={getTextColor()} size="small" />
       ) : (
-        <Text style={[styles.text, { color: getTextColor() }, textStyle]}>
+        <Text style={[styles.text, { color: getTextColor() }, textStyle, (disabled || loading) && styles.disabledButtonText]}>
           {title}
         </Text>
       )}
@@ -88,6 +89,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.16,
     shadowRadius: 6,
     elevation: 2,
+  },
+  disabledButton: {
+    backgroundColor: '#343434',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  disabledButtonText: {
+    color: '#e5e5e5',
   },
   fullWidth: {
     width: '100%',

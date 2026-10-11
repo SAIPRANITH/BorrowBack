@@ -10,7 +10,9 @@ const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 // Helper: extract user fields from the flat API response (strips success/token)
 const extractUser = (data) => {
   if (!data) return null;
-  const { success, token, ...user } = data;
+  const user = { ...data };
+  delete user.success;
+  delete user.token;
   return user;
 };
 

@@ -10,7 +10,9 @@ export default function Navbar() {
  const loc = useLocation()
  
  useEffect(() => {
- api.get('/notifications/unread-count').then(r => { if (r.data.success) setUnread(r.data.count) }).catch(() => {})
+ api.get('/notifications/unread-count')
+   .then(r => { if (r.data.success) setUnread(r.data.count) })
+   .catch(error => console.error('Failed to load unread alert count:', error))
  }, [loc])
 
  const links = user?.role === 'admin' ? [
@@ -44,8 +46,8 @@ export default function Navbar() {
  <div className="brand-mark relative overflow-hidden flex items-center justify-center">
  <img src="/icons/borrowback-mark.svg" alt="" className="relative z-10 w-7 h-7" />
  </div>
- <span className="text-2xl font-bold tracking-tight text-white group-hover:text-cyan-50 transition-colors">
- Borrow<span className="text-cyan-300">Back</span>
+ <span className="text-2xl font-bold tracking-tight text-white group-hover:text-white transition-colors">
+ Borrow<span className="text-[#ff6258]">Back</span>
  </span>
  </Link>
 
@@ -64,22 +66,22 @@ export default function Navbar() {
  to={l.path}
  className={`group flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden ${
  active 
- ? 'text-cyan-200 bg-cyan-500/[0.08] border border-cyan-400/15 shadow-sm'
+ ? 'text-[#ff8a80] bg-[#ff493e]/[0.08] border border-[#ff6258]/20 shadow-sm'
  : 'text-zinc-400 hover:text-zinc-100 border border-transparent hover:bg-white/[0.04]'
  }`}
  >
  {/* Active background subtle glow */}
- {active && <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/[0.04] to-transparent"></div>}
- {active && <div className="absolute left-0 top-1/4 bottom-1/4 w-[3px] bg-cyan-500/70 rounded-r-md"></div>}
+ {active && <div className="absolute inset-0 bg-gradient-to-r from-[#ff493e]/[0.05] to-transparent"></div>}
+ {active && <div className="absolute left-0 top-1/4 bottom-1/4 w-[3px] bg-[#ff6258] rounded-r-md"></div>}
  
  <div className="flex items-center gap-3 relative z-10">
- <div className={`p-1.5 rounded-lg transition-all duration-300 ${active ? 'text-cyan-300' : 'text-zinc-500 group-hover:text-cyan-300 group-hover:bg-cyan-500/[0.06]'}`}>
+ <div className={`p-1.5 rounded-lg transition-all duration-300 ${active ? 'text-[#ff6258]' : 'text-zinc-500 group-hover:text-[#ff8a80] group-hover:bg-[#ff493e]/[0.06]'}`}>
  <l.icon strokeWidth={2} className={`w-5 h-5 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`} />
  </div>
  <span className="tracking-wide">{l.name}</span>
  </div>
  
- {active && <ChevronRight className="w-4 h-4 text-cyan-300/50 absolute right-3 transition-transform group-hover:translate-x-1" />}
+ {active && <ChevronRight className="w-4 h-4 text-[#ff8a80]/60 absolute right-3 transition-transform group-hover:translate-x-1" />}
  </Link>
  )
  })}
@@ -89,34 +91,38 @@ export default function Navbar() {
  <div className="mt-auto shrink-0 space-y-3">
  <Link
  to="/notifications"
- className="relative flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-bold text-zinc-300 bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all group overflow-hidden"
+ className="relative flex min-h-12 items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-zinc-200 bg-white/[0.025] border border-white/[0.08] hover:border-white/15 hover:bg-white/[0.04] transition-colors group"
+ aria-label={unread > 0 ? `Alerts, ${unread} unread` : 'Alerts'}
  >
  <div className="flex items-center gap-3 relative z-10">
- <Bell className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors group-hover:animate-swing" />
+ <Bell className="w-5 h-5 text-[#ff6258] transition-colors" />
  Alerts
  </div>
  {unread > 0 ? (
- <span className="relative z-10 w-6 h-6 flex items-center justify-center rounded-full bg-cyan-500 text-xs font-black text-[#0a0a0e] shadow-[0_0_12px_rgba(34,211,238,0.5)]">
+ <span className="relative z-10 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#ff493e] px-1 text-xs font-bold text-white">
  {unread > 9 ? '9+' : unread}
  </span>
  ) : null}
  </Link>
 
- <div className="p-4 rounded-2xl bg-zinc-900/60 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors shadow-lg shadow-black/20">
+ <div className="flex items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
  <Link to="/profile" className="flex items-center gap-3 flex-1 min-w-0">
- <div className="w-11 h-11 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-white font-bold text-base shadow-inner shrink-0 relative">
- {user?.name?.[0]?.toUpperCase() || 'U'}
+ <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 text-sm font-bold text-white shadow-inner">
+ {user?.profilePhoto ? (
+   <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
+ ) : (user?.name?.[0]?.toUpperCase() || 'U')}
  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#09090b] shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
  </div>
- <div className="flex flex-col min-w-0 pr-2">
- <span className="text-[15px] font-bold text-zinc-100 truncate group-hover:text-cyan-400 transition-colors">{user?.name || 'My Account'}</span>
- <span className="text-xs font-medium text-zinc-500 truncate">{user?.email || 'user@example.com'}</span>
+ <div className="flex min-w-0 flex-col">
+ <span title={user?.name || 'My Account'} className="truncate text-sm font-semibold text-zinc-100">{user?.name || 'My Account'}</span>
+ <span title={user?.email || ''} className="truncate text-[11px] font-medium text-zinc-400">{user?.email || 'Account details'}</span>
  </div>
  </Link>
  <button
  onClick={logout}
- className="p-2.5 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+ className="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
  title="Sign Out"
+ aria-label="Sign out"
  >
  <LogOut className="w-5 h-5" />
  </button>
@@ -131,13 +137,13 @@ export default function Navbar() {
  <img src="/icons/borrowback-mark.svg" alt="" className="w-5 h-5" />
  </div>
  <span className="text-lg font-bold tracking-tight text-white">
- Borrow<span className="text-cyan-300">Back</span>
+ Borrow<span className="text-[#ff6258]">Back</span>
  </span>
  </Link>
  <div className="flex items-center gap-3 relative z-10">
- <Link to="/notifications" className="relative p-2 rounded-xl bg-white/5 text-zinc-400">
+ <Link to="/notifications" aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} className="relative rounded-xl bg-white/5 p-2 text-zinc-300">
  <Bell className="w-5 h-5" />
- {unread > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white">{unread}</span>}
+ {unread > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ff493e] px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span>}
  </Link>
  </div>
  </header>
@@ -155,7 +161,7 @@ export default function Navbar() {
  key={l.path}
  to={l.path}
  className={`flex flex-col items-center justify-center w-14 h-full gap-1 transition-colors ${
- active ? 'text-cyan-200' : 'text-zinc-500 hover:text-zinc-300'
+ active ? 'text-[#ff8a80]' : 'text-zinc-500 hover:text-zinc-300'
  }`}
  >
  <l.icon className="w-5 h-5" />

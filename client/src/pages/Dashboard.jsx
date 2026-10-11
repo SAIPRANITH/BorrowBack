@@ -15,7 +15,6 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
-  Calendar,
   Clock
 } from 'lucide-react';
 
@@ -348,6 +347,9 @@ export default function Dashboard() {
 
         </div>
       </div>
+      <p className="dashboard-developer-credit">
+        Developed by <strong>Sai Pranith Reddy Vaka</strong>
+      </p>
     </div>
   );
 }
