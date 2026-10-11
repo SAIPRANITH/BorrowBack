@@ -611,11 +611,13 @@ textarea:focus-visible,
     radial-gradient(circle at 55% 91%, rgba(255, 139, 125, 0.24) 0 1px, transparent 2px),
     radial-gradient(circle at 18% 59%, transparent 0 82px, rgba(255, 105, 91, 0.045) 83px, transparent 85px),
     radial-gradient(circle at 18% 59%, transparent 0 111px, rgba(255, 255, 255, 0.02) 112px, transparent 114px),
-    radial-gradient(circle at 34% 39%, transparent 0 126px, rgba(255, 105, 91, 0.065) 127px, transparent 129px),
-    radial-gradient(circle at 34% 39%, transparent 0 168px, rgba(255, 255, 255, 0.025) 169px, transparent 171px),
-    radial-gradient(circle at 63% 82%, transparent 0 176px, rgba(255, 105, 91, 0.045) 177px, transparent 179px),
+    radial-gradient(circle at 34% 39%, transparent 0 126px, rgba(255, 105, 91, 0.09) 127px, transparent 129px),
+    radial-gradient(circle at 34% 39%, transparent 0 168px, rgba(255, 255, 255, 0.035) 169px, transparent 171px),
+    radial-gradient(circle at 63% 82%, transparent 0 176px, rgba(255, 105, 91, 0.07) 177px, transparent 179px),
+    radial-gradient(circle, rgba(255, 139, 125, 0.24) 0 1px, transparent 1.5px) 0 0 / 48px 48px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.12) 0 1px, transparent 1.5px) 24px 24px / 96px 96px,
     repeating-linear-gradient(0deg, transparent 0 219px, rgba(255, 255, 255, 0.012) 220px);
-  opacity: 0.38;
+  opacity: 0.48;
   animation: none;
 }
 
