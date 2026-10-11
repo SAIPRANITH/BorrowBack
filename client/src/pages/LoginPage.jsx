@@ -16,20 +16,16 @@ export default function LoginPage() {
  : ''
  )
  const [loading, setLoading] = useState(false)
- const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
+
  // Redirect if already logged in
  useEffect(() => {
  if (user) navigate('/')
  }, [user, navigate])
 
- const handleMouseMove = (e) => {
- // Parallax effect calculations
- const x = (e.clientX / window.innerWidth - 0.5) * 20
- const y = (e.clientY / window.innerHeight - 0.5) * 20
- setMousePos({ x, y })
- }
 
+
+
  const handleSubmit = async (e) => {
  e.preventDefault()
  setError('')
@@ -45,36 +41,7 @@ export default function LoginPage() {
  }
 
  return (
- <div 
- className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#0a0a0e] selection:bg-cyan-500/30 text-zinc-100"
- onMouseMove={handleMouseMove}
- >
- {/* ================= BACKGROUND EFFECTS ================= */}
- <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
- {/* Dynamic Grid */}
- <div 
- className="absolute inset-0 opacity-[0.03]"
- style={{
- backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
- backgroundSize: '40px 40px',
- transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px)`
- }}
- />
-
- {/* Floating Glowing Orbs */}
- <div 
- className="absolute top-[10%] left-[20%] w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-[120px] animate-pulse-glow"
- style={{ transform: `translate(${-mousePos.x * 2}px, ${-mousePos.y * 2}px)` }}
- />
- <div 
- className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[150px] "
- style={{ transform: `translate(${mousePos.x * 3}px, ${mousePos.y * 3}px)`, animationDelay: '1s' }}
- />
- <div 
- className="absolute top-[40%] right-[30%] w-[300px] h-[300px] bg-purple-500/15 rounded-full blur-[100px] animate-pulse-glow"
- style={{ transform: `translate(${mousePos.x * 1.5}px, ${-mousePos.y * 1.5}px)`, animationDelay: '2s' }}
- />
- </div>
+ <div className="auth-page auth-page--login min-h-screen relative flex items-center justify-center overflow-hidden text-zinc-100">
 
  {/* ================= CONTENT CONTAINER ================= */}
  <div className="relative z-10 w-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
@@ -102,18 +69,16 @@ export default function LoginPage() {
  </div>
 
  {/* Right Side: Login Card */}
- <div 
- className="w-full max-w-[440px] flex-shrink-0"
- style={{ transform: `perspective(1000px) rotateX(${-mousePos.y * 0.15}deg) rotateY(${mousePos.x * 0.15}deg)` }}
- >
- <div className="bg-[#13141c]/80 backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-[2rem] p-8 sm:p-10 relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+ <div className="w-full max-w-[440px] flex-shrink-0">
+
+ <div className="auth-card p-8 sm:p-10 relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
  
  {/* Subtle inner highlight */}
  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
  {/* Logo & Header */}
  <div className="text-center mb-8 relative">
- <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-cyan-500/30 mb-5 relative group">
+ <div className="auth-logo-mark inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 relative group">
  <Package className="w-8 h-8 text-white relative z-10" />
  <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
  </div>
@@ -188,7 +153,7 @@ export default function LoginPage() {
  <button
  type="submit"
  disabled={loading}
- className="w-full mt-2 py-4 rounded-xl font-bold text-[15px] text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-[0_4px_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden relative"
+ className="auth-submit w-full mt-2 py-4 rounded-xl font-bold text-[15px] text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden relative"
  >
  {/* Shimmer effect inside button */}
  <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />

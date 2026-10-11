@@ -37,7 +37,7 @@ export default function Navbar() {
  return (
  <>
  {/* ================= DESKTOP SIDEBAR ================= */}
- <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 bg-[#0c1117]/95 backdrop-blur-xl border-r border-white/[0.06] z-50 p-5 overflow-y-auto custom-scrollbar">
+ <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 bg-[#1b1c18]/95 backdrop-blur-xl border-r border-white/[0.06] z-50 p-5 overflow-y-auto custom-scrollbar">
 
  {/* Logo */}
  <Link to="/" className="relative z-10 flex items-center gap-3 mb-10 group shrink-0">
@@ -125,7 +125,7 @@ export default function Navbar() {
  </aside>
 
  {/* ================= MOBILE TOP HEADER ================= */}
- <header className="md:hidden fixed top-0 inset-x-0 h-16 bg-[#0c1117]/95 backdrop-blur-xl border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
+ <header className="md:hidden fixed top-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-b border-white/[0.06] z-50 flex items-center justify-between px-4">
  <Link to="/" className="flex items-center gap-2 relative z-10">
  <div className="w-8 h-8 rounded-lg bg-cyan-900/40 border border-cyan-500/20 flex items-center justify-center">
  <Package className="w-4 h-4 text-white" />
@@ -143,7 +143,7 @@ export default function Navbar() {
  </header>
 
  {/* ================= MOBILE BOTTOM NAV ================= */}
- <div className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-[#0c1117]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 flex items-center justify-around px-1 pb-safe">
+ <div className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-[#1b1c18]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 flex items-center justify-around px-1 pb-safe">
  {mobileLinks.map(l => {
  const active = l.path === '/'
   ? loc.pathname === '/'

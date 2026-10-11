@@ -8,7 +8,8 @@ import {
   ScrollView,
   RefreshControl,
   SafeAreaView,
-  ActivityIndicator
+  ActivityIndicator,
+  ImageBackground
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -183,7 +184,12 @@ const BrowseScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
+        <ImageBackground
+          source={require('../../assets/bg-browse.jpg')}
+          imageStyle={styles.headerImage}
+          style={styles.header}
+        >
+          <View style={styles.headerOverlay} />
           <View style={styles.headerIntro}>
             <View>
               <Text style={styles.headerEyebrow}>THE CAMPUS EXCHANGE</Text>
@@ -217,7 +223,7 @@ const BrowseScreen = () => {
               </TouchableOpacity>
             ) : null}
           </View>
-        </View>
+        </ImageBackground>
 
         <View style={styles.categoriesWrapper}>
           <ScrollView
@@ -269,10 +275,17 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.lg,
     paddingBottom: 12,
+    overflow: 'hidden',
+  },
+  headerImage: {
+    opacity: 0.9,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(20, 21, 18, 0.72)',
   },
   headerIntro: {
     flexDirection: 'row',
@@ -295,7 +308,7 @@ const styles = StyleSheet.create({
   resultPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#39775514',
+    backgroundColor: 'rgba(25, 26, 22, 0.75)',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 7,
     borderRadius: theme.borderRadius.full,

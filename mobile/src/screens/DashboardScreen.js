@@ -7,6 +7,7 @@ import {
   FlatList,
   RefreshControl,
   Image,
+  ImageBackground,
   SafeAreaView,
   Alert
 } from 'react-native';
@@ -142,7 +143,12 @@ const DashboardScreen = () => {
         style={styles.container}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
       >
-        <View style={styles.header}>
+        <ImageBackground
+          source={require('../../assets/bg-dashboard.jpg')}
+          imageStyle={styles.headerImage}
+          style={styles.header}
+        >
+          <View style={styles.headerOverlay} />
           <View style={styles.headerTop}>
             <View style={styles.headerCopy}>
               <Text style={styles.headerEyebrow}>BORROWBACK</Text>
@@ -167,7 +173,7 @@ const DashboardScreen = () => {
             <Ionicons name="heart" size={13} color="#f1d69a" />
             <Text style={styles.headerFooterText}>Borrow what you need. Lend what you can.</Text>
           </View>
-        </View>
+        </ImageBackground>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your activity</Text>
@@ -228,15 +234,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: theme.colors.surface,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 22,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    overflow: 'hidden',
     ...theme.shadows.card,
+  },
+  headerImage: {
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(20, 21, 18, 0.72)',
   },
   headerTop: {
     flexDirection: 'row',
@@ -268,7 +280,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceRaised,
+    backgroundColor: 'rgba(25, 26, 22, 0.78)',
     borderRadius: theme.borderRadius.full,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 6,
@@ -286,7 +298,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceRaised,
+    backgroundColor: 'rgba(25, 26, 22, 0.78)',
     position: 'relative',
   },
   badge: {

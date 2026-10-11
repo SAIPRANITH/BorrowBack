@@ -64,29 +64,28 @@ export default function RegisterPage() {
  ]
 
  return (
- <div className="min-h-screen flex bg-[#09090b] text-zinc-100 selection:bg-blue-500/30 selection:text-white">
+ <div className="auth-page auth-page--register min-h-screen flex text-zinc-100 selection:bg-blue-500/30 selection:text-white">
  {/* Left: Campus background image + community perks */}
  <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
  {/* Background Photo */}
  <div
- className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
+ className="absolute inset-0 bg-cover bg-center"
  style={{
  backgroundImage:
- "url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1400&auto=format&fit=crop')",
+ 'url("/images/item-camping.jpg")',
  }}
  />
 
  {/* Dark layered overlays that keep the photo visible */}
- <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/60 to-slate-950/90" />
- <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/40" />
- <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none " />
- <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none " style={{ animationDelay: '1s' }} />
+ <div className="absolute inset-0 bg-gradient-to-r from-stone-950/72 via-stone-950/55 to-stone-950/82" />
 
+ <div className="absolute inset-0 bg-gradient-to-t from-stone-950/75 via-transparent to-stone-950/35" />
+
  {/* Content */}
  <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
  {/* Brand Header */}
  <div className="flex items-center gap-3 animate-scale-in">
- <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-xl shadow-cyan-500/25 border border-white/20 ">
+ <div className="auth-logo-mark w-12 h-12 rounded-2xl flex items-center justify-center border border-white/20 ">
  <Package className="w-6 h-6 text-white animate-bounce-soft" />
  </div>
  <div>
@@ -143,16 +142,11 @@ export default function RegisterPage() {
 
  {/* Right: Register Form */}
  <div className="flex-1 flex items-center justify-center relative z-10 p-6 sm:p-10 lg:p-16 overflow-y-auto">
- <div className="absolute inset-0 overflow-hidden pointer-events-none">
- <div className="absolute w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[160px] -top-32 -right-32 " />
- <div className="absolute w-[400px] h-[400px] bg-cyan-600/8 rounded-full blur-[140px] -bottom-32 -left-20 " style={{ animationDelay: '1.5s' }} />
- </div>
-
- <div className="w-full max-w-md relative z-10 animate-scale-in my-auto py-6 glass-card p-8 rounded-3xl border border-white/10 shadow-2xl animate-border-glow">
+ <div className="auth-card w-full max-w-md relative z-10 my-auto py-6 p-8">
  {/* Mobile Header Logo */}
  <div className="lg:hidden text-center mb-8">
  <div className="inline-flex items-center gap-3 mb-2">
- <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/25 ">
+ <div className="auth-logo-mark w-11 h-11 rounded-2xl flex items-center justify-center">
  <Package className="w-6 h-6 text-white animate-bounce-soft" />
  </div>
  <span className="text-2xl font-black text-gradient text-glow-cyan">BorrowBack</span>

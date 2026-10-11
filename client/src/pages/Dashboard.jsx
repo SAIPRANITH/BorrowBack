@@ -105,7 +105,7 @@ export default function Dashboard() {
       {/* Welcome Hero Section */}
       <div
         className="page-hero animate-fade-in-up stagger-1"
-        style={{ backgroundImage: 'url("/images/bg-dashboard.jpg")' }}
+        style={{ backgroundImage: 'url("/images/item-camping.jpg")' }}
       >
         <div className="page-hero-overlay" />
         <div className="page-hero-content flex flex-col md:flex-row md:items-center justify-between gap-5">

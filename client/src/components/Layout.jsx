@@ -12,11 +12,7 @@ export default function Layout() {
  }, [location.pathname])
 
  return (
- <div className="min-h-screen relative flex flex-col md:flex-row bg-[#0c1117]">
- <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
- <div className="absolute -top-48 right-[-8rem] h-[32rem] w-[32rem] rounded-full bg-cyan-900/[0.08] blur-[140px]" />
- <div className="absolute -bottom-56 left-1/4 h-[30rem] w-[30rem] rounded-full bg-slate-700/[0.06] blur-[140px]" />
- </div>
+ <div className="classy-app min-h-screen relative flex flex-col md:flex-row bg-[#171916]">
 
  {/* The Sidebar */}
  <Navbar />
