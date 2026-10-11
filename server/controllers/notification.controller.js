@@ -1,4 +1,42 @@
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+
+const isExpoPushToken = (token) =>
+  typeof token === 'string' && /^(Expo|Exponent)PushToken\[[^\]]+\]$/.test(token);
+
+export const registerPushToken = async (req, res, next) => {
+  try {
+    const { pushToken } = req.body;
+    if (!isExpoPushToken(pushToken)) {
+      res.status(400);
+      throw new Error('A valid Expo push token is required');
+    }
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $addToSet: { pushTokens: pushToken },
+    });
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removePushToken = async (req, res, next) => {
+  try {
+    const { pushToken } = req.body;
+    if (!isExpoPushToken(pushToken)) {
+      res.status(400);
+      throw new Error('A valid Expo push token is required');
+    }
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { pushTokens: pushToken },
+    });
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getNotifications = async (req, res, next) => {
   try {

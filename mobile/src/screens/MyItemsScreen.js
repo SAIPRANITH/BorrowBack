@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Image,
   FlatList,
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import api from '../api/api';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
 import { Card, Badge, EmptyState } from '../components';
 
 const MyItemsScreen = () => {

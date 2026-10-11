@@ -4,7 +4,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -13,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
 
 const LoginScreen = ({ navigation }) => {
   const { login, error, clearError } = useAuth();

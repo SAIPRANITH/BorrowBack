@@ -6,8 +6,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -15,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
+import TextInput from '../components/ThemedTextInput';
 import api from '../api/api';
 
 const formatMoney = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;

@@ -63,6 +63,7 @@ mobile client.
 | `server/controllers/item.controller.js` | Creates, reads, updates, and removes item listings. |
 | `server/controllers/moneyloan.controller.js` | Handles money-loan requests and their lifecycle. |
 | `server/controllers/notification.controller.js` | Reads and updates user notifications. |
+| `server/services/pushNotificationService.js` | Sends saved notifications to registered Expo devices. |
 | `server/middleware/auth.js` | Verifies bearer tokens and attaches the authenticated user to a request. |
 | `server/middleware/errorHandler.js` | Formats API errors into consistent JSON responses. |
 | `server/middleware/metricsMiddleware.js` | Collects request metrics for the monitoring service. |
@@ -100,6 +101,8 @@ mobile client.
 | `mobile/src/components/index.js` | Re-exports the shared mobile components. |
 | `mobile/src/components/Input.js` | Provides a styled, reusable form input. |
 | `mobile/src/components/LoadingScreen.js` | Displays the shared loading state. |
+| `mobile/src/components/ThemedText.js` | Applies readable light text by default while preserving explicit text colors. |
+| `mobile/src/components/ThemedTextInput.js` | Applies readable text and placeholder colors to mobile inputs. |
 | `mobile/src/screens/AddItemScreen.js` | Creates a new item listing from the mobile app. |
 | `mobile/src/screens/AdminScreen.js` | Shows administrator overview, service health, alerts, recent loans, and account summaries. |
 | `mobile/src/screens/BorrowsScreen.js` | Displays borrowing requests and their status. |
@@ -115,6 +118,16 @@ mobile client.
 | `mobile/src/screens/PlaceholderScreen.js` | Shows the shared placeholder for screens awaiting implementation. |
 | `mobile/src/screens/ProfileScreen.js` | Displays and updates the mobile user profile. |
 | `mobile/src/screens/RegisterScreen.js` | Creates an account from the mobile app. |
+
+### Mobile push notifications
+
+The mobile app registers for push notifications after sign-in. Set
+`EXPO_PUBLIC_EAS_PROJECT_ID` to the app's EAS project ID before creating a
+native build, then configure Android push credentials for that project in EAS
+and rebuild the app. The API server must also be deployed with the push-token
+registration endpoints and Expo delivery service. Without the project ID or
+Android credentials, in-app notifications continue to work but push
+notifications cannot be delivered while the app is closed.
 
 ## Setup
 

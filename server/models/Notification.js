@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { sendPushNotification } from '../services/pushNotificationService.js';
 
 const notificationSchema = new mongoose.Schema({
   user: {
@@ -37,6 +38,18 @@ const notificationSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+notificationSchema.pre('save', function trackNewNotification() {
+  this.$locals.wasNew = this.isNew;
+});
+
+notificationSchema.post('save', function notifyDevice(notification) {
+  if (!notification.$locals.wasNew) return;
+
+  sendPushNotification(notification).catch((error) => {
+    console.error('Failed to send notification push:', error);
+  });
 });
 
 const Notification = mongoose.model('Notification', notificationSchema);

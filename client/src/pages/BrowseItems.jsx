@@ -33,8 +33,16 @@ export default function BrowseItems() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Browse Items</h1>
+      <div
+        className="page-hero"
+        style={{ backgroundImage: 'url("/images/bg-browse.jpg")' }}
+      >
+        <div className="page-hero-overlay" />
+        <div className="page-hero-content">
+          <p className="text-xs font-semibold uppercase tracking-wider text-cyan-200 mb-2">Campus exchange</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Browse Items</h1>
+          <p className="text-sm text-zinc-300 mt-2">Find something useful to borrow from your campus community.</p>
+        </div>
       </div>
 
       <div className="glass-card p-4 flex flex-col md:flex-row gap-4">

@@ -103,8 +103,12 @@ export default function Dashboard() {
     <div className="pb-10 max-w-7xl mx-auto space-y-6">
       
       {/* Welcome Hero Section */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#161b1f]/90 shadow-lg animate-fade-in-up stagger-1">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 p-6 sm:p-8">
+      <div
+        className="page-hero animate-fade-in-up stagger-1"
+        style={{ backgroundImage: 'url("/images/bg-dashboard.jpg")' }}
+      >
+        <div className="page-hero-overlay" />
+        <div className="page-hero-content flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
             <p className="text-zinc-500 text-xs font-semibold mb-2 uppercase tracking-wider">{today}</p>
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">

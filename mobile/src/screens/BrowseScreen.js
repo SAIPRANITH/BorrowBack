@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Image,
-  TextInput,
   FlatList,
   TouchableOpacity,
   ScrollView,
@@ -17,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../api/api';
 import EmptyState from '../components/EmptyState';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
+import TextInput from '../components/ThemedTextInput';
 
 const CATEGORIES = [
   'All',

@@ -37,7 +37,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
-    }
+    },
+    pushTokens: {
+      type: [String],
+      default: [],
+      select: false,
+    },
   },
   {
     timestamps: true,

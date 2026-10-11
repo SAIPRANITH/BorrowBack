@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Alert,
   Image,
   TouchableOpacity,
   Platform,
-  TextInput,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +15,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
+import TextInput from '../components/ThemedTextInput';
 import { Button, Badge, LoadingScreen, Card } from '../components';
 import ExternalPaymentModal from '../components/ExternalPaymentModal';
 

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   View, 
-  Text, 
   StyleSheet, 
   KeyboardAvoidingView, 
   Platform, 
@@ -13,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
 
 const RegisterScreen = ({ navigation }) => {
   const { register, loading, error, clearError } = useAuth();

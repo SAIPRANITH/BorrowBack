@@ -4,6 +4,8 @@ import {
   markAsRead,
   markAllAsRead,
   getUnreadCount,
+  registerPushToken,
+  removePushToken,
 } from '../controllers/notification.controller.js';
 import { protect } from '../middleware/auth.js';
 
@@ -13,6 +15,8 @@ router.use(protect);
 
 router.get('/', getNotifications);
 router.get('/unread-count', getUnreadCount);
+router.post('/push-token', registerPushToken);
+router.delete('/push-token', removePushToken);
 router.put('/read-all', markAllAsRead);
 router.put('/:id/read', markAsRead);
 

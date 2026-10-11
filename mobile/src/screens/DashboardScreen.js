@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import Card from '../components/Card';
 import Badge from '../components/Badge';
 import LoadingScreen from '../components/LoadingScreen';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
 
 const DashboardScreen = () => {
   const navigation = useNavigation();

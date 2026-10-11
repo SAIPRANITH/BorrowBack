@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Text from './ThemedText';
+import TextInput from './ThemedTextInput';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
 

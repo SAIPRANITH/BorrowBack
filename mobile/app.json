@@ -2,7 +2,7 @@
   "expo": {
     "name": "BorrowBack",
     "slug": "borrowback",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.borrowback.campus",
-      "versionCode": 14,
+      "versionCode": 15,
       "adaptiveIcon": {
         "backgroundColor": "#0c1117",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -24,6 +24,7 @@
     },
     "plugins": [
       "expo-font",
+      "expo-notifications",
       [
         "expo-image-picker",
         {

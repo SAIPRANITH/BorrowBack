@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Alert,
@@ -15,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import api from '../api/api';
 import { theme } from '../theme';
+import Text from '../components/ThemedText';
 import { Input, Button, Card } from '../components';
 
 const CATEGORIES = [

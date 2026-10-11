@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { AppState, DeviceEventEmitter } from 'react-native';
+import { AppState, DeviceEventEmitter, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 import api from '../api/api';
 
 const AuthContext = createContext();
@@ -11,6 +12,38 @@ const extractUser = (data) => {
   if (!data) return null;
   const { success, token, ...user } = data;
   return user;
+};
+
+const registerForPushNotifications = async () => {
+  if (Platform.OS === 'web') return;
+
+  const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+  if (!projectId) {
+    console.warn('Push notifications are disabled until EXPO_PUBLIC_EAS_PROJECT_ID is configured.');
+    return;
+  }
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'BorrowBack updates',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      sound: 'default',
+    });
+  }
+
+  let { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') {
+    ({ status } = await Notifications.requestPermissionsAsync());
+  }
+  if (status !== 'granted') {
+    console.warn('Push notifications are disabled because notification permission was not granted.');
+    return;
+  }
+
+  const pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  await api.post('/notifications/push-token', { pushToken });
+  await AsyncStorage.setItem('pushToken', pushToken);
 };
 
 export const AuthProvider = ({ children }) => {
@@ -78,6 +111,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
+      const pushToken = await AsyncStorage.getItem('pushToken');
+      if (pushToken) {
+        try {
+          await api.delete('/notifications/push-token', { data: { pushToken } });
+        } catch (e) {
+          console.error('Failed to unregister push notifications', e);
+        }
+        await AsyncStorage.removeItem('pushToken');
+      }
       await AsyncStorage.removeItem('userToken');
       setToken(null);
       setUser(null);
@@ -86,6 +128,15 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout failed', e);
     }
   }, []);
+
+  useEffect(() => {
+    if (!token) return undefined;
+
+    registerForPushNotifications().catch((e) => {
+      console.error('Failed to register for push notifications', e);
+    });
+    return undefined;
+  }, [token]);
 
   useEffect(() => {
     const loadToken = async () => {
