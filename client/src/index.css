@@ -562,6 +562,8 @@ textarea:focus-visible,
     radial-gradient(ellipse at 76% 20%, rgba(255, 73, 62, 0.13), transparent 32%),
     radial-gradient(ellipse at 58% 78%, rgba(255, 73, 62, 0.05), transparent 40%),
     var(--surface-black);
+  background-size: 100% 100%, 155% 145%, 145% 155%, 100% 100%;
+  animation: ambient-light-drift 48s ease-in-out infinite alternate;
 }
 
 .auth-page::before {
@@ -575,6 +577,30 @@ textarea:focus-visible,
     radial-gradient(ellipse at 76% 34%, rgba(255, 73, 62, 0.14), transparent 38%),
     radial-gradient(ellipse at 35% 86%, rgba(255, 73, 62, 0.045), transparent 40%),
     var(--surface-black);
+  background-size: 100% 100%, 155% 145%, 145% 155%, 100% 100%;
+  animation: ambient-light-drift 48s ease-in-out infinite alternate;
+}
+
+.classy-app::after,
+.auth-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url("/images/ambient-line-art.svg") no-repeat 72% 50% / min(78vw, 920px) auto;
+  opacity: 0.11;
+  animation: ambient-art-drift 64s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-light-drift {
+  from { background-position: 0 0, 0% 35%, 100% 100%, 0 0; }
+  to { background-position: 0 0, 100% 65%, 0% 0%, 0 0; }
+}
+
+@keyframes ambient-art-drift {
+  from { background-position: 72% 50%; }
+  to { background-position: 68% 48%; }
 }
 
 .auth-background-art,
@@ -799,6 +825,13 @@ textarea:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .classy-app::before,
+  .auth-page::before,
+  .classy-app::after,
+  .auth-page::after {
+    animation: none;
+  }
+
   .auth-background-mark,
   .site-background-mark {
     animation: none;
