@@ -10,6 +10,7 @@ export default function LoginPage() {
  
  const [email, setEmail] = useState('')
  const [password, setPassword] = useState('')
+ const [heroLine, setHeroLine] = useState('Lend what you can.')
  const [error, setError] = useState(
  location.state?.reason === 'inactivity'
  ? 'You were signed out after 5 minutes of inactivity. Please sign in again.'
@@ -22,11 +23,28 @@ export default function LoginPage() {
  useEffect(() => {
  if (user) navigate('/')
  }, [user, navigate])
-
-
 
 
- const handleSubmit = async (e) => {
+ useEffect(() => {
+ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+ const heroLines = [
+ 'Lend what you can.',
+ 'Share what you have.',
+ 'Pass good things on.',
+ ]
+ const intervalId = window.setInterval(() => {
+ setHeroLine(current => {
+ const choices = heroLines.filter(line => line !== current)
+ return choices[Math.floor(Math.random() * choices.length)]
+ })
+ }, 5000)
+
+ return () => window.clearInterval(intervalId)
+ }, [])
+
+
+ const handleSubmit = async (e) => {
  e.preventDefault()
  setError('')
  setLoading(true)
@@ -52,10 +70,10 @@ export default function LoginPage() {
  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-semibold backdrop-blur-md">
  Borrowing and lending on campus
  </div>
- <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+ <h1 className="login-hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.02]">
  Borrow what you need. <br />
- <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
- Lend what you can.
+ <span key={heroLine} className="login-hero-highlight">
+ {heroLine}
  </span>
  </h1>
  <p className="text-zinc-400 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
@@ -67,7 +85,10 @@ export default function LoginPage() {
  <p className="text-sm text-zinc-300">Track returns<br /><span className="text-xs text-zinc-500">Keep due dates and status together.</span></p>
  <p className="text-sm text-zinc-300">Record payments<br /><span className="text-xs text-zinc-500">Confirm them with the other person.</span></p>
  </div>
- </div>
+ <p className="login-developer-credit">
+ Built with care by <strong>Sai Pranith Reddy Vaka</strong>
+ </p>
+ </div>
 
  {/* Right Side: Login Card */}
  <div className="w-full max-w-[440px] flex-shrink-0">

@@ -91,16 +91,6 @@ body::before {
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-@media (hover: hover) {
-  .btn-primary:not(:disabled):hover {
-    transform: translateY(-1px);
-  }
-
-  .classy-app a.glass-card:hover {
-    transform: translateY(-2px);
-  }
-}
-
 .btn-danger {
   background: linear-gradient(135deg, #dc2626, #e11d48);
   color: white; font-weight: 600;
@@ -196,15 +186,6 @@ select.input-dark option { background: #18181b; color: #fafafa; }
 .stagger-5 { animation-delay: 400ms; }
 
 .page-enter { animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(14px);
-}
-
-.reveal-on-scroll.is-visible {
-  animation: fadeInUp 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
 
 .text-gradient {
   background: linear-gradient(135deg, #fff 10%, #ff6258 100%);
@@ -602,6 +583,18 @@ textarea:focus-visible,
   animation: auth-mark-glow 12s ease-in-out infinite alternate;
 }
 
+.login-hero-highlight {
+  display: inline-block;
+  color: var(--brand-red-bright);
+  text-shadow: 0 0 18px rgba(255, 73, 62, 0.26), 0 0 42px rgba(255, 73, 62, 0.12);
+  animation: login-phrase-enter 420ms ease both;
+}
+
+@keyframes login-phrase-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes auth-mark-glow {
   from { opacity: 0.055; }
   to { opacity: 0.11; }
@@ -619,6 +612,23 @@ textarea:focus-visible,
     radial-gradient(ellipse at 78% 48%, rgba(255, 73, 62, 0.2), transparent 42%),
     repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.016) 280px),
     linear-gradient(110deg, #090909 0%, #100909 58%, #090909 100%) !important;
+}
+
+.classy-app .page-hero::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: 1;
+  background: radial-gradient(ellipse at 78% 48%, rgba(255, 73, 62, 0.14), transparent 38%);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 420ms ease, transform 650ms ease;
+  pointer-events: none;
+}
+
+.classy-app .page-hero:hover::after {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .classy-app input:focus,
@@ -733,6 +743,14 @@ textarea:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .auth-background-mark {
     animation: none;
+  }
+
+  .login-hero-highlight {
+    animation: none;
+  }
+
+  .classy-app .page-hero::after {
+    transition: none;
   }
 }
 

@@ -103,8 +103,7 @@ export default function Dashboard() {
       
       {/* Welcome Hero Section */}
       <div
-        className="page-hero reveal-on-scroll stagger-1"
-        data-reveal
+        className="page-hero animate-fade-in-up stagger-1"
         style={{ backgroundImage: 'url("/images/item-camping.jpg")' }}
       >
         <div className="page-hero-overlay" />
@@ -137,7 +136,7 @@ export default function Dashboard() {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 reveal-on-scroll stagger-2" data-reveal>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in-up stagger-2">
             <div className="glass-card bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-3xl p-5 relative overflow-hidden group hover:border-indigo-500/50 transition-colors shadow-lg">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-4 border border-indigo-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
@@ -179,7 +178,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recently Added Items */}
-          <div className="glass-card bg-zinc-900/40 border border-white/5 rounded-3xl p-6 sm:p-8 reveal-on-scroll stagger-3" data-reveal>
+          <div className="glass-card bg-zinc-900/40 border border-white/5 rounded-3xl p-6 sm:p-8 animate-fade-in-up stagger-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
                 <Package className="w-5 h-5 text-indigo-400" />
@@ -242,7 +241,7 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Quick Actions */}
-          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl p-6 reveal-on-scroll stagger-2" data-reveal>
+          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl p-6 animate-fade-in-up stagger-3">
             <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               <Link to="/my-items" className="bg-zinc-800/50 hover:bg-zinc-700/50 border border-white/5 hover:border-emerald-500/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 transition-all group">
@@ -276,7 +275,7 @@ export default function Dashboard() {
           </div>
 
           {/* Wallet / Financial Summary */}
-          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl overflow-hidden reveal-on-scroll stagger-3 relative" data-reveal>
+          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl overflow-hidden animate-fade-in-up stagger-4 relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
             <div className="p-6 border-b border-white/5 flex items-center justify-between relative z-10">
               <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
@@ -310,7 +309,7 @@ export default function Dashboard() {
           </div>
 
           {/* Active Borrows Mini */}
-          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl p-6 reveal-on-scroll stagger-4" data-reveal>
+          <div className="glass-card bg-zinc-900/60 border border-white/5 rounded-3xl p-6 animate-fade-in-up stagger-5">
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                 <Clock className="w-4 h-4 text-cyan-400" />

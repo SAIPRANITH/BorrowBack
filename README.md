@@ -1,9 +1,9 @@
 # BorrowBack
 
-BorrowBack is a campus sharing application for listing items, arranging
-borrowing, managing returns and fines, and requesting short-term loans. The
-repository contains a React web client, an Express/MongoDB API, and an Expo
-mobile client.
+BorrowBack is for the things you need now and the things you can lend to
+someone else. Students can list items, arrange borrowing, keep up with returns
+and late fees, and manage short-term peer loans. The project includes a React
+website, an Express API backed by MongoDB, and an Expo mobile app.
 
 ## Projects
 
@@ -129,31 +129,81 @@ registration endpoints and Expo delivery service. Without the project ID or
 Android credentials, in-app notifications continue to work but push
 notifications cannot be delivered while the app is closed.
 
-## Setup
+## Run it locally
 
-Use Node.js 20 or later for the API, and install the web and server
-dependencies from their respective directories:
+You will need Node.js 20 or newer, npm, and a MongoDB database. A local MongoDB
+instance or a MongoDB Atlas connection both work. The web client expects the
+API at `http://localhost:5000`; Vite forwards `/api` requests there while
+developing.
+
+### 1. Configure the API
+
+Create `server/.env` and set the database connection and a private signing
+secret. For example:
+
+```dotenv
+MONGODB_URI=mongodb://127.0.0.1:27017/borrowback
+JWT_SECRET=replace-this-with-a-long-random-secret
+JWT_EXPIRE=7d
+PORT=5000
+NODE_ENV=development
+```
+
+Use a real, long random value for `JWT_SECRET`; do not use the example value
+outside local development. Keep `.env` files and credentials out of Git.
+AWS credentials are optional for running the core app. Image storage and
+AWS-backed email/metrics need the relevant AWS account, permissions, and
+variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally
+`AWS_REGION` and `S3_BUCKET_NAME`).
+
+In a terminal from the repository root:
 
 ```powershell
-cd server
+Set-Location server
 npm ci
 npm run dev
 ```
 
-In a second terminal:
+The API listens on port 5000 by default.
+
+### 2. Start the website
+
+Open a second terminal from the repository root:
 
 ```powershell
-cd client
+Set-Location client
 npm ci
 npm run dev
 ```
 
-The API reads its database, token, and optional AWS configuration from
-environment variables. Keep actual credentials in a local `server/.env` file
-or the deployment platform's secret store; never commit them. The mobile app
-can be started with `npm install` and `npx expo start` from `mobile/`.
-The production web server redirects HTTP to HTTPS, serves the ACME renewal
-challenge over HTTP, and renews its short-lived IP certificate automatically.
+Open the local URL Vite prints (normally `http://localhost:5173`). The
+development server proxies API calls to `http://localhost:5000`.
+
+### 3. Start the Expo app (optional)
+
+In another terminal:
+
+```powershell
+Set-Location mobile
+npm ci
+npx expo start
+```
+
+To use a local API instead of the production default, set
+`EXPO_PUBLIC_API_URL` before starting Expo. Use `http://10.0.2.2:5000/api` for
+the standard Android emulator, or your computer's LAN address followed by
+`:5000/api` for a physical device on the same network.
+
+## Checks and production builds
+
+Run the API tests from `server/` with `npm test`. Create an optimized website
+build from `client/` with `npm run build`; serve the resulting `client/dist/`
+directory with a static web server. The production Nginx configuration in
+`borrowback.conf` serves that build and proxies `/api` to the API server.
+
+For a standalone Android APK, see [Android APK](#android-apk) below. Push
+notifications while the app is closed also require an EAS project ID and
+Android push credentials; without them, in-app notifications still work.
 
 ## Android APK
 
