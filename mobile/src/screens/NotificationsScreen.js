@@ -42,6 +42,12 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState('all');
+
+  const unreadCount = notifications.filter((notification) => notification.status === 'unread').length;
+  const visibleNotifications = filter === 'unread'
+    ? notifications.filter((notification) => notification.status === 'unread')
+    : notifications;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -122,16 +128,40 @@ export default function NotificationsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.filterBar}>
+          <TouchableOpacity
+            style={[styles.filterTab, filter === 'all' && styles.activeFilterTab]}
+            onPress={() => setFilter('all')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === 'all' }}
+          >
+            <Text style={[styles.filterText, filter === 'all' && styles.activeFilterText]}>
+              All
+            </Text>
+            <Text style={styles.filterCount}>{notifications.length}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterTab, filter === 'unread' && styles.activeFilterTab]}
+            onPress={() => setFilter('unread')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === 'unread' }}
+          >
+            <Text style={[styles.filterText, filter === 'unread' && styles.activeFilterText]}>
+              Unread
+            </Text>
+            <Text style={styles.filterCount}>{unreadCount}</Text>
+          </TouchableOpacity>
+        </View>
         <Button 
           title="Mark All Read" 
           onPress={markAllAsRead} 
           style={styles.markAllBtn}
           textStyle={styles.markAllText}
-          disabled={!notifications.some(n => n.status === 'unread')}
+          disabled={unreadCount === 0}
         />
       </View>
       <FlatList
-        data={notifications}
+        data={visibleNotifications}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
@@ -158,10 +188,40 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'flex-end',
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  filterBar: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+    alignSelf: 'stretch',
+  },
+  filterTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: theme.spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeFilterTab: {
+    borderBottomColor: theme.colors.secondary,
+  },
+  filterText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+  },
+  activeFilterText: {
+    color: theme.colors.text,
+  },
+  filterCount: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
   },
   markAllBtn: {
     paddingVertical: theme.spacing.sm,
@@ -181,11 +241,12 @@ const styles = StyleSheet.create({
   notificationCard: {
     flexDirection: 'row',
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
     marginBottom: theme.spacing.sm,
     alignItems: 'center',
-    ...theme.shadows.card,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   unreadCard: {
     backgroundColor: `${theme.colors.secondary}05`,

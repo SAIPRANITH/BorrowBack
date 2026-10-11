@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  AppState,
   ActivityIndicator,
   Alert,
   FlatList,
@@ -101,9 +102,9 @@ const AdminScreen = () => {
     fetchDashboard();
   }, [fetchDashboard]);
 
-  const fetchAccounts = useCallback(async () => {
+  const fetchAccounts = useCallback(async ({ silent = false } = {}) => {
     setAccountsError('');
-    setAccountsLoading(true);
+    if (!silent) setAccountsLoading(true);
     try {
       const response = await api.get('/admin/accounts', { timeout: 30000 });
       if (!response.data.success || !Array.isArray(response.data.accounts)) {
@@ -114,9 +115,22 @@ const AdminScreen = () => {
       console.error('Admin account request failed:', requestError);
       setAccountsError(requestError.response?.data?.message || requestError.message || 'Could not load accounts.');
     } finally {
-      setAccountsLoading(false);
+      if (!silent) setAccountsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const refreshTimer = setInterval(() => {
+      if (AppState.currentState !== 'active') return;
+      if (section === 'accounts') {
+        fetchAccounts({ silent: true });
+      } else {
+        fetchDashboard();
+      }
+    }, 30000);
+
+    return () => clearInterval(refreshTimer);
+  }, [fetchAccounts, fetchDashboard, section]);
 
   const selectSection = (nextSection) => {
     setSection(nextSection);
@@ -488,10 +502,10 @@ const AdminScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
   loadingText: { color: theme.colors.textSecondary, marginTop: 12, fontSize: 14 },
   header: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 1,
@@ -524,17 +538,16 @@ const styles = StyleSheet.create({
   statCard: {
     width: '48.5%',
     minHeight: 116,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 17,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    backgroundColor: 'transparent',
     padding: 14,
     marginBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.12)',
   },
   statIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   statValue: { fontSize: 23, fontWeight: '800', color: theme.colors.text },
   statLabel: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 3 },
-  card: { backgroundColor: theme.colors.surface, borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, padding: 16, marginTop: 12 },
+  card: { backgroundColor: 'transparent', paddingVertical: 16, marginTop: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(255,255,255,0.12)' },
   moneyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
   moneyIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: `${theme.colors.success}15`, alignItems: 'center', justifyContent: 'center' },
   fineIcon: { backgroundColor: `${theme.colors.error}12` },
@@ -587,8 +600,8 @@ const styles = StyleSheet.create({
   logoutButton: { flexDirection: 'row', gap: 8, justifyContent: 'center', alignItems: 'center', marginTop: 18, marginBottom: 12, padding: 15, backgroundColor: `${theme.colors.error}10`, borderRadius: 14, borderWidth: 1, borderColor: `${theme.colors.error}30` },
   logoutButtonText: { color: theme.colors.error, fontSize: 14, fontWeight: '700' },
   accountList: { padding: 16, paddingBottom: 28 },
-  searchInput: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 13, paddingHorizontal: 14, paddingVertical: 12, color: theme.colors.text, fontSize: 14, marginBottom: 12 },
-  accountCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: 16, padding: 13, marginBottom: 9 },
+  searchInput: {   backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.colors.border, borderRadius: 13, paddingHorizontal: 14, paddingVertical: 12, color: theme.colors.text, fontSize: 14, marginBottom: 12 },
+  accountCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent', paddingVertical: 13, marginBottom: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(255,255,255,0.12)' },
   accountAvatar: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: `${theme.colors.primary}12` },
   accountInitial: { color: theme.colors.primary, fontSize: 17, fontWeight: '800' },
   accountMain: { flex: 1, minWidth: 0 },
@@ -599,7 +612,7 @@ const styles = StyleSheet.create({
   accountEmail: { color: theme.colors.textSecondary, fontSize: 12, marginTop: 4 },
   accountStats: { color: theme.colors.textSecondary, fontSize: 11, marginTop: 6 },
   errorContent: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  errorCard: { alignItems: 'center', gap: 10, padding: 20, marginBottom: 12, backgroundColor: theme.colors.surface, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border },
+  errorCard: { alignItems: 'center', gap: 10, padding: 20, marginBottom: 12, backgroundColor: 'transparent', borderLeftWidth: 2, borderLeftColor: theme.colors.error },
   errorTitle: { color: theme.colors.text, fontSize: 17, fontWeight: '700' },
   errorText: { color: theme.colors.error, fontSize: 13, lineHeight: 19, textAlign: 'center' },
   retryButton: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 10, backgroundColor: theme.colors.primary },

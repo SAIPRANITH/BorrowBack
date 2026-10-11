@@ -391,8 +391,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    backgroundColor: 'rgba(15,15,15,0.92)',
-    borderRadius: 14,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255,255,255,0.14)',

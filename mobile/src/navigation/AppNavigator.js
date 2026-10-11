@@ -41,7 +41,7 @@ const navigationTheme = {
 };
 const stackScreenOptions = {
   contentStyle: { backgroundColor: 'transparent' },
-  headerStyle: { backgroundColor: theme.colors.surface },
+  headerStyle: { backgroundColor: 'rgba(8,8,8,0.78)' },
   headerTintColor: theme.colors.text,
   headerTitleStyle: {
     color: theme.colors.text,
@@ -156,14 +156,14 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: '#292929',
-    elevation: 8,
+    backgroundColor: 'rgba(8,8,8,0.78)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    elevation: 0,
     shadowColor: theme.colors.secondary,
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOpacity: 0,
+    shadowRadius: 0,
     height: 68,
     paddingBottom: 10,
     paddingTop: 8,

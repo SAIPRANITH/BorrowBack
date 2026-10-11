@@ -546,12 +546,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   borrowSection: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.card,
+    backgroundColor: 'transparent',
+    paddingVertical: theme.spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.12)',
   },
   borrowTitle: {
     fontSize: theme.typography.sizes.lg,

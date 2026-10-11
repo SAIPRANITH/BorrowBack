@@ -61,9 +61,9 @@ export default function ImmersiveBackground({ children, style }) {
           key={`${x}-${y}`}
           cx={x}
           cy={y}
-          r={accent ? 1.5 : 1}
+          r={accent ? 2 : 1.4}
           fill={accent ? '#ff8b7d' : '#f4f4f5'}
-          opacity={accent ? 0.17 : 0.075}
+          opacity={accent ? 0.32 : 0.15}
         />
       );
     }
@@ -80,15 +80,15 @@ export default function ImmersiveBackground({ children, style }) {
             cy={height * 0.34}
             r={orbitRadius * 0.2}
             fill="none"
-            stroke="rgba(255,105,91,0.09)"
-            strokeWidth={1}
+            stroke="rgba(255,105,91,0.2)"
+            strokeWidth={1.5}
           />
           <Circle
             cx={width * 0.31}
             cy={height * 0.34}
             r={orbitRadius * 0.27}
             fill="none"
-            stroke="rgba(255,255,255,0.035)"
+            stroke="rgba(255,255,255,0.09)"
             strokeWidth={1}
           />
           <Circle
@@ -96,13 +96,13 @@ export default function ImmersiveBackground({ children, style }) {
             cy={height * 0.76}
             r={orbitRadius * 0.22}
             fill="none"
-            stroke="rgba(255,105,91,0.065)"
-            strokeWidth={1}
+            stroke="rgba(255,105,91,0.15)"
+            strokeWidth={1.5}
           />
           {dots}
         </Svg>
         <LinearGradient
-          colors={['rgba(255,73,62,0.055)', 'rgba(255,73,62,0.012)', 'rgba(8,8,8,0)']}
+          colors={['rgba(255,73,62,0.09)', 'rgba(255,73,62,0.025)', 'rgba(8,8,8,0)']}
           locations={[0, 0.42, 1]}
           style={StyleSheet.absoluteFill}
         />
@@ -113,11 +113,12 @@ export default function ImmersiveBackground({ children, style }) {
           <View style={styles.verticalLine} />
         </View>
         <View style={styles.horizon} />
-        <RotatingMark size={50} duration={42000} style={styles.markOne} />
-        <RotatingMark size={40} duration={54000} style={styles.markTwo} />
-        <RotatingMark size={34} duration={60000} style={styles.markThree} />
+        <RotatingMark size={250} duration={78000} style={styles.markHero} />
+        <RotatingMark size={82} duration={42000} style={styles.markOne} />
+        <RotatingMark size={68} duration={54000} style={styles.markTwo} />
+        <RotatingMark size={56} duration={60000} style={styles.markThree} />
       </View>
-      {children}
+      <View style={styles.content}>{children}</View>
     </View>
   );
 }
@@ -130,6 +131,7 @@ const styles = StyleSheet.create({
   atmosphere: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
+    zIndex: 0,
   },
   motif: {
     position: 'absolute',
@@ -138,7 +140,16 @@ const styles = StyleSheet.create({
   },
   emblem: {
     position: 'absolute',
-    opacity: 0.13,
+    opacity: 0.42,
+  },
+  content: {
+    flex: 1,
+    zIndex: 1,
+  },
+  markHero: {
+    top: '35%',
+    right: '-18%',
+    opacity: 0.11,
   },
   markOne: {
     top: '18%',
@@ -147,12 +158,12 @@ const styles = StyleSheet.create({
   markTwo: {
     top: '54%',
     right: '9%',
-    opacity: 0.1,
+    opacity: 0.3,
   },
   markThree: {
     bottom: '12%',
     left: '37%',
-    opacity: 0.085,
+    opacity: 0.24,
   },
   warmGlow: {
     position: 'absolute',
@@ -161,7 +172,7 @@ const styles = StyleSheet.create({
     width: 430,
     height: 430,
     borderRadius: 215,
-    backgroundColor: 'rgba(255,73,62,0.035)',
+    backgroundColor: 'rgba(255,73,62,0.065)',
   },
   grid: {
     ...StyleSheet.absoluteFillObject,
@@ -171,7 +182,7 @@ const styles = StyleSheet.create({
   verticalLine: {
     height: '100%',
     borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.025)',
+    borderLeftColor: 'rgba(255,255,255,0.045)',
   },
   horizon: {
     position: 'absolute',
@@ -179,6 +190,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.022)',
+    borderTopColor: 'rgba(255,255,255,0.04)',
   },
 });

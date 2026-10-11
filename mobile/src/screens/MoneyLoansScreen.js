@@ -409,19 +409,19 @@ const MoneyLoansScreen = () => {
       >
         <Text style={styles.sectionTitle}>As Borrower</Text>
         <View style={styles.summaryGrid}>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Borrowed</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>₹{summaryData.borrower.totalBorrowed || 0}</Text>
           </Card>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Repaid</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.success }]}>₹{summaryData.borrower.totalRepaid || 0}</Text>
           </Card>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Pending</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.borrower.totalPending || 0}</Text>
           </Card>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Awaiting confirmation</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.borrower.awaitingConfirmation || 0}</Text>
           </Card>
@@ -429,15 +429,15 @@ const MoneyLoansScreen = () => {
 
         <Text style={[styles.sectionTitle, { marginTop: theme.spacing.lg }]}>As Lender</Text>
         <View style={styles.summaryGrid}>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Lent</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>₹{summaryData.lender.totalLent || 0}</Text>
           </Card>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Recovered</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.success }]}>₹{summaryData.lender.totalRecovered || 0}</Text>
           </Card>
-          <Card style={[styles.summaryCard, { backgroundColor: theme.colors.surface }]}>
+          <Card style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Outstanding</Text>
             <Text style={[styles.summaryValue, { color: theme.colors.accent }]}>₹{summaryData.lender.totalOutstanding || 0}</Text>
           </Card>
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabContainer: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,

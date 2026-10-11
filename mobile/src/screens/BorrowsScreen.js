@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
   },
   shortcutButton: {
     flex: 1,
@@ -488,9 +488,8 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     paddingTop: theme.spacing.md,
-    ...theme.shadows.header,
   },
   tab: {
     flex: 1,
@@ -510,7 +509,7 @@ const styles = StyleSheet.create({
   activityIntro: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     paddingHorizontal: theme.spacing.md,

@@ -42,14 +42,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   iconContainer: {
     marginBottom: theme.spacing.lg,
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.035)',
     borderRadius: theme.borderRadius.full,
-    ...theme.shadows.card,
   },
   title: {
     fontSize: theme.typography.sizes.xl,

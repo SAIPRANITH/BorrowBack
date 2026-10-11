@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
 import Text from '../components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +13,7 @@ import Card from '../components/Card';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, refreshUser } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
@@ -21,6 +21,32 @@ export default function ProfileScreen() {
   const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || '');
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
+  useEffect(() => {
+    setName(user?.name || '');
+    setPhone(user?.phone || '');
+    setProfilePhoto(user?.profilePhoto || '');
+  }, [user?.name, user?.phone, user?.profilePhoto]);
+
+  const refreshProfile = useCallback(async () => {
+    setRefreshing(true);
+    setProfileError('');
+    try {
+      await refreshUser();
+    } catch (error) {
+      setProfileError(
+        error.response?.data?.message || 'Could not load your profile. Check your connection and try again.'
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshUser]);
+
+  useEffect(() => {
+    if (!user) refreshProfile();
+  }, [refreshProfile, user]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -120,12 +146,39 @@ export default function ProfileScreen() {
     return stars;
   };
 
+  if (!user) {
+    return (
+      <View style={styles.profileLoading}>
+        {refreshing ? (
+          <ActivityIndicator size="large" color={theme.colors.secondary} />
+        ) : (
+          <>
+            <Text style={styles.profileLoadError}>
+              {profileError || 'Your profile is not available yet.'}
+            </Text>
+            <Button title="Try Again" onPress={refreshProfile} />
+          </>
+        )}
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refreshProfile}
+            tintColor={theme.colors.secondary}
+            colors={[theme.colors.secondary]}
+          />
+        }
+      >
         
         {/* Profile Header */}
         <View style={styles.header}>
@@ -133,6 +186,7 @@ export default function ProfileScreen() {
             <Ionicons name="people-outline" size={13} color={theme.colors.secondary} />
             <Text style={styles.memberStampText}>BORROWBACK MEMBER</Text>
           </View>
+          {profileError ? <Text style={styles.profileLoadError}>{profileError}</Text> : null}
           <View style={styles.avatarContainer}>
             {profilePhoto ? (
               <Image source={{ uri: profilePhoto }} style={styles.avatarImage} />
@@ -328,20 +382,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  profileLoading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    backgroundColor: 'transparent',
+  },
+  profileLoadError: {
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
   scrollContent: {
     padding: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
   },
   header: {
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceRaised,
+    backgroundColor: 'transparent',
     marginBottom: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
     paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.xl,
     overflow: 'hidden',
-    borderBottomWidth: 3,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.accent,
   },
   memberStamp: {
@@ -366,7 +431,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.035)',
     borderWidth: 3,
     borderColor: theme.colors.accent,
     justifyContent: 'center',
@@ -412,11 +477,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: theme.spacing.xs,
-    backgroundColor: theme.colors.surfaceRaised,
+    backgroundColor: 'transparent',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.full,
-    ...theme.shadows.card,
   },
   starsRow: {
     flexDirection: 'row',
@@ -530,11 +593,11 @@ const styles = StyleSheet.create({
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: 'transparent',
     padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.sm,
-    ...theme.shadows.card,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   actionIconBg: {
     width: 40,

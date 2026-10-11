@@ -31,6 +31,8 @@ const DashboardScreen = () => {
     unreadAlerts: 0,
   });
   const [recentItems, setRecentItems] = useState([]);
+  const [activeBorrows, setActiveBorrows] = useState([]);
+  const [financials, setFinancials] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -40,12 +42,17 @@ const DashboardScreen = () => {
         pendingRes,
         notificationsRes,
         recentRes,
+        financialsRes,
       ] = await Promise.all([
         api.get('/items/mine'),
         api.get('/borrows/mine'),
         api.get('/borrows/incoming'),
         api.get('/notifications/unread-count'),
         api.get('/items?sort=-createdAt&limit=5'),
+        api.get('/borrows/financial').catch((error) => {
+          console.error('Failed to load dashboard financial summary:', error);
+          return { data: { summary: null } };
+        }),
       ]);
 
       setStats({
@@ -56,6 +63,8 @@ const DashboardScreen = () => {
       });
 
       setRecentItems(recentRes.data.items || []);
+      setActiveBorrows((borrowsRes.data.borrows || []).filter((borrow) => borrow.status === 'active'));
+      setFinancials(financialsRes.data.summary || null);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       Alert.alert('Error', 'Could not load your dashboard. Please try again.');
@@ -111,6 +120,9 @@ const DashboardScreen = () => {
       kitchen: theme.colors.error,
       others: '#7e7257',
     };
+    const borrowerDeposits = financials?.borrower?.totalDepositsPaid || 0;
+    const ownerDeposits = financials?.owner?.totalDepositsCollected || 0;
+    const financialBalance = ownerDeposits - borrowerDeposits;
     const placeholderColor = categoryColors[item.category?.toLowerCase()] || theme.colors.textSecondary;
 
     return (
@@ -199,6 +211,41 @@ const DashboardScreen = () => {
 
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Your wallet</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Fines')}>
+              <Text style={styles.seeAllText}>Finances</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.walletSummary}>
+            <View style={styles.walletBalance}>
+              <Text style={styles.walletCaption}>Net balance</Text>
+              <Text style={[styles.walletAmount, { color: financialBalance >= 0 ? theme.colors.success : theme.colors.error }]}>
+                {financialBalance >= 0 ? '+' : '-'}₹{Math.abs(financialBalance).toLocaleString('en-IN')}
+              </Text>
+            </View>
+            <View style={styles.walletRows}>
+              <View style={styles.walletRow}>
+                <Text style={styles.walletCaption}>Deposits paid</Text>
+                <Text style={styles.walletValue}>₹{borrowerDeposits.toLocaleString('en-IN')}</Text>
+              </View>
+              <View style={styles.walletRow}>
+                <Text style={styles.walletCaption}>Fines paid</Text>
+                <Text style={styles.walletValue}>₹{(financials?.borrower?.totalFinesPaid || 0).toLocaleString('en-IN')}</Text>
+              </View>
+              <View style={styles.walletRow}>
+                <Text style={styles.walletCaption}>Deposits held</Text>
+                <Text style={styles.walletValue}>₹{ownerDeposits.toLocaleString('en-IN')}</Text>
+              </View>
+              <View style={styles.walletRow}>
+                <Text style={styles.walletCaption}>Fines earned</Text>
+                <Text style={styles.walletValue}>₹{(financials?.owner?.totalFinesCollected || 0).toLocaleString('en-IN')}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Recently Added</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Browse')}>
               <Text style={styles.seeAllText}>See All</Text>
@@ -217,6 +264,38 @@ const DashboardScreen = () => {
             <View style={styles.emptyRecent}>
               <Text style={styles.emptyRecentText}>No recent items found.</Text>
             </View>
+          )}
+        </View>
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Active borrows</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Borrows')}>
+              <Text style={styles.seeAllText}>View all</Text>
+            </TouchableOpacity>
+          </View>
+          {activeBorrows.length ? activeBorrows.slice(0, 3).map((borrow) => (
+            <TouchableOpacity
+              key={borrow._id}
+              style={styles.activeBorrowRow}
+              onPress={() => borrow.item?._id && navigation.navigate('ItemDetail', { itemId: borrow.item._id })}
+              activeOpacity={borrow.item?._id ? 0.8 : 1}
+              accessibilityRole={borrow.item?._id ? 'button' : undefined}
+            >
+              <View style={styles.activeBorrowIcon}>
+                <Ionicons name="time-outline" size={19} color={theme.colors.secondary} />
+              </View>
+              <View style={styles.activeBorrowCopy}>
+                <Text style={styles.activeBorrowName} numberOfLines={1}>
+                  {borrow.item?.name || 'Borrowed item'}
+                </Text>
+                <Text style={styles.activeBorrowDue}>
+                  Due {borrow.dueDate ? new Date(borrow.dueDate).toLocaleDateString() : 'date unavailable'}
+                </Text>
+              </View>
+              {borrow.item?._id ? <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} /> : null}
+            </TouchableOpacity>
+          )) : (
+            <Text style={styles.emptyBorrows}>You have no active borrows right now.</Text>
           )}
         </View>
         <Text style={styles.developerCredit}>
@@ -349,6 +428,78 @@ const styles = StyleSheet.create({
     color: theme.colors.secondary,
     fontWeight: theme.typography.weights.semibold,
   },
+  walletSummary: {
+    paddingHorizontal: 20,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.12)',
+  },
+  walletBalance: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+    paddingBottom: theme.spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  walletRows: {
+    gap: theme.spacing.sm,
+  },
+  walletRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  walletCaption: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+  },
+  walletAmount: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+  },
+  walletValue: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+  },
+  activeBorrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  activeBorrowIcon: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+    borderRadius: 19,
+    backgroundColor: `${theme.colors.secondary}15`,
+  },
+  activeBorrowCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  activeBorrowName: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
+  },
+  activeBorrowDue: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    marginTop: 3,
+  },
+  emptyBorrows: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    marginHorizontal: 20,
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -357,8 +508,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
-    backgroundColor: 'rgba(255,255,255,0.035)',
-    borderRadius: 14,
+    backgroundColor: 'transparent',
     padding: 16,
     marginBottom: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -410,8 +560,7 @@ const styles = StyleSheet.create({
   },
   recentItemCard: {
     width: 160,
-    backgroundColor: 'rgba(255,255,255,0.035)',
-    borderRadius: 14,
+    backgroundColor: 'transparent',
     marginRight: 16,
     overflow: 'hidden',
     borderBottomWidth: StyleSheet.hairlineWidth,

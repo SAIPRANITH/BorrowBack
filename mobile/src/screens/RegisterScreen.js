@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   header: {
     minHeight: 250,
     paddingVertical: 32,
-    backgroundColor: 'rgba(17,17,17,0.5)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,

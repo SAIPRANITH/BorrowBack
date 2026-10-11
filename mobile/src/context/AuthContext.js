@@ -55,19 +55,6 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const lastActivityAt = useRef(Date.now());
 
-  const fetchUser = async () => {
-    try {
-      const response = await api.get('/auth/me');
-      // Backend returns flat: { success, _id, name, email, phone, ... }
-      setUser(extractUser(response.data));
-    } catch (e) {
-      console.error('Failed to fetch user', e);
-      if (e.response?.status === 401) {
-        logout();
-      }
-    }
-  };
-
   const login = async (email, password) => {
     try {
       setError(null);
@@ -131,6 +118,21 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await api.get('/auth/me');
+      const currentUser = extractUser(response.data);
+      setUser(currentUser);
+      return currentUser;
+    } catch (e) {
+      console.error('Failed to fetch user', e);
+      if (e.response?.status === 401) {
+        await logout();
+      }
+      throw e;
+    }
+  }, [logout]);
+
   useEffect(() => {
     if (!token) return undefined;
 
@@ -160,7 +162,7 @@ export const AuthProvider = ({ children }) => {
     const logoutListener = DeviceEventEmitter.addListener('LOGOUT', logout);
 
     return () => logoutListener.remove();
-  }, [logout]);
+  }, [fetchUser, logout]);
 
   useEffect(() => {
     if (!token) return undefined;
@@ -230,6 +232,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateUser,
+        refreshUser: fetchUser,
         clearError,
       }}
     >

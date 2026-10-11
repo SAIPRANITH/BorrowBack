@@ -19,10 +19,10 @@ const Card = ({ children, onPress, style, padding = theme.spacing.md }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255,255,255,0.035)',
-    borderRadius: 14,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.12)',
+    borderBottomColor: 'rgba(255,255,255,0.09)',
     marginVertical: theme.spacing.sm,
   },
 });

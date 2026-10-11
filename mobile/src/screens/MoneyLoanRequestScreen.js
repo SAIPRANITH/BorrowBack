@@ -309,13 +309,11 @@ const styles = StyleSheet.create({
   lenderCard: {
     width: 100,
     padding: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'transparent',
     marginRight: theme.spacing.md,
     alignItems: 'center',
-    borderWidth: 2,
+    borderBottomWidth: 2,
     borderColor: 'transparent',
-    ...theme.shadows.card,
   },
   selectedLenderCard: {
     borderColor: theme.colors.primary,
