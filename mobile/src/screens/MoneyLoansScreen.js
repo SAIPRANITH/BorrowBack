@@ -531,7 +531,7 @@ const MoneyLoansScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   tabContainer: {
     backgroundColor: theme.colors.surface,

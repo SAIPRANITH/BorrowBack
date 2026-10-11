@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
-import ImmersiveBackground from '../components/ImmersiveBackground';
 import LoadingScreen from '../components/LoadingScreen';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
@@ -138,7 +137,6 @@ const DashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ImmersiveBackground>
         <ScrollView
           style={styles.container}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
@@ -226,7 +224,6 @@ const DashboardScreen = () => {
         </Text>
         <View style={{ height: 40 }} />
         </ScrollView>
-      </ImmersiveBackground>
     </SafeAreaView>
   );
 };
@@ -234,7 +231,7 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

@@ -462,7 +462,7 @@ export default function BorrowsScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   shortcutRow: {
     flexDirection: 'row',

@@ -32,7 +32,7 @@ const navigationTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: theme.colors.primary,
-    background: theme.colors.background,
+    background: 'transparent',
     card: theme.colors.surface,
     text: theme.colors.text,
     border: theme.colors.border,
@@ -40,6 +40,7 @@ const navigationTheme = {
   },
 };
 const stackScreenOptions = {
+  contentStyle: { backgroundColor: 'transparent' },
   headerStyle: { backgroundColor: theme.colors.surface },
   headerTintColor: theme.colors.text,
   headerTitleStyle: {
@@ -50,14 +51,14 @@ const stackScreenOptions = {
 };
 
 const AuthStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
   </Stack.Navigator>
 );
 
 const AdminStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
     <Stack.Screen name="AdminDashboard" component={AdminScreen} />
   </Stack.Navigator>
 );
@@ -109,6 +110,7 @@ const MainTabs = () => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       headerShown: false,
+      sceneStyle: { backgroundColor: 'transparent' },
       tabBarIcon: ({ focused, color, size }) => {
         let iconName;
 

@@ -12,7 +12,6 @@ import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import BorrowBackMark from '../components/BorrowBackMark';
-import ImmersiveBackground from '../components/ImmersiveBackground';
 import { theme } from '../theme';
 import Text from '../components/ThemedText';
 
@@ -66,7 +65,6 @@ const RegisterScreen = ({ navigation }) => {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ImmersiveBackground>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           bounces={false}
@@ -198,7 +196,6 @@ const RegisterScreen = ({ navigation }) => {
           </View>
         </View>
         </ScrollView>
-      </ImmersiveBackground>
     </KeyboardAvoidingView>
   );
 };
@@ -206,7 +203,7 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,

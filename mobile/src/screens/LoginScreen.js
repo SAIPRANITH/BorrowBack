@@ -54,7 +54,7 @@ const LoginScreen = ({ navigation }) => {
     >
       <View style={styles.background}>
         <LinearGradient
-          colors={['rgba(255,73,62,0.035)', 'rgba(8,8,8,0.04)', '#080808']}
+          colors={['rgba(255,73,62,0.035)', 'rgba(8,8,8,0.04)', 'rgba(8,8,8,0.28)']}
           locations={[0, 0.42, 1]}
           style={styles.backgroundOverlay}
         />
@@ -181,7 +181,7 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   background: {
     flex: 1,

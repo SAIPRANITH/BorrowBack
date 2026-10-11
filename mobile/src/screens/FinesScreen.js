@@ -369,7 +369,7 @@ export default function FinesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   errorState: {
     flex: 1,

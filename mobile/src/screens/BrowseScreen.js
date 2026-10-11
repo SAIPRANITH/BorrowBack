@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../api/api';
 import { theme } from '../theme';
-import ImmersiveBackground from '../components/ImmersiveBackground';
 import Text from '../components/ThemedText';
 import TextInput from '../components/ThemedTextInput';
 
@@ -183,7 +182,6 @@ const BrowseScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ImmersiveBackground>
         <View style={styles.container}>
         <View style={styles.header}>
           <LinearGradient
@@ -264,7 +262,6 @@ const BrowseScreen = () => {
           />
         )}
       </View>
-      </ImmersiveBackground>
     </SafeAreaView>
   );
 };
@@ -272,7 +269,7 @@ const BrowseScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
