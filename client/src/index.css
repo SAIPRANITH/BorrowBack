@@ -2,13 +2,17 @@
 
 :root {
   color-scheme: dark;
-  --brand-red: #ff493e;
-  --brand-red-bright: #ff6258;
-  --brand-red-soft: rgba(255, 73, 62, 0.13);
-  --surface-black: #080808;
-  --surface-panel: #111111;
-  --surface-raised: #191919;
-  --line-subtle: rgba(255, 255, 255, 0.09);
+  --brand-red: #f45d52;
+  --brand-red-bright: #ff7a66;
+  --brand-red-soft: rgba(244, 93, 82, 0.15);
+  --surface-black: #090b0d;
+  --surface-panel: #12181d;
+  --surface-raised: #1a2129;
+  --line-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: #f5f7fb;
+  --text-secondary: #dfe5ee;
+  --text-muted: #aeb7c3;
+  --shadow-soft: rgba(5, 8, 12, 0.42);
 }
 
 html.light {
@@ -19,34 +23,39 @@ body {
   margin: 0;
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   background-color: var(--surface-black);
-  color: #a1a1aa;
+  color: var(--text-secondary);
   min-height: 100vh;
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
-::selection { background: rgba(255,73,62,0.38); color: #fff; }
+h1, h2, h3, h4, h5, h6, p, a, li, span, label, input, textarea, select, button {
+  color: inherit;
+}
+
+::selection { background: rgba(244,93,82,0.4); color: #fff; }
 
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background:
-    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.016) 280px),
-    radial-gradient(ellipse at 74% 24%, rgba(255, 73, 62, 0.12), transparent 32%),
-    radial-gradient(ellipse at 52% 78%, rgba(255, 73, 62, 0.045), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.012) 280px),
+    radial-gradient(ellipse at 76% 20%, rgba(244, 93, 82, 0.11), transparent 32%),
+    radial-gradient(ellipse at 32% 86%, rgba(255, 166, 114, 0.05), transparent 36%),
     var(--surface-black);
   z-index: -2;
   pointer-events: none;
 }
 
 .glass-card {
-  background: rgba(17,17,17,0.76);
+  background: rgba(18, 24, 29, 0.82);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 10px;
-  box-shadow: 0 14px 34px rgba(0,0,0,0.22), inset 0 1px rgba(255,255,255,0.025);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.22), inset 0 1px rgba(255,255,255,0.04);
   transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   overflow: hidden;
@@ -58,10 +67,10 @@ body::before {
 
 
 .stat-card {
-  background: rgba(17,17,17,0.84);
+  background: rgba(20, 24, 29, 0.88);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--line-subtle);
-  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
   transition: all 0.3s ease;
   position: relative; overflow: hidden;
 }
@@ -119,9 +128,9 @@ body::before {
 
 
 .input-dark {
-  background: rgba(24,24,27,0.5);
-  border: 1px solid rgba(113,113,122,0.3);
-  color: #fafafa;
+  background: rgba(17,21,25,0.82);
+  border: 1px solid rgba(148,163,184,0.22);
+  color: var(--text-primary);
   font-size: 0.875rem;
   transition: all 0.2s ease;
 }
