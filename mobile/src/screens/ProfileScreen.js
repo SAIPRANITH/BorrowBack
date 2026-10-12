@@ -19,6 +19,7 @@ export default function ProfileScreen() {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || '');
+  const [profilePhotoLoaded, setProfilePhotoLoaded] = useState(false);
   const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function ProfileScreen() {
     setName(user?.name || '');
     setPhone(user?.phone || '');
     setProfilePhoto(user?.profilePhoto || '');
+    setProfilePhotoLoaded(false);
     setProfilePhotoFailed(false);
   }, [user?.name, user?.phone, user?.profilePhoto]);
 
@@ -81,6 +83,7 @@ export default function ProfileScreen() {
         name: asset.fileName || `profile-${Date.now()}.jpg`,
         type: asset.mimeType || 'image/jpeg',
       });
+      setProfilePhotoLoaded(false);
       setProfilePhotoFailed(false);
       setProfilePhoto(asset.uri);
     } catch (error) {
@@ -195,10 +198,12 @@ export default function ProfileScreen() {
             {profilePhoto && !profilePhotoFailed ? (
               <Image
                 source={{ uri: profilePhoto }}
-                style={styles.avatarImage}
+                style={[styles.avatarImage, { opacity: profilePhotoLoaded ? 1 : 0 }]}
                 resizeMode="cover"
+                onLoad={() => setProfilePhotoLoaded(true)}
                 onError={(error) => {
                   console.warn('Could not load the profile photo:', error.nativeEvent.error);
+                  setProfilePhotoLoaded(false);
                   setProfilePhotoFailed(true);
                 }}
               />
