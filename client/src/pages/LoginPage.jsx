@@ -65,11 +65,11 @@ export default function LoginPage() {
  </div>
 
  {/* ================= CONTENT CONTAINER ================= */}
- <div className="relative z-10 w-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
+ <div className="login-content relative z-10 w-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
  
  {/* Left Side: Info */}
- <div className="flex-1 text-center lg:text-left space-y-6 animate-fade-in-up">
- <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-semibold backdrop-blur-md">
+ <div className="login-hero-copy flex-1 text-center lg:text-left space-y-6 animate-fade-in-up">
+ <div className="login-hero-kicker inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-semibold backdrop-blur-md">
  Borrowing and lending on campus
  </div>
  <h1 className="login-hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.02]">
@@ -78,7 +78,7 @@ export default function LoginPage() {
  {heroLine}
  </span>
  </h1>
- <p className="text-zinc-400 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
+ <p className="login-hero-description text-zinc-400 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
  Find items listed by other members, request to borrow, and keep track of returns, deposits, and loan repayments.
  </p>
  
@@ -93,7 +93,7 @@ export default function LoginPage() {
  </div>
 
  {/* Right Side: Login Card */}
- <div className="w-full max-w-[440px] flex-shrink-0">
+ <div className="login-card-column w-full max-w-[440px] flex-shrink-0">
 
  <div className="auth-card p-8 sm:p-10 relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
  
@@ -126,7 +126,7 @@ export default function LoginPage() {
  {/* Form */}
  <form onSubmit={handleSubmit} autoComplete="on" className="space-y-5 relative">
  <div className="space-y-1.5">
- <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">
+ <label className="login-form-label text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">
  Campus Email
  </label>
  <div className="relative group">
@@ -150,7 +150,7 @@ export default function LoginPage() {
 
  <div className="space-y-1.5">
  <div className="flex items-center justify-between ml-1">
- <label className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+ <label className="login-form-label text-xs font-bold uppercase tracking-widest text-zinc-500">
  Password
  </label>
  <span className="text-[11px] text-zinc-500 font-medium">

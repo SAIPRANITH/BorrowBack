@@ -294,10 +294,10 @@ export default function MyBorrows() {
 
 
  <nav aria-label="Borrowing sections" className="flex flex-wrap gap-2">
- <Link to="/my-borrows" aria-current="page" className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+ <Link to="/my-borrows" aria-current="page" className="section-nav-link section-nav-link--active">
  My Borrows
  </Link>
- <Link to="/requests" className="rounded-xl border border-white/10 bg-zinc-900/60 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-white">
+ <Link to="/requests" className="section-nav-link">
  Requests to Approve
  </Link>
  </nav>
@@ -322,15 +322,8 @@ export default function MyBorrows() {
 
  onClick={() => setTab(t.key)}
 
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-
- isActive
-
- ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-lg shadow-cyan-600/30'
-
- : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-
- }`}
+ className={`app-filter-tab ${isActive ? 'app-filter-tab--active' : ''}`}
+ aria-pressed={isActive}
 
  >
 

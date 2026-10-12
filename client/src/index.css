@@ -21,7 +21,7 @@ html.light {
 
 body {
   margin: 0;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: "Manrope", "Plus Jakarta Sans", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background-color: var(--surface-black);
@@ -1734,5 +1734,386 @@ a:hover .brand-mark {
 @media (prefers-reduced-motion: reduce) {
   .classy-app .inventory-hero__action {
     transition: none;
+  }
+}
+
+.classy-app {
+  font-family: "Manrope", "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: #dfe5ee;
+}
+
+.classy-app h1,
+.classy-app h2,
+.classy-app h3 {
+  font-family: "Manrope", "Plus Jakarta Sans", system-ui, sans-serif;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.classy-app main h1 {
+  font-size: clamp(2rem, 3.8vw, 2.9rem);
+  line-height: 1.08;
+  font-weight: 800;
+}
+
+.classy-app main h2 {
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  line-height: 1.22;
+  font-weight: 750;
+}
+
+.classy-app [class*="text-zinc-400"] {
+  color: #c3cbd5 !important;
+}
+
+.classy-app [class*="text-zinc-500"] {
+  color: #a9b3c0 !important;
+}
+
+.classy-app [class*="text-zinc-600"] {
+  color: #929eac !important;
+}
+
+.classy-app .section-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background: rgba(18, 24, 29, 0.78);
+  padding: 0.7rem 1.15rem;
+  color: #cbd3dd;
+  font-size: 0.9rem;
+  font-weight: 650;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.classy-app .section-nav-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 112, 101, 0.42);
+  color: #fff;
+}
+
+.classy-app .section-nav-link--active {
+  border-color: rgba(255, 112, 101, 0.42);
+  background: linear-gradient(110deg, rgba(255, 73, 62, 0.16), rgba(255, 73, 62, 0.055));
+  color: #ff938a;
+  box-shadow: inset 0 0 22px rgba(255, 73, 62, 0.07);
+}
+
+.classy-app .section-nav-link--active::before,
+.classy-app .app-filter-tab--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--brand-red-bright);
+  transform-origin: center;
+  animation: selection-bar-reveal 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.classy-app .app-filter-tab {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 0.8rem;
+  background: transparent;
+  padding: 0.65rem 1rem 0.65rem 1.1rem;
+  color: #c3cbd5;
+  font-size: 0.875rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.classy-app .app-filter-tab:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.045);
+  color: #fff;
+}
+
+.classy-app .app-filter-tab--active {
+  border-color: rgba(255, 112, 101, 0.34);
+  background: linear-gradient(110deg, rgba(255, 73, 62, 0.15), rgba(255, 73, 62, 0.045));
+  color: #ff938a;
+  box-shadow: inset 0 0 20px rgba(255, 73, 62, 0.06);
+}
+
+.classy-app .app-filter-tab > span + span {
+  display: inline-flex;
+  min-width: 1.45rem;
+  min-height: 1.45rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  padding: 0 0.35rem;
+  color: #d7dee7;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.classy-app .app-filter-tab--active > span + span {
+  border-color: rgba(255, 112, 101, 0.26);
+  background: rgba(255, 112, 101, 0.18);
+  color: #ffd3cf;
+}
+
+.classy-app .bb-feature-hero {
+  min-height: 15rem;
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(ellipse at 84% 44%, rgba(255, 90, 78, 0.19), transparent 33%),
+    radial-gradient(ellipse at 16% 100%, rgba(255, 166, 114, 0.08), transparent 38%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.018) 280px),
+    linear-gradient(115deg, #141719 0%, #0d1013 58%, #17100f 100%);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.3);
+}
+
+.classy-app .bb-feature-hero > div {
+  min-width: 0;
+}
+
+.classy-app .bb-feature-hero .glass-card {
+  border-color: rgba(255, 255, 255, 0.095) !important;
+  background: rgba(20, 24, 29, 0.78) !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18), inset 0 1px rgba(255, 255, 255, 0.045);
+}
+
+.classy-app .inventory-hero {
+  min-height: 17rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(ellipse at 84% 34%, rgba(255, 90, 78, 0.17), transparent 34%),
+    radial-gradient(ellipse at 14% 100%, rgba(255, 166, 114, 0.065), transparent 38%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 279px, rgba(255, 255, 255, 0.016) 280px),
+    linear-gradient(115deg, rgba(20, 24, 27, 0.98), rgba(11, 13, 15, 0.95));
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.24);
+}
+
+.classy-app .inventory-hero__title {
+  font-size: clamp(2.2rem, 4.5vw, 3.35rem);
+  line-height: 1.02;
+}
+
+.classy-app .inventory-hero__description {
+  color: #c3cbd5;
+  font-size: clamp(0.95rem, 1.6vw, 1.08rem);
+}
+
+.classy-app .inventory-hero__stats > span {
+  min-height: 2.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.35rem 0.8rem;
+}
+
+.classy-app .inventory-hero__action {
+  min-height: 3.15rem;
+  box-shadow: 0 10px 24px rgba(255, 73, 62, 0.18);
+}
+
+@keyframes selection-bar-reveal {
+  from { opacity: 0; transform: scaleY(0.25); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@media (max-width: 767px) {
+  .classy-app .bb-feature-hero {
+    min-height: 0;
+  }
+
+  .classy-app .app-filter-tab {
+    min-height: 2.55rem;
+    padding: 0.55rem 0.8rem 0.55rem 0.95rem;
+    font-size: 0.8125rem;
+  }
+
+  .classy-app .inventory-hero {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classy-app .section-nav-link,
+  .classy-app .app-filter-tab {
+    transition: none;
+  }
+
+  .classy-app .section-nav-link--active::before,
+  .classy-app .app-filter-tab--active::before {
+    animation: none;
+  }
+}
+
+.auth-page--login {
+  padding: clamp(1.5rem, 4vh, 3.5rem) 0;
+}
+
+.auth-page--login .login-content {
+  align-items: center;
+}
+
+.auth-page--login .login-hero-copy {
+  max-width: 39rem;
+}
+
+.auth-page--login .login-hero-kicker {
+  border-color: rgba(255, 112, 101, 0.24);
+  background: rgba(255, 112, 101, 0.08);
+  color: #ff9188 !important;
+  letter-spacing: 0.01em;
+}
+
+.auth-page--login .login-hero-title {
+  max-width: 11ch;
+  font-size: clamp(2.7rem, 6.5vw, 5.5rem);
+  line-height: 0.99;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.auth-page--login .login-hero-highlight {
+  text-shadow: 0 5px 28px rgba(255, 73, 62, 0.18);
+}
+
+.auth-page--login .login-hero-description {
+  color: #c5ccd5 !important;
+  font-size: clamp(1rem, 1.35vw, 1.125rem);
+  line-height: 1.7;
+}
+
+.auth-page--login .login-developer-credit {
+  color: #aeb7c3;
+}
+
+.auth-page--login .login-developer-credit strong {
+  color: #edf1f6;
+  font-weight: 700;
+}
+
+.auth-page--login .auth-card {
+  border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgba(21, 25, 29, 0.96), rgba(12, 15, 18, 0.96));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.44), inset 0 1px rgba(255, 255, 255, 0.055);
+}
+
+.auth-page--login .auth-card h2 {
+  font-size: 1.75rem;
+  letter-spacing: -0.04em;
+}
+
+.auth-page--login .login-form-label {
+  color: #bdc6d1 !important;
+}
+
+.auth-page--login input {
+  border-color: rgba(190, 200, 211, 0.2);
+  background-color: rgba(7, 10, 13, 0.78);
+  color: #f5f7fb;
+}
+
+.auth-page--login input::placeholder {
+  color: #8e99a6;
+  opacity: 1;
+}
+
+.auth-page--login input:focus {
+  border-color: rgba(255, 112, 101, 0.72);
+  --tw-ring-color: rgba(255, 112, 101, 0.24);
+}
+
+.auth-page--login .auth-submit {
+  background: linear-gradient(105deg, #f04d43, #fb6559);
+  box-shadow: 0 10px 28px rgba(255, 73, 62, 0.18);
+}
+
+.auth-page--login .auth-submit:hover:not(:disabled) {
+  background: linear-gradient(105deg, #fa5a50, #ff7869);
+}
+
+.auth-page--login a:not(:hover) {
+  text-decoration-color: rgba(255, 145, 136, 0.42);
+}
+
+@media (min-width: 900px) {
+  .auth-page--login > .login-content {
+    flex-direction: row;
+    gap: clamp(2rem, 4vw, 4rem);
+    padding-left: clamp(1.5rem, 4vw, 3rem);
+    padding-right: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .auth-page--login .login-hero-copy {
+    flex: 1 1 0;
+    text-align: left;
+  }
+
+  .auth-page--login .login-hero-title {
+    font-size: clamp(2.8rem, 5vw, 4.55rem);
+  }
+
+  .auth-page--login .login-hero-description {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .auth-page--login .login-hero-copy > div.pt-6 {
+    display: grid;
+  }
+
+  .auth-page--login .login-card-column {
+    width: min(42vw, 420px);
+    max-width: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .auth-page--login {
+    align-items: flex-start;
+  }
+
+  .auth-page--login > .login-content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .auth-page--login .login-hero-title {
+    max-width: 12ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .auth-page--login .login-card-column {
+    max-width: 28rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page--login .login-hero-copy {
+    gap: 1rem;
+  }
+
+  .auth-page--login .login-hero-title {
+    font-size: clamp(2.65rem, 12vw, 3.35rem);
+  }
+
+  .auth-page--login .auth-card {
+    padding: 1.5rem;
   }
 }

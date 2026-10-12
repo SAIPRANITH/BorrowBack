@@ -556,15 +556,8 @@ export default function MoneyLoans() {
 
  onClick={() => setTab(t.key)}
 
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-
- isActive
-
- ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-lg shadow-cyan-600/30'
-
- : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-
- }`}
+ className={`app-filter-tab ${isActive ? 'app-filter-tab--active' : ''}`}
+ aria-pressed={isActive}
 
  >
 
