@@ -22,14 +22,16 @@ export default function ProfileScreen() {
   const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || '');
   const [profilePhotoLoaded, setProfilePhotoLoaded] = useState(false);
   const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
-  const [profileRating, setProfileRating] = useState({
-    average: user?.averageRating || 0,
-    count: user?.totalRatings || 0,
-  });
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [profileError, setProfileError] = useState('');
+  const [profileStats, setProfileStats] = useState({
+    items: 0,
+    borrows: 0,
+    requests: 0,
+    financial: null,
+  });
 
   useEffect(() => {
     setName(user?.name || '');
@@ -37,58 +39,33 @@ export default function ProfileScreen() {
     setProfilePhoto(user?.profilePhoto || '');
     setProfilePhotoLoaded(false);
     setProfilePhotoFailed(false);
-    setProfileRating({
-      average: user?.averageRating || 0,
-      count: user?.totalRatings || 0,
-    });
-  }, [user?.name, user?.phone, user?.profilePhoto, user?.averageRating, user?.totalRatings]);
+  }, [user?.name, user?.phone, user?.profilePhoto]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      const loadReceivedRatings = async () => {
-        try {
-          const [borrowed, lending, borrowedLoans, lentLoans] = await Promise.all([
-            api.get('/borrows/mine'),
-            api.get('/borrows/lending'),
-            api.get('/money-loans/mine'),
-            api.get('/money-loans/lending'),
-          ]);
-          const ratings = [
-            ...(borrowed.data.borrows || []).map((borrow) => borrow.borrowerRating),
-            ...(lending.data.history || lending.data.borrows || []).map((borrow) => borrow.ownerRating),
-            ...(borrowedLoans.data.loans || []).map((loan) => loan.borrowerRating),
-            ...(lentLoans.data.loans || []).map((loan) => loan.lenderRating),
-          ].map(Number).filter((rating) => Number.isFinite(rating) && rating >= 1 && rating <= 5);
-
-          if (active) {
-            setProfileRating({
-              average: ratings.length > 0
-                ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
-                : 0,
-              count: ratings.length,
-            });
-          }
-        } catch (error) {
-          console.warn('Could not calculate profile ratings from completed transactions:', error);
-        }
-      };
-
-      loadReceivedRatings();
-      return () => {
-        active = false;
-      };
-    }, [])
-  );
+  const profileRating = {
+    average: Number(user?.averageRating) || 0,
+    count: Number(user?.totalRatings) || 0,
+  };
 
   const refreshProfile = useCallback(async () => {
     setRefreshing(true);
     setProfileError('');
     try {
-      await refreshUser();
+      const [itemsResponse, borrowsResponse, incomingResponse, financialResponse] = await Promise.all([
+        api.get('/items/mine'),
+        api.get('/borrows/mine'),
+        api.get('/borrows/incoming'),
+        api.get('/borrows/financial'),
+        refreshUser(),
+      ]);
+      setProfileStats({
+        items: itemsResponse.data?.count || 0,
+        borrows: borrowsResponse.data?.count || 0,
+        requests: incomingResponse.data?.count || 0,
+        financial: financialResponse.data?.summary || null,
+      });
     } catch (error) {
       setProfileError(
-        error.response?.data?.message || 'Could not load your profile. Check your connection and try again.'
+        error.response?.data?.message || 'Could not load your profile information. Check your connection and try again.'
       );
     } finally {
       setRefreshing(false);
@@ -283,6 +260,65 @@ export default function ProfileScreen() {
           </View>
           {memberYear ? <Text style={styles.memberSince}>Member since {memberYear}</Text> : null}
         </View>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statValue}>{profileRating.average.toFixed(1)} / 5</Text>
+            <Text style={styles.statDetail}>{profileRating.count} reviews</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Items Listed</Text>
+            <Text style={styles.statValue}>{profileStats.items}</Text>
+            <Text style={styles.statDetail}>Your listings</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Borrow History</Text>
+            <Text style={styles.statValue}>{profileStats.borrows}</Text>
+            <Text style={styles.statDetail}>Items borrowed</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Incoming Requests</Text>
+            <Text style={styles.statValue}>{profileStats.requests}</Text>
+            <Text style={styles.statDetail}>Awaiting your response</Text>
+          </View>
+        </View>
+
+        <Card style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, styles.financialTitle]}>Financial Overview</Text>
+          <View style={styles.financialGrid}>
+            <View style={styles.financialPanel}>
+              <Text style={styles.financialHeading}>Borrowing Summary</Text>
+              <View style={styles.financialRow}>
+                <Text style={styles.financialLabel}>Deposits Paid</Text>
+                <Text style={styles.financialValue}>
+                  ₹{profileStats.financial?.borrower?.totalDepositsPaid || 0}
+                </Text>
+              </View>
+              <View style={styles.financialRow}>
+                <Text style={styles.financialLabel}>Fines Paid</Text>
+                <Text style={styles.financialValue}>
+                  ₹{profileStats.financial?.borrower?.totalFinesPaid || 0}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.financialPanel}>
+              <Text style={styles.financialHeading}>Lending Summary</Text>
+              <View style={styles.financialRow}>
+                <Text style={styles.financialLabel}>Deposits Collected</Text>
+                <Text style={styles.financialValue}>
+                  ₹{profileStats.financial?.owner?.totalDepositsCollected || 0}
+                </Text>
+              </View>
+              <View style={styles.financialRow}>
+                <Text style={styles.financialLabel}>Fines Collected</Text>
+                <Text style={styles.financialValue}>
+                  ₹{profileStats.financial?.owner?.totalFinesCollected || 0}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
 
         {/* Edit Profile Section */}
         <Card style={styles.sectionCard}>
@@ -568,6 +604,72 @@ const styles = StyleSheet.create({
   sectionCard: {
     marginBottom: theme.spacing.xl,
     padding: theme.spacing.md,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  statCard: {
+    width: '48%',
+    minHeight: 104,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.glass,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.lg,
+  },
+  statLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    marginBottom: theme.spacing.xs,
+  },
+  statValue: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.bold,
+  },
+  statDetail: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.xs,
+    marginTop: theme.spacing.xs,
+  },
+  financialTitle: {
+    marginBottom: theme.spacing.md,
+  },
+  financialGrid: {
+    gap: theme.spacing.sm,
+  },
+  financialPanel: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.surfaceRaised,
+    borderRadius: theme.borderRadius.md,
+  },
+  financialHeading: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
+    marginBottom: theme.spacing.sm,
+  },
+  financialRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+  },
+  financialLabel: {
+    flexShrink: 1,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+  },
+  financialValue: {
+    color: theme.colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.bold,
   },
   helpCard: {
     marginBottom: theme.spacing.xl,

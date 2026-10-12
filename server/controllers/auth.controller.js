@@ -7,6 +7,19 @@ const generateToken = (id) => {
   });
 };
 
+export const serializeUser = (user) => ({
+  success: true,
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  profilePhoto: user.profilePhoto,
+  role: user.role,
+  averageRating: user.averageRating,
+  totalRatings: user.totalRatings,
+  createdAt: user.createdAt,
+});
+
 export const register = async (req, res, next) => {
   try {
     const { name, email, password, phone, profilePhoto } = req.body;
@@ -28,13 +41,7 @@ export const register = async (req, res, next) => {
 
     if (user) {
       res.status(201).json({
-        success: true,
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        profilePhoto: user.profilePhoto,
-        role: user.role,
+        ...serializeUser(user),
         token: generateToken(user._id),
       });
     } else {
@@ -54,13 +61,7 @@ export const login = async (req, res, next) => {
 
     if (user && (await user.matchPassword(password))) {
       res.json({
-        success: true,
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        profilePhoto: user.profilePhoto,
-        role: user.role,
+        ...serializeUser(user),
         token: generateToken(user._id),
       });
     } else {
@@ -77,18 +78,7 @@ export const getMe = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-      res.json({
-        success: true,
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        profilePhoto: user.profilePhoto,
-        role: user.role,
-        averageRating: user.averageRating,
-        totalRatings: user.totalRatings,
-        createdAt: user.createdAt,
-      });
+      res.json(serializeUser(user));
     } else {
       res.status(404);
       throw new Error('User not found');
@@ -116,13 +106,7 @@ export const updateProfile = async (req, res, next) => {
       const updatedUser = await user.save();
 
       res.json({
-        success: true,
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        profilePhoto: updatedUser.profilePhoto,
-        role: updatedUser.role,
+        ...serializeUser(updatedUser),
         token: generateToken(updatedUser._id),
       });
     } else {

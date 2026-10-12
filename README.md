@@ -115,7 +115,6 @@ website, an Express API backed by MongoDB, and an Expo mobile app.
 | `mobile/src/screens/MoneyLoansScreen.js` | Displays and manages money-loan requests. |
 | `mobile/src/screens/MyItemsScreen.js` | Displays and manages the user's mobile listings. |
 | `mobile/src/screens/NotificationsScreen.js` | Displays mobile account notifications. |
-| `mobile/src/screens/PlaceholderScreen.js` | Shows the shared placeholder for screens awaiting implementation. |
 | `mobile/src/screens/ProfileScreen.js` | Displays and updates the mobile user profile. |
 | `mobile/src/screens/RegisterScreen.js` | Creates an account from the mobile app. |
 
