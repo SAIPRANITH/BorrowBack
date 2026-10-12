@@ -86,11 +86,11 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
 
   const orbitRadius = Math.min(width, height);
   const orbits = [
-    { x: 0.18, y: 0.59, radius: 0.2, color: 'rgba(255,105,91,0.24)' },
-    { x: 0.18, y: 0.59, radius: 0.275, color: 'rgba(255,255,255,0.08)' },
-    { x: 0.34, y: 0.39, radius: 0.31, color: 'rgba(255,105,91,0.22)' },
-    { x: 0.34, y: 0.39, radius: 0.41, color: 'rgba(255,255,255,0.07)' },
-    { x: 0.63, y: 0.82, radius: 0.43, color: 'rgba(255,105,91,0.19)' },
+    { x: 0.18, y: 0.59, radius: 0.2, color: 'rgba(255,105,91,0.32)' },
+    { x: 0.18, y: 0.59, radius: 0.275, color: 'rgba(255,255,255,0.12)' },
+    { x: 0.34, y: 0.39, radius: 0.31, color: 'rgba(255,105,91,0.3)' },
+    { x: 0.34, y: 0.39, radius: 0.41, color: 'rgba(255,255,255,0.1)' },
+    { x: 0.63, y: 0.82, radius: 0.43, color: 'rgba(255,105,91,0.26)' },
   ];
   const accentPoints = [
     [0.3, 0.25], [0.39, 0.39], [0.51, 0.22], [0.42, 0.73],
@@ -105,7 +105,7 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
     >
       <View pointerEvents="none" style={styles.atmosphere}>
         <LinearGradient
-          colors={['rgba(255,73,62,0.2)', 'rgba(255,73,62,0.075)', 'rgba(8,8,8,0)']}
+          colors={['rgba(255,73,62,0.3)', 'rgba(255,73,62,0.12)', 'rgba(8,8,8,0)']}
           locations={[0, 0.48, 1]}
           start={{ x: 0.85, y: 0.1 }}
           end={{ x: 0.18, y: 0.95 }}
@@ -178,7 +178,7 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
               cy={height * y}
               r={1.2}
               fill="#ff8b7d"
-              opacity={0.2}
+              opacity={0.3}
             />
           ))}
           {dots}
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: 'absolute',
-    backgroundColor: 'rgba(255,73,62,0.12)',
+    backgroundColor: 'rgba(255,73,62,0.2)',
   },
   emblem: {
     position: 'absolute',
@@ -240,22 +240,22 @@ const styles = StyleSheet.create({
   markOne: {
     top: '19%',
     left: '29%',
-    opacity: 0.22,
+    opacity: 0.26,
   },
   markTwo: {
     top: '62%',
     left: '51%',
-    opacity: 0.19,
+    opacity: 0.23,
   },
   markThree: {
     top: '31%',
     right: '9%',
-    opacity: 0.18,
+    opacity: 0.22,
   },
   markFour: {
     bottom: '13%',
     left: '34%',
-    opacity: 0.16,
+    opacity: 0.2,
   },
   grid: {
     ...StyleSheet.absoluteFillObject,

@@ -57,7 +57,7 @@ const navigationTheme = {
 };
 const stackScreenOptions = {
   contentStyle: { backgroundColor: 'transparent' },
-  headerStyle: { backgroundColor: 'rgba(8,8,8,0.78)' },
+  headerStyle: { backgroundColor: 'rgba(20,13,12,0.96)' },
   headerTintColor: theme.colors.text,
   headerTitleStyle: {
     color: theme.colors.text,
@@ -142,6 +142,8 @@ const MainTabs = () => (
       tabBarInactiveTintColor: theme.colors.textSecondary,
       tabBarStyle: styles.tabBar,
       tabBarLabelStyle: styles.tabBarLabel,
+      tabBarItemStyle: styles.tabBarItem,
+      tabBarActiveBackgroundColor: 'rgba(255,73,62,0.1)',
     })}
   >
     <Tab.Screen name="Home" component={HomeStack} />
@@ -176,17 +178,22 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: 'rgba(8,8,8,0.78)',
+    backgroundColor: 'rgba(20,13,12,0.98)',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(255,112,101,0.32)',
     elevation: 0,
     shadowColor: theme.colors.secondary,
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0,
     shadowRadius: 0,
-    height: 68,
+    height: 72,
     paddingBottom: 10,
     paddingTop: 8,
+  },
+  tabBarItem: {
+    marginHorizontal: 4,
+    marginVertical: 4,
+    borderRadius: 12,
   },
   tabBarLabel: {
     fontSize: 11,

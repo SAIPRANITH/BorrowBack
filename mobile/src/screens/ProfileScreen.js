@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
 import Text from '../components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,6 +21,10 @@ export default function ProfileScreen() {
   const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || '');
   const [profilePhotoLoaded, setProfilePhotoLoaded] = useState(false);
   const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
+  const [profileRating, setProfileRating] = useState({
+    average: user?.averageRating || 0,
+    count: user?.totalRatings || 0,
+  });
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,7 +36,47 @@ export default function ProfileScreen() {
     setProfilePhoto(user?.profilePhoto || '');
     setProfilePhotoLoaded(false);
     setProfilePhotoFailed(false);
-  }, [user?.name, user?.phone, user?.profilePhoto]);
+    setProfileRating({
+      average: user?.averageRating || 0,
+      count: user?.totalRatings || 0,
+    });
+  }, [user?.name, user?.phone, user?.profilePhoto, user?.averageRating, user?.totalRatings]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      const loadReceivedRatings = async () => {
+        try {
+          const [borrowed, lending, borrowedLoans, lentLoans] = await Promise.all([
+            api.get('/borrows/mine'),
+            api.get('/borrows/lending'),
+            api.get('/money-loans/mine'),
+            api.get('/money-loans/lending'),
+          ]);
+          const ratings = [
+            ...(borrowed.data.borrows || []).map((borrow) => borrow.borrowerRating),
+            ...(lending.data.history || lending.data.borrows || []).map((borrow) => borrow.ownerRating),
+            ...(borrowedLoans.data.loans || []).map((loan) => loan.borrowerRating),
+            ...(lentLoans.data.loans || []).map((loan) => loan.lenderRating),
+          ].filter((rating) => Number.isFinite(rating) && rating >= 1 && rating <= 5);
+
+          if (active && ratings.length > 0) {
+            setProfileRating({
+              average: ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length,
+              count: ratings.length,
+            });
+          }
+        } catch (error) {
+          console.warn('Could not calculate profile ratings from completed transactions:', error);
+        }
+      };
+
+      loadReceivedRatings();
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   const refreshProfile = useCallback(async () => {
     setRefreshing(true);
@@ -48,9 +92,11 @@ export default function ProfileScreen() {
     }
   }, [refreshUser]);
 
-  useEffect(() => {
-    if (!user) refreshProfile();
-  }, [refreshProfile, user]);
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile])
+  );
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -106,6 +152,8 @@ export default function ProfileScreen() {
       if (photoFile) profileData.append('image', photoFile);
       const updatedUser = await updateUser(profileData);
       setProfilePhoto(updatedUser?.profilePhoto || profilePhoto);
+      setProfilePhotoLoaded(false);
+      setProfilePhotoFailed(false);
       setPhotoFile(null);
       setIsEditing(false);
       Alert.alert('Success', 'Profile updated successfully');
@@ -224,10 +272,10 @@ export default function ProfileScreen() {
           
           <View style={styles.ratingContainer}>
             <View style={styles.starsRow}>
-              {renderStars(user?.averageRating || 0)}
+              {renderStars(profileRating.average)}
             </View>
             <Text style={styles.ratingText}>
-              {user?.averageRating?.toFixed(1) || '0.0'} ({user?.totalRatings || 0} reviews)
+              {profileRating.average.toFixed(1)} ({profileRating.count} reviews)
             </Text>
           </View>
           {memberYear ? <Text style={styles.memberSince}>Member since {memberYear}</Text> : null}
@@ -446,7 +494,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: 'rgba(255,255,255,0.035)',
+    backgroundColor: theme.colors.surface,
     borderWidth: 3,
     borderColor: theme.colors.accent,
     justifyContent: 'center',
