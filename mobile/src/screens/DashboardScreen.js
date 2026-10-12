@@ -33,6 +33,9 @@ const DashboardScreen = () => {
   const [recentItems, setRecentItems] = useState([]);
   const [activeBorrows, setActiveBorrows] = useState([]);
   const [financials, setFinancials] = useState(null);
+  const borrowerDeposits = financials?.borrower?.totalDepositsPaid || 0;
+  const ownerDeposits = financials?.owner?.totalDepositsCollected || 0;
+  const financialBalance = ownerDeposits - borrowerDeposits;
 
   const fetchData = useCallback(async () => {
     try {
@@ -120,9 +123,6 @@ const DashboardScreen = () => {
       kitchen: theme.colors.error,
       others: '#7e7257',
     };
-    const borrowerDeposits = financials?.borrower?.totalDepositsPaid || 0;
-    const ownerDeposits = financials?.owner?.totalDepositsCollected || 0;
-    const financialBalance = ownerDeposits - borrowerDeposits;
     const placeholderColor = categoryColors[item.category?.toLowerCase()] || theme.colors.textSecondary;
 
     return (

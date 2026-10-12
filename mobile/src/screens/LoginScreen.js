@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/Input';
@@ -53,21 +52,6 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.background}>
-        <LinearGradient
-          colors={['rgba(255,73,62,0.035)', 'rgba(8,8,8,0.04)', 'rgba(8,8,8,0.28)']}
-          locations={[0, 0.42, 1]}
-          style={styles.backgroundOverlay}
-        />
-        <View pointerEvents="none" style={styles.backgroundGrid}>
-          <View style={styles.backgroundGridLine} />
-          <View style={styles.backgroundGridLine} />
-          <View style={styles.backgroundGridLine} />
-        </View>
-        <View pointerEvents="none" style={styles.backgroundAtmosphere}>
-          <View style={styles.coralGlow} />
-          <View style={styles.coralGlowLower} />
-          <BorrowBackMark size={210} style={styles.backgroundMark} />
-        </View>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -185,47 +169,7 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
-  },
-  backgroundOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  backgroundGrid: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  backgroundAtmosphere: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-  },
-  coralGlow: {
-    position: 'absolute',
-    top: -160,
-    right: -145,
-    width: 370,
-    height: 370,
-    borderRadius: 185,
-    backgroundColor: 'rgba(255,73,62,0.055)',
-  },
-  coralGlowLower: {
-    position: 'absolute',
-    bottom: 80,
-    left: -180,
-    width: 340,
-    height: 340,
-    borderRadius: 170,
-    backgroundColor: 'rgba(255,73,62,0.035)',
-  },
-  backgroundMark: {
-    position: 'absolute',
-    right: -48,
-    bottom: 112,
-    opacity: 0.075,
-  },
-  backgroundGridLine: {
-    height: '100%',
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.045)',
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,

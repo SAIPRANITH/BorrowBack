@@ -1,7 +1,7 @@
 import React from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Line } from 'react-native-svg';
 import BorrowBackMark from './BorrowBackMark';
 import { theme } from '../theme';
 
@@ -49,64 +49,125 @@ function RotatingMark({ size, style, duration }) {
   );
 }
 
-export default function ImmersiveBackground({ children, style }) {
+export default function ImmersiveBackground({ children, onTouchStartCapture, style }) {
   const { width, height } = useWindowDimensions();
   const dots = [];
 
-  for (let y = 36; y < height; y += 72) {
-    for (let x = 32; x < width; x += 64) {
-      const accent = (Math.round(x / 64) + Math.round(y / 72)) % 5 === 0;
+  for (let y = 24; y < height; y += 48) {
+    for (let x = 24; x < width; x += 48) {
+      const accent = (Math.round(x / 48) + Math.round(y / 48)) % 5 === 0;
       dots.push(
         <Circle
           key={`${x}-${y}`}
           cx={x}
           cy={y}
-          r={accent ? 2 : 1.4}
+          r={accent ? 1.5 : 1}
           fill={accent ? '#ff8b7d' : '#f4f4f5'}
-          opacity={accent ? 0.32 : 0.15}
+          opacity={accent ? 0.42 : 0.2}
         />
       );
     }
   }
 
   const orbitRadius = Math.min(width, height);
+  const orbits = [
+    { x: 0.18, y: 0.59, radius: 0.2, color: 'rgba(255,105,91,0.24)' },
+    { x: 0.18, y: 0.59, radius: 0.275, color: 'rgba(255,255,255,0.08)' },
+    { x: 0.34, y: 0.39, radius: 0.31, color: 'rgba(255,105,91,0.22)' },
+    { x: 0.34, y: 0.39, radius: 0.41, color: 'rgba(255,255,255,0.07)' },
+    { x: 0.63, y: 0.82, radius: 0.43, color: 'rgba(255,105,91,0.19)' },
+  ];
+  const accentPoints = [
+    [0.3, 0.25], [0.39, 0.39], [0.51, 0.22], [0.42, 0.73],
+    [0.69, 0.67], [0.86, 0.32], [0.2, 0.27], [0.57, 0.43],
+    [0.77, 0.56], [0.25, 0.83], [0.92, 0.71], [0.55, 0.91],
+  ];
 
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[styles.container, style]}
+      onTouchStartCapture={onTouchStartCapture}
+    >
       <View pointerEvents="none" style={styles.atmosphere}>
-        <Svg width={width} height={height} style={styles.motif}>
-          <Circle
-            cx={width * 0.31}
-            cy={height * 0.34}
-            r={orbitRadius * 0.2}
-            fill="none"
-            stroke="rgba(255,105,91,0.2)"
-            strokeWidth={1.5}
-          />
-          <Circle
-            cx={width * 0.31}
-            cy={height * 0.34}
-            r={orbitRadius * 0.27}
-            fill="none"
-            stroke="rgba(255,255,255,0.09)"
-            strokeWidth={1}
-          />
-          <Circle
-            cx={width * 0.72}
-            cy={height * 0.76}
-            r={orbitRadius * 0.22}
-            fill="none"
-            stroke="rgba(255,105,91,0.15)"
-            strokeWidth={1.5}
-          />
-          {dots}
-        </Svg>
         <LinearGradient
-          colors={['rgba(255,73,62,0.09)', 'rgba(255,73,62,0.025)', 'rgba(8,8,8,0)']}
-          locations={[0, 0.42, 1]}
+          colors={['rgba(255,73,62,0.2)', 'rgba(255,73,62,0.075)', 'rgba(8,8,8,0)']}
+          locations={[0, 0.48, 1]}
+          start={{ x: 0.85, y: 0.1 }}
+          end={{ x: 0.18, y: 0.95 }}
           style={StyleSheet.absoluteFill}
         />
-        <View style={styles.warmGlow} />
+        {orbits.map(({ x, y, radius, color }, index) => {
+          const diameter = orbitRadius * radius * 2;
+          return (
+            <View
+              key={`orbit-${index}`}
+              style={[
+                styles.orbit,
+                {
+                  left: width * x - diameter / 2,
+                  top: height * y - diameter / 2,
+                  width: diameter,
+                  height: diameter,
+                  borderRadius: diameter / 2,
+                  borderColor: color,
+                },
+              ]}
+            />
+          );
+        })}
+        <View
+          style={[
+            styles.glow,
+            {
+              top: height * 0.02,
+              right: -width * 0.4,
+              width: width * 0.9,
+              height: width * 0.9,
+              borderRadius: width * 0.45,
+            },
+          ]}
+        />
+        <Svg width={width} height={height} style={styles.motif}>
+          {Array.from({ length: Math.ceil(width / 280) }, (_, index) => {
+            const x = 280 * (index + 1);
+            return (
+              <Line
+                key={`vertical-${x}`}
+                x1={x}
+                y1="0"
+                x2={x}
+                y2={height}
+                stroke="rgba(255,255,255,0.016)"
+                strokeWidth={1}
+              />
+            );
+          })}
+          {Array.from({ length: Math.ceil(height / 220) }, (_, index) => {
+            const y = 220 * (index + 1);
+            return (
+              <Line
+                key={`horizontal-${y}`}
+                x1="0"
+                y1={y}
+                x2={width}
+                y2={y}
+                stroke="rgba(255,255,255,0.012)"
+                strokeWidth={1}
+              />
+            );
+          })}
+          {accentPoints.map(([x, y], index) => (
+            <Circle
+              key={`accent-${index}`}
+              cx={width * x}
+              cy={height * y}
+              r={1.2}
+              fill="#ff8b7d"
+              opacity={0.2}
+            />
+          ))}
+          {dots}
+        </Svg>
         <View style={styles.grid}>
           <View style={styles.verticalLine} />
           <View style={styles.verticalLine} />
@@ -114,9 +175,10 @@ export default function ImmersiveBackground({ children, style }) {
         </View>
         <View style={styles.horizon} />
         <RotatingMark size={250} duration={78000} style={styles.markHero} />
-        <RotatingMark size={82} duration={42000} style={styles.markOne} />
-        <RotatingMark size={68} duration={54000} style={styles.markTwo} />
-        <RotatingMark size={56} duration={60000} style={styles.markThree} />
+        <RotatingMark size={42} duration={42000} style={styles.markOne} />
+        <RotatingMark size={34} duration={54000} style={styles.markTwo} />
+        <RotatingMark size={32} duration={60000} style={styles.markThree} />
+        <RotatingMark size={28} duration={66000} style={styles.markFour} />
       </View>
       <View style={styles.content}>{children}</View>
     </View>
@@ -127,6 +189,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    position: 'relative',
   },
   atmosphere: {
     ...StyleSheet.absoluteFillObject,
@@ -138,6 +201,14 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
   },
+  orbit: {
+    position: 'absolute',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  glow: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,73,62,0.12)',
+  },
   emblem: {
     position: 'absolute',
     opacity: 0.42,
@@ -147,32 +218,29 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   markHero: {
-    top: '35%',
-    right: '-18%',
-    opacity: 0.11,
+    top: '32%',
+    right: '-32%',
+    opacity: 0.15,
   },
   markOne: {
-    top: '18%',
-    left: '13%',
+    top: '19%',
+    left: '29%',
+    opacity: 0.22,
   },
   markTwo: {
-    top: '54%',
-    right: '9%',
-    opacity: 0.3,
+    top: '62%',
+    left: '51%',
+    opacity: 0.19,
   },
   markThree: {
-    bottom: '12%',
-    left: '37%',
-    opacity: 0.24,
+    top: '31%',
+    right: '9%',
+    opacity: 0.18,
   },
-  warmGlow: {
-    position: 'absolute',
-    top: -180,
-    right: -190,
-    width: 430,
-    height: 430,
-    borderRadius: 215,
-    backgroundColor: 'rgba(255,73,62,0.065)',
+  markFour: {
+    bottom: '13%',
+    left: '34%',
+    opacity: 0.16,
   },
   grid: {
     ...StyleSheet.absoluteFillObject,
@@ -182,7 +250,7 @@ const styles = StyleSheet.create({
   verticalLine: {
     height: '100%',
     borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.045)',
+    borderLeftColor: 'rgba(255,255,255,0.03)',
   },
   horizon: {
     position: 'absolute',

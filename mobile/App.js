@@ -58,14 +58,11 @@ export default function App() {
       <SafeAreaProvider>
         <AuthProvider>
           <StatusBar style="light" />
-          <View
-            style={{ flex: 1, backgroundColor: theme.colors.background }}
+          <ImmersiveBackground
             onTouchStartCapture={() => DeviceEventEmitter.emit('USER_ACTIVITY')}
           >
-            <ImmersiveBackground>
-              <AppNavigator />
-            </ImmersiveBackground>
-          </View>
+            <AppNavigator />
+          </ImmersiveBackground>
         </AuthProvider>
       </SafeAreaProvider>
     </AppErrorBoundary>
