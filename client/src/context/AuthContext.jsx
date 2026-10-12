@@ -153,7 +153,7 @@ export const AuthProvider = ({ children }) => {
  localStorage.setItem('token', res.data.token);
  setToken(res.data.token);
  }
- setUser(currentUser => ({ ...currentUser, ...extractUser(res.data) }));
+ setUser(extractUser(res.data));
  return { success: true };
  }
  return { success: false, message: 'Update failed' };

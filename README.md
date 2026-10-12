@@ -263,6 +263,7 @@ some local scripts refer to machine-specific paths.
 | `fix_web.py` | Fixes known JSX text issues and removes selected hover styles from local web source files. |
 | `strip_css_hovers.py` | Removes selected hover styles from the web app stylesheet. |
 | `generate_qr.py` | Creates an Expo QR code for a fixed local network address and writes it to a machine-specific folder. |
+| `patch_money.py` | Patches response-data handling in the separate `BorrowBackMobile` loan screen. |
 | `seedFinal.js` | Seeds MongoDB with the final demo dataset. |
 | `seedFixed.js` | Seeds MongoDB with corrected demo records. |
 | `seedFull.js` | Seeds MongoDB with an expanded set of demo records. |
