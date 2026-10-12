@@ -5,7 +5,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
-import ImmersiveBackground from './src/components/ImmersiveBackground';
 import { theme } from './src/theme';
 import Text from './src/components/ThemedText';
 
@@ -58,11 +57,12 @@ export default function App() {
       <SafeAreaProvider>
         <AuthProvider>
           <StatusBar style="light" />
-          <ImmersiveBackground
+          <View
+            style={styles.appContent}
             onTouchStartCapture={() => DeviceEventEmitter.emit('USER_ACTIVITY')}
           >
             <AppNavigator />
-          </ImmersiveBackground>
+          </View>
         </AuthProvider>
       </SafeAreaProvider>
     </AppErrorBoundary>
@@ -70,6 +70,10 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  appContent: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   errorContainer: {
     flex: 1,
     alignItems: 'center',

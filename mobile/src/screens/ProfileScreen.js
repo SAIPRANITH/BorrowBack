@@ -19,6 +19,7 @@ export default function ProfileScreen() {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || '');
+  const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,6 +29,7 @@ export default function ProfileScreen() {
     setName(user?.name || '');
     setPhone(user?.phone || '');
     setProfilePhoto(user?.profilePhoto || '');
+    setProfilePhotoFailed(false);
   }, [user?.name, user?.phone, user?.profilePhoto]);
 
   const refreshProfile = useCallback(async () => {
@@ -79,6 +81,7 @@ export default function ProfileScreen() {
         name: asset.fileName || `profile-${Date.now()}.jpg`,
         type: asset.mimeType || 'image/jpeg',
       });
+      setProfilePhotoFailed(false);
       setProfilePhoto(asset.uri);
     } catch (error) {
       console.error('Failed to select a profile photo:', error);
@@ -188,11 +191,18 @@ export default function ProfileScreen() {
           </View>
           {profileError ? <Text style={styles.profileLoadError}>{profileError}</Text> : null}
           <View style={styles.avatarContainer}>
-            {profilePhoto ? (
-              <Image source={{ uri: profilePhoto }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
-            )}
+            <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
+            {profilePhoto && !profilePhotoFailed ? (
+              <Image
+                source={{ uri: profilePhoto }}
+                style={styles.avatarImage}
+                resizeMode="cover"
+                onError={(error) => {
+                  console.warn('Could not load the profile photo:', error.nativeEvent.error);
+                  setProfilePhotoFailed(true);
+                }}
+              />
+            ) : null}
             {isEditing && (
               <TouchableOpacity
                 style={styles.avatarEditButton}
@@ -436,6 +446,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: theme.spacing.md,
     ...theme.shadows.card,
   },
@@ -445,6 +456,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.bold,
   },
   avatarImage: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
     borderRadius: 48,

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
+import ImmersiveBackground, { withImmersiveBackground } from '../components/ImmersiveBackground';
 import LoadingScreen from '../components/LoadingScreen';
 
 // Import real screens
@@ -24,6 +25,21 @@ import AddItemScreen from '../screens/AddItemScreen';
 import MoneyLoansScreen from '../screens/MoneyLoansScreen';
 import MoneyLoanRequestScreen from '../screens/MoneyLoanRequestScreen';
 import AdminScreen from '../screens/AdminScreen';
+
+const LoginWithBackground = withImmersiveBackground(LoginScreen);
+const RegisterWithBackground = withImmersiveBackground(RegisterScreen);
+const DashboardWithBackground = withImmersiveBackground(DashboardScreen);
+const BrowseWithBackground = withImmersiveBackground(BrowseScreen);
+const MyItemsWithBackground = withImmersiveBackground(MyItemsScreen);
+const BorrowsWithBackground = withImmersiveBackground(BorrowsScreen);
+const ProfileWithBackground = withImmersiveBackground(ProfileScreen);
+const ItemDetailWithBackground = withImmersiveBackground(ItemDetailScreen);
+const NotificationsWithBackground = withImmersiveBackground(NotificationsScreen);
+const FinesWithBackground = withImmersiveBackground(FinesScreen);
+const AddItemWithBackground = withImmersiveBackground(AddItemScreen);
+const MoneyLoansWithBackground = withImmersiveBackground(MoneyLoansScreen);
+const MoneyLoanRequestWithBackground = withImmersiveBackground(MoneyLoanRequestScreen);
+const AdminWithBackground = withImmersiveBackground(AdminScreen);
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -52,30 +68,30 @@ const stackScreenOptions = {
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-    <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="Register" component={RegisterScreen} />
+    <Stack.Screen name="Login" component={LoginWithBackground} />
+    <Stack.Screen name="Register" component={RegisterWithBackground} />
   </Stack.Navigator>
 );
 
 const AdminStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-    <Stack.Screen name="AdminDashboard" component={AdminScreen} />
+    <Stack.Screen name="AdminDashboard" component={AdminWithBackground} />
   </Stack.Navigator>
 );
 
 const HomeStack = () => (
   <Stack.Navigator screenOptions={stackScreenOptions}>
-    <Stack.Screen name="Dashboard" component={DashboardScreen} />
-    <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
-    <Stack.Screen name="Notifications" component={NotificationsScreen} />
-    <Stack.Screen name="Fines" component={FinesScreen} options={{ title: 'Financials' }} />
+    <Stack.Screen name="Dashboard" component={DashboardWithBackground} />
+    <Stack.Screen name="ItemDetail" component={ItemDetailWithBackground} />
+    <Stack.Screen name="Notifications" component={NotificationsWithBackground} />
+    <Stack.Screen name="Fines" component={FinesWithBackground} options={{ title: 'Financials' }} />
   </Stack.Navigator>
 );
 
 const BrowseStack = () => (
   <Stack.Navigator screenOptions={stackScreenOptions}>
-    <Stack.Screen name="BrowseItems" component={BrowseScreen} options={{ title: 'Browse' }} />
-    <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
+    <Stack.Screen name="BrowseItems" component={BrowseWithBackground} options={{ title: 'Browse' }} />
+    <Stack.Screen name="ItemDetail" component={ItemDetailWithBackground} />
   </Stack.Navigator>
 );
 
@@ -83,7 +99,7 @@ const BorrowsStack = () => (
   <Stack.Navigator screenOptions={stackScreenOptions}>
     <Stack.Screen
       name="Borrows"
-      component={BorrowsScreen}
+      component={BorrowsWithBackground}
       initialParams={{ initialTab: 'REQUESTS' }}
       options={{ title: 'Borrows' }}
     />
@@ -92,17 +108,17 @@ const BorrowsStack = () => (
 
 const LoansStack = () => (
   <Stack.Navigator screenOptions={stackScreenOptions}>
-    <Stack.Screen name="MoneyLoans" component={MoneyLoansScreen} options={{ title: 'Loans' }} />
-    <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestScreen} options={{ title: 'Request a Loan' }} />
+    <Stack.Screen name="MoneyLoans" component={MoneyLoansWithBackground} options={{ title: 'Loans' }} />
+    <Stack.Screen name="MoneyLoanRequest" component={MoneyLoanRequestWithBackground} options={{ title: 'Request a Loan' }} />
   </Stack.Navigator>
 );
 
 const ProfileStack = () => (
   <Stack.Navigator screenOptions={stackScreenOptions}>
-    <Stack.Screen name="ProfileMain" component={ProfileScreen} options={{ title: 'Account' }} />
-    <Stack.Screen name="MyItemsList" component={MyItemsScreen} options={{ title: 'My Items' }} />
-    <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add Item' }} />
-    <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notifications' }} />
+    <Stack.Screen name="ProfileMain" component={ProfileWithBackground} options={{ title: 'Account' }} />
+    <Stack.Screen name="MyItemsList" component={MyItemsWithBackground} options={{ title: 'My Items' }} />
+    <Stack.Screen name="AddItem" component={AddItemWithBackground} options={{ title: 'Add Item' }} />
+    <Stack.Screen name="Notifications" component={NotificationsWithBackground} options={{ title: 'Notifications' }} />
   </Stack.Navigator>
 );
 
@@ -140,7 +156,11 @@ const AppNavigator = () => {
   const { user, token, loading } = useAuth();
 
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <ImmersiveBackground>
+        <LoadingScreen />
+      </ImmersiveBackground>
+    );
   }
 
   return (

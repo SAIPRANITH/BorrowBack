@@ -49,6 +49,21 @@ function RotatingMark({ size, style, duration }) {
   );
 }
 
+export function withImmersiveBackground(ScreenComponent) {
+  function ScreenWithImmersiveBackground(props) {
+    return (
+      <ImmersiveBackground>
+        <ScreenComponent {...props} />
+      </ImmersiveBackground>
+    );
+  }
+
+  ScreenWithImmersiveBackground.displayName = `WithImmersiveBackground(${
+    ScreenComponent.displayName || ScreenComponent.name || 'Screen'
+  })`;
+  return ScreenWithImmersiveBackground;
+}
+
 export default function ImmersiveBackground({ children, onTouchStartCapture, style }) {
   const { width, height } = useWindowDimensions();
   const dots = [];
