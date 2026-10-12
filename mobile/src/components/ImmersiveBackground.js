@@ -1,59 +1,36 @@
 import React from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import BorrowBackMark from './BorrowBackMark';
 import { theme } from '../theme';
 
-function RotatingMark({ size, style, duration }) {
-  const rotation = React.useRef(new Animated.Value(0)).current;
-  const [reduceMotion, setReduceMotion] = React.useState(false);
-
-  React.useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
-    return () => subscription.remove();
-  }, []);
-
-  React.useEffect(() => {
-    if (reduceMotion) {
-      rotation.setValue(0);
-      return undefined;
-    }
-
-    const animation = Animated.loop(
-      Animated.timing(rotation, {
-        toValue: 1,
-        duration,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-
-    animation.start();
-    return () => animation.stop();
-  }, [duration, reduceMotion, rotation]);
-
-  const rotate = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={[styles.emblem, style, { width: size, height: size, transform: [{ rotate }] }]}
-    >
-      <BorrowBackMark size={size} />
-    </Animated.View>
-  );
-}
-
-export function withImmersiveBackground(ScreenComponent) {
+export function withImmersiveBackground(ScreenComponent, { showBackButton = true } = {}) {
   function ScreenWithImmersiveBackground(props) {
+    const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
+    const canGoBack = navigation.canGoBack();
+    const showBack = canGoBack && showBackButton;
+
     return (
       <ImmersiveBackground>
-        <ScreenComponent {...props} />
+        {showBack ? (
+          <TouchableOpacity
+            style={[styles.backButton, { top: insets.top + 8 }]}
+            onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            hitSlop={8}
+          >
+            <Ionicons name="arrow-back" size={21} color={theme.colors.text} />
+          </TouchableOpacity>
+        ) : null}
+        <View style={[styles.screenFrame, { paddingTop: showBack ? insets.top + 54 : insets.top }]}>
+          <ScreenComponent {...props} />
+        </View>
       </ImmersiveBackground>
     );
   }
@@ -67,6 +44,13 @@ export function withImmersiveBackground(ScreenComponent) {
 export default function ImmersiveBackground({ children, onTouchStartCapture, style }) {
   const { width, height } = useWindowDimensions();
   const dots = [];
+  const orbits = [
+    { x: 0.12, y: 0.64, radius: 0.22, color: 'rgba(255,125,108,0.38)' },
+    { x: 0.12, y: 0.64, radius: 0.31, color: 'rgba(255,255,255,0.14)' },
+    { x: 0.9, y: 0.28, radius: 0.24, color: 'rgba(255,125,108,0.32)' },
+    { x: 0.9, y: 0.28, radius: 0.36, color: 'rgba(255,255,255,0.11)' },
+    { x: 0.72, y: 0.92, radius: 0.34, color: 'rgba(255,125,108,0.22)' },
+  ];
 
   for (let y = 24; y < height; y += 48) {
     for (let x = 24; x < width; x += 48) {
@@ -76,40 +60,38 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
           key={`${x}-${y}`}
           cx={x}
           cy={y}
-          r={accent ? 1.5 : 1}
-          fill={accent ? '#ff8b7d' : '#f4f4f5'}
-          opacity={accent ? 0.42 : 0.2}
+          r={accent ? 1.35 : 0.85}
+          fill={accent ? '#ff9a8d' : '#f4f4f5'}
+          opacity={accent ? 0.5 : 0.2}
         />
       );
     }
   }
 
   const orbitRadius = Math.min(width, height);
-  const orbits = [
-    { x: 0.18, y: 0.59, radius: 0.2, color: 'rgba(255,105,91,0.32)' },
-    { x: 0.18, y: 0.59, radius: 0.275, color: 'rgba(255,255,255,0.12)' },
-    { x: 0.34, y: 0.39, radius: 0.31, color: 'rgba(255,105,91,0.3)' },
-    { x: 0.34, y: 0.39, radius: 0.41, color: 'rgba(255,255,255,0.1)' },
-    { x: 0.63, y: 0.82, radius: 0.43, color: 'rgba(255,105,91,0.26)' },
-  ];
-  const accentPoints = [
-    [0.3, 0.25], [0.39, 0.39], [0.51, 0.22], [0.42, 0.73],
-    [0.69, 0.67], [0.86, 0.32], [0.2, 0.27], [0.57, 0.43],
-    [0.77, 0.56], [0.25, 0.83], [0.92, 0.71], [0.55, 0.91],
-  ];
 
   return (
-    <View
-      style={[styles.container, style]}
-      onTouchStartCapture={onTouchStartCapture}
-    >
-      <View pointerEvents="none" style={styles.atmosphere}>
+    <View style={[styles.container, style]} onTouchStartCapture={onTouchStartCapture}>
+      <View pointerEvents="none" collapsable={false} style={styles.atmosphere}>
         <LinearGradient
-          colors={['rgba(255,73,62,0.3)', 'rgba(255,73,62,0.12)', 'rgba(8,8,8,0)']}
-          locations={[0, 0.48, 1]}
-          start={{ x: 0.85, y: 0.1 }}
-          end={{ x: 0.18, y: 0.95 }}
+          colors={['#1a1312', '#101416', '#0b1013']}
+          locations={[0, 0.52, 1]}
+          start={{ x: 0.8, y: 0 }}
+          end={{ x: 0.1, y: 1 }}
           style={StyleSheet.absoluteFill}
+        />
+        <LinearGradient
+          colors={['rgba(255,112,96,0.23)', 'rgba(255,73,62,0.12)', 'transparent']}
+          locations={[0, 0.38, 1]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0.9 }}
+          style={styles.ambientGlow}
+        />
+        <LinearGradient
+          colors={['transparent', 'rgba(255,151,112,0.09)', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0.2 }}
+          style={styles.lowerGlow}
         />
         {orbits.map(({ x, y, radius, color }, index) => {
           const diameter = orbitRadius * radius * 2;
@@ -130,18 +112,6 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
             />
           );
         })}
-        <View
-          style={[
-            styles.glow,
-            {
-              top: height * 0.02,
-              right: -width * 0.4,
-              width: width * 0.9,
-              height: width * 0.9,
-              borderRadius: width * 0.45,
-            },
-          ]}
-        />
         <Svg width={width} height={height} style={styles.motif}>
           {Array.from({ length: Math.ceil(width / 280) }, (_, index) => {
             const x = 280 * (index + 1);
@@ -152,7 +122,7 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
                 y1="0"
                 x2={x}
                 y2={height}
-                stroke="rgba(255,255,255,0.016)"
+                stroke="rgba(255,255,255,0.035)"
                 strokeWidth={1}
               />
             );
@@ -166,34 +136,19 @@ export default function ImmersiveBackground({ children, onTouchStartCapture, sty
                 y1={y}
                 x2={width}
                 y2={y}
-                stroke="rgba(255,255,255,0.012)"
+                stroke="rgba(255,255,255,0.028)"
                 strokeWidth={1}
               />
             );
           })}
-          {accentPoints.map(([x, y], index) => (
-            <Circle
-              key={`accent-${index}`}
-              cx={width * x}
-              cy={height * y}
-              r={1.2}
-              fill="#ff8b7d"
-              opacity={0.3}
-            />
-          ))}
           {dots}
         </Svg>
-        <View style={styles.grid}>
-          <View style={styles.verticalLine} />
-          <View style={styles.verticalLine} />
-          <View style={styles.verticalLine} />
+        <View style={styles.heroMark}>
+          <BorrowBackMark size={Math.min(width * 0.78, 320)} />
         </View>
-        <View style={styles.horizon} />
-        <RotatingMark size={250} duration={78000} style={styles.markHero} />
-        <RotatingMark size={42} duration={42000} style={styles.markOne} />
-        <RotatingMark size={34} duration={54000} style={styles.markTwo} />
-        <RotatingMark size={32} duration={60000} style={styles.markThree} />
-        <RotatingMark size={28} duration={66000} style={styles.markFour} />
+        <View style={styles.smallMark}>
+          <BorrowBackMark size={46} />
+        </View>
       </View>
       <View style={styles.content}>{children}</View>
     </View>
@@ -211,6 +166,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     zIndex: 0,
   },
+  ambientGlow: {
+    position: 'absolute',
+    top: 0,
+    right: '-12%',
+    width: '112%',
+    height: '82%',
+  },
+  lowerGlow: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: '100%',
+    height: '46%',
+  },
   motif: {
     position: 'absolute',
     left: 0,
@@ -220,59 +189,37 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: StyleSheet.hairlineWidth,
   },
-  glow: {
+  heroMark: {
     position: 'absolute',
-    backgroundColor: 'rgba(255,73,62,0.2)',
+    top: '33%',
+    right: '-27%',
+    opacity: 0.13,
   },
-  emblem: {
+  smallMark: {
     position: 'absolute',
-    opacity: 0.42,
+    top: '17%',
+    left: '11%',
+    opacity: 0.29,
   },
   content: {
     flex: 1,
+    position: 'relative',
     zIndex: 1,
   },
-  markHero: {
-    top: '32%',
-    right: '-32%',
-    opacity: 0.15,
+  screenFrame: {
+    flex: 1,
   },
-  markOne: {
-    top: '19%',
-    left: '29%',
-    opacity: 0.26,
-  },
-  markTwo: {
-    top: '62%',
-    left: '51%',
-    opacity: 0.23,
-  },
-  markThree: {
-    top: '31%',
-    right: '9%',
-    opacity: 0.22,
-  },
-  markFour: {
-    bottom: '13%',
-    left: '34%',
-    opacity: 0.2,
-  },
-  grid: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  verticalLine: {
-    height: '100%',
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: 'rgba(255,255,255,0.03)',
-  },
-  horizon: {
+  backButton: {
     position: 'absolute',
-    top: '31%',
-    left: 0,
-    right: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.04)',
+    left: theme.spacing.md,
+    zIndex: 2,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: 'rgba(17,17,17,0.92)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
 });

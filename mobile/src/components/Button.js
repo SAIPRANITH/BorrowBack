@@ -28,13 +28,13 @@ const Button = ({
 
   const getTextColor = () => {
     if (disabled) return theme.colors.textSecondary;
-    if (variant === 'outline') return theme.colors.primary;
-    return theme.colors.surface;
+    if (variant === 'outline') return theme.colors.accent;
+    return '#080808';
   };
 
   const getBorderColor = () => {
     if (disabled) return theme.colors.border;
-    if (variant === 'outline') return theme.colors.primary;
+    if (variant === 'outline') return theme.colors.coralLine;
     return 'transparent';
   };
 
@@ -51,9 +51,11 @@ const Button = ({
         fullWidth && styles.fullWidth,
         variant === 'primary' && !disabled && styles.primaryShadow,
         { 
-          backgroundColor: getBackgroundColor(),
+          backgroundColor: variant === 'outline' && !disabled
+            ? 'rgba(255,73,62,0.055)'
+            : getBackgroundColor(),
           borderColor: getBorderColor(),
-          borderWidth: variant === 'outline' ? 1 : 0,
+          borderWidth: variant === 'outline' || disabled ? 1 : 0,
         },
         style,
         (disabled || loading) && styles.disabledButton
@@ -72,8 +74,8 @@ const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 50,
-    borderRadius: 15,
+    minHeight: 48,
+    borderRadius: theme.borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
@@ -84,14 +86,15 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
   },
   primaryShadow: {
-    shadowColor: theme.colors.primary,
+    shadowColor: theme.colors.secondary,
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.16,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOpacity: 0.24,
+    shadowRadius: 12,
+    elevation: 3,
   },
   disabledButton: {
-    backgroundColor: '#343434',
+    backgroundColor: '#262626',
+    borderColor: 'rgba(255,255,255,0.06)',
     shadowOpacity: 0,
     elevation: 0,
   },

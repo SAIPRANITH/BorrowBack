@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.borrowback.campus",
-      "versionCode": 26,
+      "versionCode": 28,
       "adaptiveIcon": {
         "backgroundColor": "#070707",
         "foregroundImage": "./assets/android-icon-foreground.png",

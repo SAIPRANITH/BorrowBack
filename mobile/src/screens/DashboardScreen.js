@@ -7,7 +7,6 @@ import {
   FlatList,
   RefreshControl,
   Image,
-  SafeAreaView,
   Alert
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -148,7 +147,7 @@ const DashboardScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
         <ScrollView
           style={styles.container}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.secondary]} />}
@@ -298,12 +297,9 @@ const DashboardScreen = () => {
             <Text style={styles.emptyBorrows}>You have no active borrows right now.</Text>
           )}
         </View>
-        <Text style={styles.developerCredit}>
-          Developed by <Text style={styles.developerName}>Sai Pranith Reddy Vaka</Text>
-        </Text>
         <View style={{ height: 40 }} />
         </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -597,19 +593,6 @@ const styles = StyleSheet.create({
   emptyRecentText: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.sizes.sm,
-  },
-  developerCredit: {
-    marginTop: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.colors.border,
-    color: theme.colors.textSecondary,
-    fontSize: theme.typography.sizes.xs,
-    textAlign: 'center',
-  },
-  developerName: {
-    color: theme.colors.text,
-    fontWeight: theme.typography.weights.semibold,
   },
 });
 

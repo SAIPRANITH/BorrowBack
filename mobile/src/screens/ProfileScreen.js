@@ -4,6 +4,7 @@ import Text from '../components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/api';
 import { theme } from '../theme';
 import * as ImagePicker from 'expo-image-picker';
 import appConfig from '../../app.json';
@@ -58,11 +59,13 @@ export default function ProfileScreen() {
             ...(lending.data.history || lending.data.borrows || []).map((borrow) => borrow.ownerRating),
             ...(borrowedLoans.data.loans || []).map((loan) => loan.borrowerRating),
             ...(lentLoans.data.loans || []).map((loan) => loan.lenderRating),
-          ].filter((rating) => Number.isFinite(rating) && rating >= 1 && rating <= 5);
+          ].map(Number).filter((rating) => Number.isFinite(rating) && rating >= 1 && rating <= 5);
 
-          if (active && ratings.length > 0) {
+          if (active) {
             setProfileRating({
-              average: ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length,
+              average: ratings.length > 0
+                ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+                : 0,
               count: ratings.length,
             });
           }
@@ -463,14 +466,16 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    marginBottom: theme.spacing.xl,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.glass,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.09)',
+    borderRadius: theme.borderRadius.xl,
+    marginBottom: theme.spacing.md,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
     paddingHorizontal: theme.spacing.md,
     overflow: 'hidden',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.accent,
+    ...theme.shadows.card,
   },
   memberStamp: {
     alignSelf: 'center',
@@ -481,7 +486,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderWidth: 1,
     borderColor: `${theme.colors.accent}99`,
-    borderRadius: 4,
+    borderRadius: theme.borderRadius.full,
     marginBottom: theme.spacing.md,
   },
   memberStampText: {
@@ -493,10 +498,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 96,
     height: 96,
-    borderRadius: 48,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 3,
-    borderColor: theme.colors.accent,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.surfaceRaised,
+    borderWidth: 2,
+    borderColor: 'rgba(255,112,101,0.65)',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -504,7 +509,7 @@ const styles = StyleSheet.create({
     ...theme.shadows.card,
   },
   avatarText: {
-    fontSize: 36,
+    fontSize: 34,
     color: theme.colors.primary,
     fontWeight: theme.typography.weights.bold,
   },
@@ -512,7 +517,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
-    borderRadius: 48,
+    borderRadius: theme.borderRadius.lg,
   },
   avatarEditButton: {
     position: 'absolute',

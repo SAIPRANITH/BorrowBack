@@ -9,7 +9,7 @@ const Card = ({ children, onPress, style, padding = theme.spacing.md }) => {
     <CardComponent 
       style={[styles.card, { padding }, style]} 
       onPress={onPress}
-      activeOpacity={onPress ? 0.86 : 1}
+      activeOpacity={onPress ? 0.9 : 1}
       accessibilityRole={onPress ? 'button' : undefined}
     >
       {children}
@@ -19,11 +19,13 @@ const Card = ({ children, onPress, style, padding = theme.spacing.md }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'transparent',
-    borderRadius: 0,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.09)',
+    backgroundColor: theme.colors.glass,
+    borderRadius: theme.borderRadius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
     marginVertical: theme.spacing.sm,
+    overflow: 'hidden',
+    ...theme.shadows.card,
   },
 });
 

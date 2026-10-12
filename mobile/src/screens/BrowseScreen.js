@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
-  SafeAreaView,
   ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -181,7 +180,7 @@ const BrowseScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
         <View style={styles.container}>
         <View style={styles.header}>
           <LinearGradient
@@ -262,7 +261,7 @@ const BrowseScreen = () => {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -278,11 +277,11 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.lg,
-    paddingBottom: 12,
+    paddingBottom: theme.spacing.md,
     minHeight: 174,
     overflow: 'hidden',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(255,112,101,0.2)',
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -330,12 +329,12 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.paperShade,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: 12,
-    height: 44,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    height: 50,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.11)',
   },
   searchIcon: {
     marginRight: theme.spacing.sm,
@@ -347,7 +346,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   categoriesWrapper: {
-    backgroundColor: 'rgba(8,8,8,0.32)',
+    backgroundColor: 'rgba(8,8,8,0.2)',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255,255,255,0.08)',
     paddingBottom: 12,
@@ -363,14 +362,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
+    backgroundColor: 'rgba(17,17,17,0.82)',
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: theme.colors.border,
     marginRight: theme.spacing.sm,
   },
   chipSelected: {
     backgroundColor: theme.colors.secondary,
     borderColor: theme.colors.secondary,
+    shadowColor: theme.colors.secondary,
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 2,
   },
   chipText: {
     fontSize: theme.typography.sizes.sm,
@@ -391,10 +394,13 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     width: '48%',
-    backgroundColor: 'transparent',
+    backgroundColor: theme.colors.glass,
     overflow: 'hidden',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.14)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.09)',
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.card,
   },
   itemImage: {
     height: 140,

@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
     padding: theme.spacing.xl,
   },
   errorIcon: {

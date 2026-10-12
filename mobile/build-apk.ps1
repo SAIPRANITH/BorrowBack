@@ -1,3 +1,8 @@
+param(
+    [switch]$InstallOnDevice,
+    [switch]$SkipWebsiteCopy
+)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -60,7 +65,7 @@ $env:Path = "$jdkDirectory\bin;$sdkDirectory\platform-tools;$env:Path"
 
 Push-Location $mobileDirectory
 try {
-    & npx.cmd expo prebuild --platform android
+    & npx.cmd expo prebuild --platform android --no-clean
     if ($LASTEXITCODE -ne 0) {
         throw 'Expo could not generate the Android project.'
     }
@@ -95,13 +100,31 @@ try {
         $gradle = $gradle.Replace($signingMarker, "$signingMarker`n$releaseConfig")
     }
 
-    $debugSigning = 'signingConfig signingConfigs.debug'
-    $releaseSigningIndex = $gradle.LastIndexOf($debugSigning, [StringComparison]::Ordinal)
-    if ($releaseSigningIndex -lt 0) {
+    $releaseBlock = [regex]::Match(
+        $gradle,
+        '(?s)(buildTypes\s*\{.*?\brelease\s*\{)(.*?)(\r?\n\s*\})'
+    )
+    if (-not $releaseBlock.Success) {
         throw 'The generated release build type could not be found for signing.'
     }
-    $gradle = $gradle.Remove($releaseSigningIndex, $debugSigning.Length)
-    $gradle = $gradle.Insert($releaseSigningIndex, 'signingConfig signingConfigs.borrowbackRelease')
+    $releaseBody = $releaseBlock.Groups[2].Value
+    $signingConfigPattern = '(?m)^(\s*)signingConfig\s+signingConfigs\.\w+\s*$'
+    if ([regex]::IsMatch($releaseBody, $signingConfigPattern)) {
+        $releaseBody = [regex]::Replace(
+            $releaseBody,
+            $signingConfigPattern,
+            '${1}signingConfig signingConfigs.borrowbackRelease',
+            1
+        )
+    }
+    else {
+        $releaseBody = "`n            signingConfig signingConfigs.borrowbackRelease$releaseBody"
+    }
+    $gradle = $gradle.Remove($releaseBlock.Index, $releaseBlock.Length)
+    $gradle = $gradle.Insert(
+        $releaseBlock.Index,
+        "$($releaseBlock.Groups[1].Value)$releaseBody$($releaseBlock.Groups[3].Value)"
+    )
     [System.IO.File]::WriteAllText(
         $gradlePath,
         $gradle,
@@ -124,11 +147,6 @@ try {
         throw 'Gradle completed without producing the expected APK.'
     }
 
-    $downloadDirectory = Join-Path $repositoryRoot 'client\public\downloads'
-    New-Item -ItemType Directory -Path $downloadDirectory -Force | Out-Null
-    $downloadPath = Join-Path $downloadDirectory 'BorrowBack.apk'
-    Copy-Item -LiteralPath $apkPath -Destination $downloadPath -Force
-
     $apksigner = Get-ChildItem -LiteralPath (Join-Path $sdkDirectory 'build-tools') `
         -Filter apksigner.bat -Recurse |
         Sort-Object FullName -Descending |
@@ -136,12 +154,32 @@ try {
     if (-not $apksigner) {
         throw 'The Android SDK apksigner tool is missing; the APK signature could not be verified.'
     }
-    & $apksigner.FullName verify --verbose $downloadPath
+    & $apksigner.FullName verify --verbose $apkPath
     if ($LASTEXITCODE -ne 0) {
         throw 'The generated APK signature did not verify.'
     }
 
-    Write-Output "Signed APK: $downloadPath"
+    if ($InstallOnDevice) {
+        $adbPath = Join-Path $sdkDirectory 'platform-tools\adb.exe'
+        if (-not (Test-Path -LiteralPath $adbPath)) {
+            throw "Android Debug Bridge was not found at '$adbPath'."
+        }
+
+        & $adbPath install -r $apkPath
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Could not install the signed APK. Confirm one authorized Android device is connected.'
+        }
+        Write-Output 'Installed the signed APK on the connected Android device.'
+    }
+    elseif (-not $SkipWebsiteCopy) {
+        $downloadDirectory = Join-Path $repositoryRoot 'client\public\downloads'
+        New-Item -ItemType Directory -Path $downloadDirectory -Force | Out-Null
+        $downloadPath = Join-Path $downloadDirectory 'BorrowBack.apk'
+        Copy-Item -LiteralPath $apkPath -Destination $downloadPath -Force
+        Write-Output "Website download copy: $downloadPath"
+    }
+
+    Write-Output "Signed APK: $apkPath"
     Write-Output "Signing key backup: $keyStorePath"
 }
 finally {

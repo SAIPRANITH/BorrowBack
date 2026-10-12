@@ -152,10 +152,6 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Ionicons name="people-outline" size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.footerText}>Made for sharing, built for campus.</Text>
-        </View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
@@ -189,9 +185,15 @@ const styles = StyleSheet.create({
     marginBottom: 34,
   },
   logoContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
+    backgroundColor: 'rgba(255,73,62,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,112,101,0.2)',
   },
   appName: {
     fontSize: 19,
@@ -200,10 +202,10 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   heroTitle: {
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 34,
+    lineHeight: 40,
     fontWeight: '800',
-    letterSpacing: -0.7,
+    letterSpacing: -0.9,
     color: theme.colors.text,
     marginBottom: 10,
   },
@@ -225,9 +227,13 @@ const styles = StyleSheet.create({
     marginLeft: 7,
   },
   form: {
-    backgroundColor: 'transparent',
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    backgroundColor: theme.colors.glass,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: theme.borderRadius.xl,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    ...theme.shadows.card,
   },
   sheetHeader: {
     marginBottom: 19,
@@ -285,17 +291,6 @@ const styles = StyleSheet.create({
     color: theme.colors.secondary,
     fontSize: 13,
     fontWeight: '800',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 18,
-  },
-  footerText: {
-    color: theme.colors.textSecondary,
-    fontSize: 12,
-    marginLeft: 7,
   },
 });
 

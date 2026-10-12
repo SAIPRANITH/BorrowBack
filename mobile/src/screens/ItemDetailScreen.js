@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'transparent',
   },
   errorText: {
     color: theme.colors.error,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.glass,
     borderTopLeftRadius: theme.borderRadius.xl,
     borderTopRightRadius: theme.borderRadius.xl,
     marginTop: -20,

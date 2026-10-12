@@ -1,9 +1,10 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
@@ -27,7 +28,7 @@ import MoneyLoanRequestScreen from '../screens/MoneyLoanRequestScreen';
 import AdminScreen from '../screens/AdminScreen';
 
 const LoginWithBackground = withImmersiveBackground(LoginScreen);
-const RegisterWithBackground = withImmersiveBackground(RegisterScreen);
+const RegisterWithBackground = withImmersiveBackground(RegisterScreen, { showBackButton: false });
 const DashboardWithBackground = withImmersiveBackground(DashboardScreen);
 const BrowseWithBackground = withImmersiveBackground(BrowseScreen);
 const MyItemsWithBackground = withImmersiveBackground(MyItemsScreen);
@@ -36,7 +37,7 @@ const ProfileWithBackground = withImmersiveBackground(ProfileScreen);
 const ItemDetailWithBackground = withImmersiveBackground(ItemDetailScreen);
 const NotificationsWithBackground = withImmersiveBackground(NotificationsScreen);
 const FinesWithBackground = withImmersiveBackground(FinesScreen);
-const AddItemWithBackground = withImmersiveBackground(AddItemScreen);
+const AddItemWithBackground = withImmersiveBackground(AddItemScreen, { showBackButton: false });
 const MoneyLoansWithBackground = withImmersiveBackground(MoneyLoansScreen);
 const MoneyLoanRequestWithBackground = withImmersiveBackground(MoneyLoanRequestScreen);
 const AdminWithBackground = withImmersiveBackground(AdminScreen);
@@ -56,15 +57,49 @@ const navigationTheme = {
   },
 };
 const stackScreenOptions = {
+  headerShown: false,
   contentStyle: { backgroundColor: 'transparent' },
-  headerStyle: { backgroundColor: 'rgba(20,13,12,0.96)' },
-  headerTintColor: theme.colors.text,
-  headerTitleStyle: {
-    color: theme.colors.text,
-    fontWeight: theme.typography.weights.semibold,
-  },
-  headerShadowVisible: false,
 };
+
+function AnimatedTabButton({ accessibilityState, children, ...props }) {
+  const focused = Boolean(accessibilityState?.selected);
+  const progress = useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  useEffect(() => {
+    const animation = Animated.spring(progress, {
+      toValue: focused ? 1 : 0,
+      useNativeDriver: true,
+      damping: 18,
+      stiffness: 220,
+      mass: 0.7,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [focused, progress]);
+
+  const activeScale = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.88, 1],
+  });
+
+  return (
+    <TouchableOpacity {...props} activeOpacity={0.9} style={[props.style, styles.animatedTabButton]}>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.tabActiveIndicator,
+          {
+            opacity: progress,
+            transform: [{ scale: activeScale }],
+          },
+        ]}
+      />
+      <Animated.View style={{ transform: [{ scale: activeScale }] }}>
+        {children}
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
@@ -143,7 +178,16 @@ const MainTabs = () => (
       tabBarStyle: styles.tabBar,
       tabBarLabelStyle: styles.tabBarLabel,
       tabBarItemStyle: styles.tabBarItem,
-      tabBarActiveBackgroundColor: 'rgba(255,73,62,0.1)',
+      tabBarButton: (props) => <AnimatedTabButton {...props} />,
+      tabBarActiveBackgroundColor: 'transparent',
+      tabBarBackground: () => (
+        <View style={StyleSheet.absoluteFill}>
+          <LinearGradient
+            colors={['rgba(22,17,17,0.98)', 'rgba(8,8,8,0.98)']}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      ),
     })}
   >
     <Tab.Screen name="Home" component={HomeStack} />
@@ -178,26 +222,47 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: 'rgba(20,13,12,0.98)',
+    backgroundColor: 'transparent',
+    marginHorizontal: 12,
+    marginTop: 0,
+    marginBottom: 8,
+    height: 70,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,112,101,0.32)',
-    elevation: 0,
+    borderTopColor: 'transparent',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,112,101,0.24)',
+    borderRadius: 22,
+    overflow: 'hidden',
+    elevation: 8,
     shadowColor: theme.colors.secondary,
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    height: 72,
-    paddingBottom: 10,
-    paddingTop: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    paddingBottom: 7,
+    paddingTop: 7,
   },
   tabBarItem: {
-    marginHorizontal: 4,
-    marginVertical: 4,
+    marginHorizontal: 3,
+    marginVertical: 5,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  animatedTabButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabActiveIndicator: {
+    ...StyleSheet.absoluteFillObject,
+    margin: 2,
     borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,112,101,0.2)',
+    backgroundColor: 'rgba(255,73,62,0.1)',
   },
   tabBarLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: theme.typography.weights.semibold,
+    letterSpacing: 0.15,
   }
 });
 
