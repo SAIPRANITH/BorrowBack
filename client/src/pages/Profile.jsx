@@ -1,10 +1,10 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
 import { Link } from 'react-router-dom';
 import { 
   User, Mail, Phone, Calendar, Star, Package, Repeat, Inbox, 
-  IndianRupee, ShieldCheck, Edit3, Lock, Bell, ChevronRight, 
+  IndianRupee, Edit3, Lock, Bell, ChevronRight,
   CheckCircle2, AlertCircle, Loader2, Coins, Settings
 } from 'lucide-react';
 
@@ -23,8 +23,40 @@ export default function Profile() {
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
+  const [failedPhoto, setFailedPhoto] = useState('');
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState(null);
+  const [statsError, setStatsError] = useState('');
+
+  const fetchProfileData = useCallback(async () => {
+    const endpoints = [
+      ['items', '/items/mine'],
+      ['borrow history', '/borrows/mine'],
+      ['incoming requests', '/borrows/incoming'],
+      ['financial summary', '/borrows/financial'],
+    ];
+    const results = await Promise.allSettled(
+      endpoints.map(([, endpoint]) => api.get(endpoint))
+    );
+    const [itemsRes, borrowsRes, incomingRes, finRes] = results;
+    const failedEndpoints = results.flatMap((result, index) => {
+      if (result.status === 'fulfilled') return [];
+      console.error(`Could not load profile ${endpoints[index][0]}:`, result.reason);
+      return [endpoints[index][0]];
+    });
+
+    setStats({
+      items: itemsRes.status === 'fulfilled' ? itemsRes.value.data?.count ?? 0 : null,
+      borrows: borrowsRes.status === 'fulfilled' ? borrowsRes.value.data?.count ?? 0 : null,
+      requests: incomingRes.status === 'fulfilled' ? incomingRes.value.data?.count ?? 0 : null,
+      financial: finRes.status === 'fulfilled' ? finRes.value.data?.summary ?? null : null,
+    });
+    setStatsError(
+      failedEndpoints.length
+        ? `Could not load ${failedEndpoints.join(', ')}. Check your connection and retry.`
+        : ''
+    );
+  }, []);
 
   useEffect(() => {
     if (!photoFile) {
@@ -38,43 +70,16 @@ export default function Profile() {
   }, [photoFile]);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const [itemsRes, borrowsRes, incomingRes, finRes] = await Promise.all([
-          api.get('/items/mine').catch(() => ({ data: { count: 0 } })),
-          api.get('/borrows/mine').catch(() => ({ data: { count: 0 } })),
-          api.get('/borrows/incoming').catch(() => ({ data: { count: 0 } })),
-          api.get('/borrows/financial').catch(() => ({ data: { summary: null } }))
-        ]);
-
-        setStats({
-          items: itemsRes.data?.count || 0,
-          borrows: borrowsRes.data?.count || 0,
-          requests: incomingRes.data?.count || 0,
-          financial: finRes.data?.summary || {
-            totalDepositsPaid: 0,
-            totalFinesPaid: 0,
-            totalDepositsCollected: 0,
-            totalFinesCollected: 0
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching profile stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (user) {
       setFormData({ 
         name: user.name, 
         phone: user.phone || ''
       });
-      fetchProfileData();
+      fetchProfileData().finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchProfileData]);
 
   const handleInputChange = (e) => {
     setFormData((current) => ({ ...current, [e.target.name]: e.target.value }));
@@ -133,45 +138,47 @@ export default function Profile() {
     );
   }
 
-  const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : 'Unknown';
+  const createdAt = user?.createdAt ? new Date(user.createdAt) : null;
+  const joinDate = createdAt && !Number.isNaN(createdAt.getTime())
+    ? createdAt.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+    : 'Unknown';
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : '?';
+  const photoSource = photoPreview || user?.profilePhoto || '';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in-up pb-12">
       {/* Profile Hero Card */}
       <div className="glass-card overflow-hidden rounded-3xl border border-white/5 bg-zinc-900/60 relative">
         {/* Banner */}
-        <div className="profile-banner-abstract h-52 relative overflow-hidden flex items-start justify-end p-4">
-          
-          <div className="relative z-10 flex items-center gap-2 bg-zinc-950/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-xl mt-2 mr-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-medium text-emerald-100 tracking-wide uppercase">Verified Student</span>
-          </div>
-        </div>
+        <div aria-hidden="true" className="profile-banner-abstract h-40 sm:h-52 relative overflow-hidden" />
 
         {/* Content */}
         <div className="px-6 sm:px-10 pb-8 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-14 relative z-10 mb-6">
-            <div className="relative group">
-              {photoPreview || user?.profilePhoto ? (
-                <img src={photoPreview || user.profilePhoto} alt={user.name} className="w-28 h-28 rounded-2xl object-cover border-4 border-zinc-900 shadow-2xl" />
+            <div className="relative h-28 w-28 shrink-0">
+              {photoSource && failedPhoto !== photoSource ? (
+                <img
+                  src={photoSource}
+                  alt={user?.name ? `${user.name}'s profile` : 'Profile'}
+                  onError={() => setFailedPhoto(photoSource)}
+                  className="h-full w-full rounded-2xl border-4 border-zinc-900 object-cover shadow-2xl"
+                />
               ) : (
-                <div className="w-28 h-28 rounded-2xl border-4 border-zinc-900 shadow-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-4xl font-bold text-white">
+                <div role="img" aria-label={`Profile initials: ${initial}`} className="flex h-full w-full items-center justify-center rounded-2xl border-4 border-zinc-900 bg-gradient-to-br from-red-500 to-orange-500 text-4xl font-bold text-white shadow-2xl">
                   {initial}
                 </div>
               )}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-zinc-900 animate-pulse"></div>
             </div>
-            <div className="flex-1 text-center sm:text-left mb-2">
-              <h1 className="text-3xl font-bold text-white mb-1">{user?.name}</h1>
+            <div className="mb-2 min-w-0 w-full flex-1 text-center sm:text-left">
+              <h1 className="mb-1 break-words text-3xl font-bold text-white">{user?.name || 'Your profile'}</h1>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-zinc-400 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Mail className="w-4 h-4" />
-                  {user?.email}
+                <div className="flex min-w-0 max-w-full items-center gap-1.5 break-all">
+                  <Mail className="h-4 w-4 shrink-0" />
+                  <span>{user?.email || 'Email unavailable'}</span>
                 </div>
                 {user?.phone && (
-                  <div className="flex items-center gap-1.5">
-                    <Phone className="w-4 h-4" />
+                  <div className="flex min-w-0 max-w-full items-center gap-1.5 break-words">
+                    <Phone className="h-4 w-4 shrink-0" />
                     {user.phone}
                   </div>
                 )}
@@ -186,6 +193,18 @@ export default function Profile() {
       </div>
 
       {/* Activity Stats Row */}
+      {statsError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-100">
+          <span>{statsError}</span>
+          <button
+            type="button"
+            onClick={() => fetchProfileData()}
+            className="font-semibold text-amber-200 underline underline-offset-4 hover:text-white"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-scale-in" style={{animationDelay: '100ms'}}>
         <div className="stat-card glass-card rounded-2xl p-5 border border-white/5 bg-zinc-900/60 flex flex-col gap-3">
           <div className="flex justify-between items-start">
@@ -210,7 +229,7 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-zinc-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white">{stats.items}</p>
+            <p className="text-2xl font-bold text-white">{stats.items ?? '—'}</p>
             <p className="text-xs text-zinc-400 mt-1">Items Listed</p>
           </div>
         </Link>
@@ -223,8 +242,8 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-zinc-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white">{stats.borrows}</p>
-            <p className="text-xs text-zinc-400 mt-1">Active Borrows</p>
+            <p className="text-2xl font-bold text-white">{stats.borrows ?? '—'}</p>
+            <p className="text-xs text-zinc-400 mt-1">My Borrows</p>
           </div>
         </Link>
         
@@ -236,7 +255,7 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-zinc-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white">{stats.requests}</p>
+            <p className="text-2xl font-bold text-white">{stats.requests ?? '—'}</p>
             <p className="text-xs text-zinc-400 mt-1">Incoming Requests</p>
           </div>
         </Link>
@@ -258,14 +277,18 @@ export default function Profile() {
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-xs text-zinc-500 mb-1">Deposits Paid</p>
-                      <p className="text-xl font-bold text-emerald-400">₹{stats.financial?.borrower?.totalDepositsPaid || 0}</p>
+                      <p className="text-xl font-bold text-emerald-400">
+                        {stats.financial ? `₹${stats.financial.borrower?.totalDepositsPaid ?? 0}` : '—'}
+                      </p>
                     </div>
                   </div>
                   <div className="w-full h-px bg-white/5"></div>
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-xs text-zinc-500 mb-1">Fines Paid</p>
-                      <p className="text-xl font-bold text-red-400">₹{stats.financial?.borrower?.totalFinesPaid || 0}</p>
+                      <p className="text-xl font-bold text-red-400">
+                        {stats.financial ? `₹${stats.financial.borrower?.totalFinesPaid ?? 0}` : '—'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -277,14 +300,18 @@ export default function Profile() {
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-xs text-zinc-500 mb-1">Deposits Collected</p>
-                      <p className="text-xl font-bold text-emerald-400">₹{stats.financial?.owner?.totalDepositsCollected || 0}</p>
+                      <p className="text-xl font-bold text-emerald-400">
+                        {stats.financial ? `₹${stats.financial.owner?.totalDepositsCollected ?? 0}` : '—'}
+                      </p>
                     </div>
                   </div>
                   <div className="w-full h-px bg-white/5"></div>
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-xs text-zinc-500 mb-1">Fines Collected</p>
-                      <p className="text-xl font-bold text-emerald-400">₹{stats.financial?.owner?.totalFinesCollected || 0}</p>
+                      <p className="text-xl font-bold text-emerald-400">
+                        {stats.financial ? `₹${stats.financial.owner?.totalFinesCollected ?? 0}` : '—'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -323,30 +350,34 @@ export default function Profile() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-zinc-400 ml-1">Full Name</label>
+                  <label htmlFor="profile-name" className="text-sm font-medium text-zinc-400 ml-1">Full Name</label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3.5 w-5 h-5 text-zinc-400" />
                     <input 
                       type="text" 
+                      id="profile-name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all text-sm"
+                      autoComplete="name"
+                      className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-red-400/60 focus:ring-1 focus:ring-red-400/60 transition-all text-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-zinc-400 ml-1">Phone Number</label>
+                  <label htmlFor="profile-phone" className="text-sm font-medium text-zinc-400 ml-1">Phone Number</label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3.5 w-5 h-5 text-zinc-400" />
                     <input 
                       type="tel" 
+                      id="profile-phone"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all text-sm"
+                      autoComplete="tel"
+                      className="w-full bg-black/40 border border-white/5 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-red-400/60 focus:ring-1 focus:ring-red-400/60 transition-all text-sm"
                     />
                   </div>
                 </div>
@@ -354,7 +385,7 @@ export default function Profile() {
                 <div>
                   <label htmlFor="profile-photo" className="text-sm font-medium text-zinc-400 ml-1">Profile photo</label>
                   <div className="mt-2 flex flex-wrap items-center gap-4">
-                    <label htmlFor="profile-photo" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:border-red-400/50 hover:bg-white/[0.04]">
+                    <label htmlFor="profile-photo" className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:border-red-400/50 hover:bg-white/[0.04] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-red-400">
                       <User className="h-4 w-4 text-red-400" />
                       Choose photo
                     </label>
@@ -376,7 +407,7 @@ export default function Profile() {
                 <button 
                   type="submit" 
                   disabled={updating}
-                  className="btn-primary w-full sm:w-auto px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="btn-primary w-full sm:w-auto px-8 py-3 rounded-xl text-white font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {updating ? (
                     <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>

@@ -60,11 +60,6 @@ export default function LoginPage() {
 
  return (
  <div className="auth-page auth-page--login min-h-screen relative flex items-center justify-center overflow-hidden text-zinc-100">
- <div aria-hidden="true" className="auth-background-art absolute pointer-events-none">
- <div className="auth-background-mark" />
- </div>
-
- {/* ================= CONTENT CONTAINER ================= */}
  <div className="relative z-10 w-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20">
  
  {/* Left Side: Info */}
